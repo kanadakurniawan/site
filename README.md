@@ -1,43 +1,74 @@
-# Astro Starter Kit: Minimal
+# kanadakurniawan.com — Blog & Research
+
+Personal blog and research site of **Kanada Kurniawan** — AI × Meteorology
+(researcher at BMKG, Stasiun Meteorologi Kelas III Maritim Dwikora, Pontianak).
+
+Built with [Astro](https://astro.build), deployed for free to **GitHub Pages**.
+
+## Features
+
+- 📝 Blog posts (Markdown/MDX) on deep learning, meteorology, and research notes
+- 📖 Publications page (paper list from Google Scholar)
+- 🧮 KaTeX math rendering (`$...$` inline, multi-line `$$ ... $$` display)
+- 🗞️ RSS feed (`/rss.xml`) + sitemap (`/sitemap-index.xml`)
+- 📱 Responsive, dark-mode aware
+- 🔄 GitHub Actions: auto-build & deploy on push to `main`
+
+## Tech Stack
+
+- **Astro 5** + MDX + TypeScript
+- remark-math + rehype-katex for equations
+- @astrojs/rss + @astrojs/sitemap
+- Static deployment via GitHub Actions
+
+## Local Development
 
 ```sh
-npm create astro@latest -- --template minimal
+npm install     # first time only
+npm run dev     # preview at http://localhost:4321
+npm run build   # production build to ./dist/
+npm run preview # preview the production build
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Project Structure
 
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
+```
+site/
 ├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+│   ├── content/
+│   │   ├── posts/          # blog posts (Markdown/MDX)
+│   │   └── publications/   # publication records (Markdown)
+│   ├── layouts/            # base layout
+│   ├── components/         # header, footer, post card, avatar
+│   ├── pages/              # home, blog, about, publications, rss, sitemap
+│   ├── scripts/            # build/verification helpers
+│   ├── config.ts           # site metadata & nav
+│   └── styles/             # global CSS
+├── public/                 # static assets (favicon, images)
+└── .github/workflows/      # GitHub Pages deploy
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## Adding Content
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+1. Create a Markdown/MDX file in `src/content/posts/` with frontmatter:
 
-Any static assets, like images, can be placed in the `public/` directory.
+   ```md
+   ---
+   title: "Post Title"
+   description: "One-line summary"
+   pubDate: 2026-09-01
+   categories: ["Deep Learning"]
+   tags: ["neural-network"]
+   draft: false
+   ---
+   ```
 
-## 🧞 Commands
+2. The filename becomes the URL: `my-post.md` → `/blog/my-post/`.
+3. Push to `main` — GitHub Actions builds and deploys automatically.
 
-All commands are run from the root of the project, from a terminal:
+For book chapters (from `../book/`), run `node ../book/build/sync-to-blog.mjs` to sync
+manuscripts into this blog, then build & push.
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+## License
 
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+Content © Kanada Kurniawan. Source code under the MIT License unless noted.

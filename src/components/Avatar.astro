@@ -9,7 +9,7 @@ const { alt = 'Kanada Kurniawan', size = 256 } = Astro.props;
 
 <img
 	class="avatar"
-	src="/images/kanada-kurniawan.webp"
+	src={import.meta.env.BASE_URL + 'images/kanada-kurniawan.webp'}
 	alt={alt}
 	width={200}
 	height={200}

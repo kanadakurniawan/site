@@ -4,7 +4,7 @@ import { siteConfig } from '../config';
 
 <header class="site-header">
 	<div class="container nav-wrap">
-		<a class="site-logo" href="/">{siteConfig.title}</a>
+		<a class="site-logo" href={import.meta.env.BASE_URL}>{siteConfig.title}</a>
 		<nav aria-label="Main navigation">
 			<ul>
 				{

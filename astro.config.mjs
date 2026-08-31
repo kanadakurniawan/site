@@ -8,7 +8,8 @@ import rehypeKatex from 'rehype-katex';
 
 // https://astro.build/config
 export default defineConfig({
-	site: 'https://kanadakurniawan.com',
+	site: 'https://kanadakurniawan.github.io',
+	base: '/site/',
 	markdown: {
 		processor: unified({
 			remarkPlugins: [remarkMath],

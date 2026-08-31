@@ -1,0 +1,59 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const pubs = (await getCollection('publications')).sort(
+	(a, b) => b.data.year - a.data.year,
+);
+---
+
+<BaseLayout title="Publications" description="Publications by Kanada Kurniawan.">
+	<h1>Publications</h1>
+	<ol class="pubs">
+		{
+			pubs.map((pub) => (
+				<li>
+					<p class="pub-title">
+						{pub.data.title}
+					</p>
+					<p class="pub-venue">
+						{pub.data.venue}, {pub.data.year}
+						{pub.data.doi && (
+							<>
+								{' '}· <a href={`https://doi.org/${pub.data.doi}`} rel="noopener">DOI</a>
+							</>
+						)}
+						{pub.data.url && (
+							<>
+								{' '}· <a href={pub.data.url} rel="noopener">Link</a>
+							</>
+						)}
+						{pub.data.citation && (
+							<>
+								{' '}· <span class="pub-cite">{pub.data.citation}</span>
+							</>
+						)}
+					</p>
+				</li>
+			))
+		}
+	</ol>
+</BaseLayout>
+
+<style>
+	.pubs {
+		padding-left: 1.2rem;
+	}
+	.pubs li {
+		margin-block: 1.25rem;
+	}
+	.pub-title {
+		margin: 0;
+		font-weight: 600;
+	}
+	.pub-venue {
+		margin: 0.2rem 0 0;
+		color: var(--muted);
+		font-size: 0.95rem;
+	}
+</style>

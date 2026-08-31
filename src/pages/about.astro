@@ -1,0 +1,86 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Avatar from '../components/Avatar.astro';
+---
+
+<BaseLayout title="About" description="About Kanada Kurniawan — researcher in AI and meteorology.">
+	<div class="about-hero">
+		<div class="avatar-wrap">
+			<Avatar size={220} />
+		</div>
+		<div>
+			<h1>About</h1>
+			<p class="lead">
+				Researcher at the intersection of artificial intelligence and meteorology.
+			</p>
+		</div>
+	</div>
+
+	<p>
+		I specialize in deep learning for meteorology. At the intersection of AI and atmospheric
+		science, I develop neural network models for weather and hydrological forecasting.
+	</p>
+
+	<h2>Experience</h2>
+	<div class="entry">
+		<h3>Meteorology Officer</h3>
+		<p class="org">BMKG — Stasiun Meteorologi Kelas III Maritim Dwikora, Pontianak</p>
+		<p class="meta">Present</p>
+	</div>
+
+	<h2>Education</h2>
+	<div class="entry">
+		<h3>Magister Teknik (MT), Electrical Engineering (Artificial Intelligence)</h3>
+		<p class="org">Universitas Tanjungpura</p>
+		<p class="meta">2024 – 2026</p>
+	</div>
+	<div class="entry">
+		<h3>Bachelor of Computer Science</h3>
+		<p class="org">Universitas Muhammadiyah Pontianak</p>
+		<p class="meta">2020 – 2023</p>
+	</div>
+</BaseLayout>
+
+<style>
+	.about-hero {
+		display: flex;
+		align-items: center;
+		gap: 2rem;
+		flex-wrap: wrap;
+		margin-block: 2.5rem 1.5rem;
+	}
+	.avatar-wrap {
+		flex-shrink: 0;
+	}
+	.about-hero h1 {
+		margin: 0 0 0.3rem;
+	}
+	.lead {
+		color: var(--muted);
+		font-size: 1.1rem;
+		margin: 0;
+	}
+
+	h2 {
+		margin-top: 2.5rem;
+		border-bottom: 1px solid var(--border);
+		padding-bottom: 0.25rem;
+	}
+	.entry {
+		margin-block: 1rem;
+	}
+	.entry h3 {
+		margin: 0;
+		font-size: 1.05rem;
+	}
+	.org {
+		margin: 0.1rem 0 0;
+		color: var(--text);
+		font-weight: 500;
+	}
+	.meta {
+		margin: 0.1rem 0 0;
+		color: var(--muted);
+		font-size: 0.9rem;
+	}
+</style>

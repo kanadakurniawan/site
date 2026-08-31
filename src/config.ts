@@ -1,14 +1,17 @@
+export const base = import.meta.env.BASE_URL;
+export const siteUrl = `${import.meta.env.SITE}`.replace(/\/+$/, '');
+
 export const siteConfig = {
 	title: 'Kanada Kurniawan',
 	description: 'Research on artificial intelligence and meteorology.',
-	url: 'https://kanadakurniawan.com',
+	url: siteUrl,
 	author: 'Kanada Kurniawan',
 	locale: 'en',
-	defaultOgg: '/og-default.png',
+	defaultOgg: `${base}og-default.png`,
 	nav: [
-		{ title: 'Home', href: '/' },
-		{ title: 'Blog', href: '/blog/' },
-		{ title: 'Publications', href: '/publications/' },
-		{ title: 'About', href: '/about/' },
+		{ title: 'Home', href: `${base}` },
+		{ title: 'Blog', href: `${base}blog/` },
+		{ title: 'Publications', href: `${base}publications/` },
+		{ title: 'About', href: `${base}about/` },
 	],
 } as const;

@@ -1,7 +1,7 @@
 import rss from '@astrojs/rss';
 import type { APIContext } from 'astro';
 import { getCollection } from 'astro:content';
-import { siteConfig } from '../config';
+import { base, siteConfig } from '../config';
 
 export async function GET(context: APIContext) {
 	const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
@@ -11,12 +11,12 @@ export async function GET(context: APIContext) {
 	return rss({
 		title: siteConfig.title,
 		description: siteConfig.description,
-		site: context.site!,
+		site: `${siteConfig.url}${base}`.replace(/\/+$/, ''),
 		items: posts.map((post) => ({
 			title: post.data.title,
 			description: post.data.description,
 			pubDate: post.data.pubDate,
-			link: `/blog/${post.id}/`,
+			link: `${base}blog/${post.id}/`,
 		})),
 		customData: `<language>${siteConfig.locale}</language>`,
 	});

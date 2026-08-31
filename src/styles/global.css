@@ -119,18 +119,3 @@ td {
 	overflow-y: hidden;
 	padding-block: 0.25rem;
 }
-
-@media (prefers-color-scheme: dark) {
-	:root {
-		--bg: #111418;
-		--surface: #161a1f;
-		--text: #e6e6e6;
-		--muted: #9a9a9a;
-		--border: #2a2f35;
-		--accent: #7aa5ff;
-		--accent-soft: #1d2430;
-	}
-	code {
-		background: #1e242b;
-	}
-}

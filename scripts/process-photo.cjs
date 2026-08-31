@@ -1,12 +1,14 @@
 const sharp = require('sharp');
 const path = require('path');
+const fs = require('fs');
 
-const src = 'C:/Users/Hi/Documents/Kanada/Riset/kanadakurniawan.com/kanada-kurniawan.webp';
-const outDir = 'C:/Users/Hi/Documents/Kanada/Riset/kanadakurniawan.com/site/public/images';
+const root = path.resolve(__dirname, '..');
+const src = path.join(root, '..', 'kanada-kurniawan.webp');
+const outDir = path.join(root, 'public', 'images');
 const outFile = path.join(outDir, 'kanada-kurniawan.webp');
 
 (async () => {
-	require('fs').mkdirSync(outDir, { recursive: true });
+	fs.mkdirSync(outDir, { recursive: true });
 	const meta = await sharp(src).metadata();
 	const size = Math.min(meta.width, meta.height);
 	await sharp(src)
@@ -14,7 +16,7 @@ const outFile = path.join(outDir, 'kanada-kurniawan.webp');
 		.webp({ quality: 82 })
 		.toFile(outFile);
 	const out = await sharp(outFile).metadata();
-	const bytes = require('fs').statSync(outFile).size;
+	const bytes = fs.statSync(outFile).size;
 	console.log(
 		JSON.stringify({
 			in: { width: meta.width, height: meta.height },

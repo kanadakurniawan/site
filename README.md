@@ -66,8 +66,8 @@ site/
 2. The filename becomes the URL: `my-post.md` → `/blog/my-post/`.
 3. Push to `main` — GitHub Actions builds and deploys automatically.
 
-For book chapters (from `../book/`), run `node ../book/build/sync-to-blog.mjs` to sync
-manuscripts into this blog, then build & push.
+Some posts are synced from the *Pengantar Deep Learning untuk Meteorologi* book repository
+via its build script before publication, then built and pushed here.
 
 ## License
 

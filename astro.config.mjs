@@ -6,11 +6,10 @@ import sitemap from '@astrojs/sitemap';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 
-// Di GitHub Pages project repo, base harus '/<repo-name>/'
-// Saat nanti pakai custom domain, ubah jadi: site: 'https://kanadakurniawan.com' + base: '/'
-export default defineConfig({
-	site: 'https://kanadakurniawan.github.io',
-	base: '/site/',
+// Cuangganggé custom domain, site 'https://kanadakurniawan.com' + base '/'
+	export default defineConfig({
+		site: 'https://kanadakurniawan.com',
+		base: '/',
 	markdown: {
 		processor: unified({
 			remarkPlugins: [remarkMath],

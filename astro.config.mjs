@@ -6,10 +6,9 @@ import sitemap from '@astrojs/sitemap';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 
-// Cuangganggé custom domain, site 'https://kanadakurniawan.com' + base '/'
-	export default defineConfig({
-		site: 'https://kanadakurniawan.com',
-		base: '/',
+export default defineConfig({
+	site: 'https://kanadakurniawan.com',
+	base: '/',
 	markdown: {
 		processor: unified({
 			remarkPlugins: [remarkMath],

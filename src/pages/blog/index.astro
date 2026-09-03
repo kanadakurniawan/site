@@ -9,8 +9,11 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
 ---
 
 <BaseLayout title="Blog" description="Notes on artificial intelligence and meteorology research.">
-	<h1>Blog</h1>
-	<p>Notes and write-ups on AI and meteorology research.</p>
+	<header class="page-head">
+		<span class="eyebrow">Blog</span>
+		<h1>Catatan riset</h1>
+		<p class="lead">Tulisan dan catatan tentang riset AI dan meteorologi.</p>
+	</header>
 	{
 		posts.map((post) => (
 			<PostCard
@@ -24,3 +27,15 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
 		))
 	}
 </BaseLayout>
+
+<style>
+	.page-head {
+		margin-block: 3.5rem 2.5rem;
+	}
+	.page-head h1 {
+		margin: 0.45rem 0 0.5rem;
+	}
+	.page-head .lead {
+		margin: 0;
+	}
+</style>

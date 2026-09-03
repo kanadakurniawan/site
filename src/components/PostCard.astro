@@ -17,49 +17,96 @@ const date = pubDate.toLocaleDateString('en-US', {
 ---
 
 <article class="post-card">
-	<a href={href}>
+	<a class="post-card-link" href={href}>
+		<div class="post-card-top">
+			<time datetime={pubDate.toISOString()}>{date}</time>
+			{categories.length > 0 && <span class="post-card-cat">{categories[0]}</span>}
+		</div>
 		<h2>{title}</h2>
+		<p>{description}</p>
+		<span class="read-more">Baca artikel <span class="arrow" aria-hidden="true">→</span></span>
 	</a>
-	<time datetime={pubDate.toISOString()}>{date}</time>
-	<p>{description}</p>
-	<div class="meta">
-		{categories.map((c) => <span class="category">{c}</span>)}
-		{tags.map((t) => <span class="tag">{t}</span>)}
-	</div>
+	{
+		tags.length > 0 && (
+			<div class="meta">
+				{tags.map((t) => <span class="chip">{t}</span>)}
+			</div>
+		)
+	}
 </article>
 
 <style>
 	.post-card {
-		padding-block: 1.25rem;
+		padding-block: 1.4rem;
 		border-bottom: 1px solid var(--border);
 	}
-	.post-card h2 {
-		margin: 0 0 0.25rem;
-		font-size: 1.25rem;
+	.post-card:first-of-type {
+		padding-top: 0.5rem;
+	}
+	.post-card-link {
+		display: block;
+		color: var(--text);
+	}
+	.post-card-link:hover {
+		color: var(--text);
+	}
+	.post-card-top {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		margin-bottom: 0.5rem;
 	}
 	.post-card time {
+		font-family: var(--mono);
+		font-size: 0.78rem;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
 		color: var(--muted);
-		font-size: 0.9rem;
+	}
+	.post-card-cat {
+		font-size: 0.72rem;
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		color: var(--accent-strong);
+		background: var(--accent-soft);
+		border-radius: 999px;
+		padding: 0.14rem 0.6rem;
+	}
+	.post-card h2 {
+		margin: 0 0 0.45rem;
+		font-size: 1.4rem;
+		font-weight: 600;
+		line-height: 1.3;
+		transition: color 0.15s ease;
+	}
+	.post-card-link:hover h2 {
+		color: var(--accent-strong);
 	}
 	.post-card p {
-		margin: 0.5rem 0 0.6rem;
+		margin: 0 0 0.75rem;
 		color: var(--muted);
+		font-size: 0.97rem;
+	}
+	.read-more {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		font-size: 0.88rem;
+		font-weight: 600;
+		color: var(--accent);
+	}
+	.read-more .arrow {
+		transition: transform 0.18s ease;
+	}
+	.post-card-link:hover .read-more .arrow {
+		transform: translateX(4px);
 	}
 	.meta {
 		display: flex;
 		gap: 0.4rem;
 		flex-wrap: wrap;
-	}
-	.category,
-	.tag {
-		font-size: 0.75rem;
-		padding: 0.15rem 0.55rem;
-		border-radius: 999px;
-		border: 1px solid var(--border);
-		color: var(--muted);
-	}
-	.category {
-		background: var(--accent-soft);
-		border-color: transparent;
+		margin-top: 0.85rem;
 	}
 </style>

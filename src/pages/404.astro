@@ -2,8 +2,37 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout title="Not found">
-	<h1>404</h1>
-	<p>Page not found.</p>
-	<p><a href={import.meta.env.BASE_URL}>Back to home</a></p>
+<BaseLayout title="Halaman tidak ditemukan">
+	<div class="nf">
+		<p class="nf-code">404</p>
+		<h1>Halaman tidak ditemukan</h1>
+		<p class="lead">Halaman yang Anda cari tidak ada atau telah dipindahkan.</p>
+		<a class="btn-arrow" href={import.meta.env.BASE_URL}>
+			<span class="arrow" aria-hidden="true">←</span> Kembali ke beranda
+		</a>
+	</div>
 </BaseLayout>
+
+<style>
+	.nf {
+		max-width: 30rem;
+		margin: 0 auto;
+		padding-block: 5rem;
+		text-align: center;
+	}
+	.nf-code {
+		margin: 0 0 0.5rem;
+		font-family: var(--font-display);
+		font-size: 3.4rem;
+		font-weight: 620;
+		line-height: 1;
+		color: var(--accent);
+	}
+	.nf h1 {
+		margin: 0 0 0.6rem;
+		font-size: 1.6rem;
+	}
+	.nf .lead {
+		margin: 0 0 1.25rem;
+	}
+</style>

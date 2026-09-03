@@ -18,8 +18,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout site
         uses: actions/checkout@v4
+
+      - name: Checkout book (untuk sync bab)
+        uses: actions/checkout@v4
+        with:
+          repository: kanadakurniawan/book
+          path: book
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -29,6 +35,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Sync konten buku -> blog
+        run: node book/build/sync-to-blog.mjs
 
       - name: Build
         run: npm run build

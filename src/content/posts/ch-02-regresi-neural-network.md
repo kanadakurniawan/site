@@ -15,6 +15,19 @@ draft: true
 > `Dense` layer, Anda boleh lompat cepat ke §2.5 — tetapi pastikan Anda tahu istilah
 > bobot, bias, dan fungsi aktivasi.
 
+## Tujuan Pembelajaran
+
+Setelah menyelesaikan bab ini, Anda diharapkan mampu:
+
+1. **Membangun** model regresi neural network (perceptron/MLP) untuk prediksi besaran
+   meteorologi dengan TensorFlow/Keras.
+2. **Menjelaskan** peran bobot, bias, dan fungsi aktivasi (termasuk ReLU) serta kapan
+   non-linearitas diperlukan.
+3. **Menerapkan** mini-kasus pasang surut: windowing, baseline persistence, dan perbandingan
+   MAE antara model neural vs baseline.
+4. **Memilih** antara MAE dan MSE berdasarkan sifat data dan tujuan, serta membagi data
+   deret waktu secara kronologis yang mencegah *leakage*.
+
 ## 2.1 Prediksi Besaran sebagai Masalah Regresi
 
 Banyak pertanyaan meteorologi yang jawabannya berupa **angka**:

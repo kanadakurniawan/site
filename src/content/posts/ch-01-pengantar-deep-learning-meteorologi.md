@@ -18,6 +18,19 @@ contoh-contoh yang dekat dengan dunia meteorologi Indonesia.
 > Bab 1 dikuasai. Jika Anda sudah terbiasa dengan dasar TensorFlow, Anda boleh
 > melompat ke Bab 2, tetapi baca §1.6–1.8 untuk memahami notasi yang dipakai buku ini.
 
+## Tujuan Pembelajaran
+
+Setelah menyelesaikan bab ini, Anda diharapkan mampu:
+
+1. **Membedakan** artificial intelligence, machine learning, dan deep learning beserta
+   contoh aplikasinya di meteorologi.
+2. **Mempetakan** aplikasi deep learning meteorologi ke bab yang relevan dan membedakan
+   mana yang dibahas buku ini vs literatur lanjut.
+3. **Menilai** secara kritis kapan deep learning layak dipakai dibanding baseline statistik
+   (ukuran data, non-linearitas, konteks operasional).
+4. **Menyiapkan** lingkungan kerja Google Colab + TensorFlow/Keras dan membuat tensor
+   pertama dari contoh data cuaca mini.
+
 ## 1.1 Artificial Intelligence, Machine Learning, dan Deep Learning
 
 *Artificial intelligence* (AI, kecerdasan buatan) adalah bidang yang mempelajari cara
@@ -409,3 +422,5 @@ studi kasus di Bab 8–9, GPU mempermudah, tetapi Colab menyediakannya gratis.
 7. M. Reichstein et al., "Deep learning and process understanding for data-driven Earth
    system science," *Nature*, vol. 566, no. 7743, pp. 195–204, Feb. 2019,
    doi: 10.1038/s41586-019-0912-1.
+
+

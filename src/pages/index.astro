@@ -14,16 +14,22 @@ const latest = posts.slice(0, 5);
 <BaseLayout title={siteConfig.title} description={siteConfig.description}>
 	<section class="hero">
 		<div class="avatar-wrap">
-			<Avatar size={160} />
+			<Avatar size={150} />
 		</div>
-		<div>
-			<h1>Kanada Kurniawan</h1>
-			<p>{siteConfig.description}.</p>
+		<div class="hero-copy">
+			<span class="eyebrow">AI × Meteorology</span>
+			<h1>{siteConfig.title}</h1>
+			<p class="lead">{siteConfig.description}</p>
 		</div>
 	</section>
 
-	<section>
-		<h2>Latest writings</h2>
+	<section class="writing">
+		<div class="section-head">
+			<h2>Latest writings</h2>
+			<a class="btn-arrow" href={import.meta.env.BASE_URL + 'blog/'}>
+				Semua tulisan <span class="arrow" aria-hidden="true">→</span>
+			</a>
+		</div>
 		{
 			latest.map((post) => (
 				<PostCard
@@ -36,7 +42,6 @@ const latest = posts.slice(0, 5);
 				/>
 			))
 		}
-		<p><a href={import.meta.env.BASE_URL + 'blog/'}>All posts →</a></p>
 	</section>
 </BaseLayout>
 
@@ -44,21 +49,37 @@ const latest = posts.slice(0, 5);
 	.hero {
 		display: flex;
 		align-items: center;
-		gap: 1.75rem;
+		gap: 2.2rem;
 		flex-wrap: wrap;
-		margin-block: 3rem 2.5rem;
+		margin-block: 3.5rem 4rem;
 	}
 	.avatar-wrap {
 		flex-shrink: 0;
 	}
+	.hero-copy {
+		flex: 1;
+		min-width: 260px;
+	}
 	.hero h1 {
+		margin: 0.5rem 0 0.4rem;
+		font-weight: 620;
+	}
+	.hero .lead {
 		margin: 0;
 	}
-	.hero p {
-		color: var(--muted);
-		font-size: 1.15rem;
+	.writing {
+		margin-bottom: 1rem;
 	}
-	section h2 {
-		margin-bottom: 0.25rem;
+	.section-head {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 1rem;
+		flex-wrap: wrap;
+		margin-bottom: 0.6rem;
+	}
+	.section-head h2 {
+		margin: 0;
+		font-size: 1.5rem;
 	}
 </style>

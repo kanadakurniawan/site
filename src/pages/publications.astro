@@ -7,53 +7,101 @@ const pubs = (await getCollection('publications')).sort(
 );
 ---
 
-<BaseLayout title="Publications" description="Publications by Kanada Kurniawan.">
-	<h1>Publications</h1>
-	<ol class="pubs">
+<BaseLayout title="Publications" description="Publikasi oleh Kanada Kurniawan.">
+	<header class="page-head">
+		<span class="eyebrow">Publications</span>
+		<h1>Publikasi</h1>
+		<p class="lead">Daftar tulisan ilmiah dan publikasi.</p>
+	</header>
+	<div class="pubs">
 		{
 			pubs.map((pub) => (
-				<li>
-					<p class="pub-title">
-						{pub.data.title}
-					</p>
-					<p class="pub-venue">
-						{pub.data.venue}, {pub.data.year}
-						{pub.data.doi && (
-							<>
-								{' '}· <a href={`https://doi.org/${pub.data.doi}`} rel="noopener">DOI</a>
-							</>
-						)}
-						{pub.data.url && (
-							<>
-								{' '}· <a href={pub.data.url} rel="noopener">Link</a>
-							</>
-						)}
-						{pub.data.citation && (
-							<>
-								{' '}· <span class="pub-cite">{pub.data.citation}</span>
-							</>
-						)}
-					</p>
-				</li>
+				<article class="pub">
+					<span class="pub-year">{pub.data.year}</span>
+					<div class="pub-body">
+						<h2>{pub.data.title}</h2>
+						<p class="pub-venue">{pub.data.venue}</p>
+						{
+							(pub.data.doi || pub.data.url || pub.data.citation) && (
+								<div class="pub-actions">
+									{pub.data.doi && (
+										<a class="btn-arrow" href={`https://doi.org/${pub.data.doi}`} rel="noopener">
+											DOI <span class="arrow" aria-hidden="true">→</span>
+										</a>
+									)}
+									{pub.data.url && (
+										<a class="btn-arrow" href={pub.data.url} rel="noopener">
+											Link <span class="arrow" aria-hidden="true">→</span>
+										</a>
+									)}
+									{pub.data.citation && <span class="chip">{pub.data.citation}</span>}
+								</div>
+							)
+						}
+					</div>
+				</article>
 			))
 		}
-	</ol>
+	</div>
 </BaseLayout>
 
 <style>
-	.pubs {
-		padding-left: 1.2rem;
+	.page-head {
+		margin-block: 3.5rem 2.75rem;
 	}
-	.pubs li {
-		margin-block: 1.25rem;
+	.page-head h1 {
+		margin: 0.45rem 0 0.5rem;
 	}
-	.pub-title {
+	.page-head .lead {
 		margin: 0;
+	}
+	.pubs {
+		display: flex;
+		flex-direction: column;
+		gap: 0;
+	}
+	.pub {
+		display: flex;
+		gap: 1.4rem;
+		padding-block: 1.4rem;
+		border-bottom: 1px solid var(--border);
+	}
+	.pub:first-child {
+		padding-top: 0.4rem;
+	}
+	.pub-year {
+		flex-shrink: 0;
+		font-family: var(--mono);
+		font-size: 0.85rem;
+		color: var(--accent-strong);
+		background: var(--accent-soft);
+		height: fit-content;
+		padding: 0.18rem 0.6rem;
+		border-radius: 999px;
+		margin-top: 0.2rem;
+	}
+	.pub-body h2 {
+		margin: 0 0 0.2rem;
+		font-size: 1.15rem;
 		font-weight: 600;
+		line-height: 1.4;
 	}
 	.pub-venue {
-		margin: 0.2rem 0 0;
+		margin: 0 0 0.6rem;
 		color: var(--muted);
-		font-size: 0.95rem;
+		font-size: 0.92rem;
+	}
+	.pub-actions {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		flex-wrap: wrap;
+		margin-top: 0.6rem;
+	}
+	@media (max-width: 520px) {
+		.pub {
+			flex-direction: column;
+			gap: 0.6rem;
+		}
 	}
 </style>

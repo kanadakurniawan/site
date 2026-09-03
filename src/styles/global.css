@@ -1,0 +1,69 @@
+@import "tailwindcss";
+@import "./theme.css";
+@import "./typography.css";
+@import "rehype-callouts/theme/obsidian";
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+@layer base {
+  * {
+    @apply border-border outline-accent/75;
+    scrollbar-width: auto;
+    scrollbar-color: var(--color-muted) transparent;
+  }
+  a,
+  button,
+  #main-content {
+    @apply outline-accent outline-offset-1 focus-visible:no-underline focus-visible:outline-2 focus-visible:outline-dashed;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+@utility max-w-app {
+  @apply max-w-3xl;
+}
+
+@utility app-layout {
+  @apply max-w-app mx-auto w-full px-4;
+}
+
+@utility active-nav {
+  @apply underline decoration-wavy decoration-2 underline-offset-8;
+}
+
+/* Gradient border (thick) for boxes/images/cards */
+@utility grad-border {
+  border: 3px solid transparent;
+  border-image: var(--accent-grad) 1;
+}
+
+/* Gradient ring for rounded/circular elements (photos, avatars) */
+@utility grad-ring {
+  border: 3px solid transparent;
+  background:
+    var(--accent-grad-soft) padding-box,
+    var(--accent-grad) border-box;
+}
+
+/* Gradient separator line (header bottom, section dividers) */
+.grad-line {
+  position: relative;
+  border-bottom: none;
+}
+
+.grad-line::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 3px;
+  background: var(--accent-grad);
+  z-index: 1;
+}
+
+:target {
+  scroll-margin-block: 1rem;
+}

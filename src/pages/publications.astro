@@ -1,0 +1,54 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/Header.astro";
+import Breadcrumb from "@/components/Breadcrumb.astro";
+import Main from "@/components/Main.astro";
+import Footer from "@/components/Footer.astro";
+import config from "@/config";
+
+const pubs = (await getCollection("publications")).sort(
+  (a, b) => b.data.year - a.data.year
+);
+---
+
+<Layout
+  title={`Publications | ${config.site.title}`}
+  description="Daftar publikasi riset Kanada Kurniawan — AI dan meteorologi."
+  ogImage={config.site.ogImage}
+>
+  <Header />
+
+  <Breadcrumb />
+
+  <Main pageTitle="Publications" class="app-prose">
+    <p>
+      Daftar publikasi yang dapat dikutip (DOI tersedia). Karya lengkap juga ada di
+      <a href="https://scholar.google.com/citations?user=lLQWmDAAAAAJ&amp;hl=en" rel="noopener"> Google Scholar</a>.
+    </p>
+    <ol>
+      {
+        pubs.map((pub) => (
+          <li style={{ marginBottom: "1.5rem" }}>
+            <strong>{pub.data.title}</strong>
+            <span class="text-muted text-base block">
+              {pub.data.venue}, {pub.data.year}
+              {pub.data.doi && (
+                <a href={`https://doi.org/${pub.data.doi}`} rel="noopener">
+                  {" "}· DOI: {pub.data.doi}
+                </a>
+              )}
+              {pub.data.url && (
+                <a href={pub.data.url} rel="noopener">
+                  {" "}· Tautan
+                </a>
+              )}
+            </span>
+          </li>
+        ))
+      }
+    </ol>
+  </Main>
+
+  <Footer />
+</Layout>

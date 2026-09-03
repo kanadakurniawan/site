@@ -1,0 +1,151 @@
+---
+import { getCollection } from "astro:content";
+import { getRelativeLocaleUrl } from "astro:i18n";
+import IconArrowRight from "@/assets/icons/IconArrowRight.svg";
+import IconLinkedin from "@/assets/icons/socials/linkedin.svg";
+import IconScholar from "@/assets/icons/socials/scholar.svg";
+import IconMail from "@/assets/icons/socials/mail.svg";
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/Header.astro";
+import Footer from "@/components/Footer.astro";
+import Card from "@/components/Card.astro";
+import LinkButton from "@/components/LinkButton.astro";
+import { getSortedPosts } from "@/utils/getSortedPosts";
+import { useTranslations } from "@/i18n";
+import config from "@/config";
+
+const { posts: postsConfig } = config;
+
+const locale = Astro.currentLocale ?? config.site.lang;
+const t = useTranslations(locale);
+
+const posts = await getCollection("posts");
+const sortedPosts = getSortedPosts(posts);
+const featuredPosts = sortedPosts.filter(({ data }) => data.featured);
+const recentPosts = sortedPosts.filter(({ data }) => !data.featured);
+const homePath = getRelativeLocaleUrl(locale, "");
+---
+
+<Layout>
+  <Header />
+  <main
+    id="main-content"
+    data-layout="index"
+    data-home-path={homePath}
+    class="app-layout my-1"
+  >
+    <section id="hero" class="border-border border-b pt-8 pb-6">
+      <div class="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
+        <img
+          src="/images/kanada-kurniawan.webp"
+          alt="Kanada Kurniawan"
+          width="200"
+          height="200"
+          class="grad-ring size-24 rounded-full border-0 object-cover shadow-md sm:size-28"
+          loading="eager"
+        />
+        <div>
+          <h1 class="my-0 text-4xl font-bold sm:text-5xl">Kanada Kurniawan</h1>
+          <p class="mt-2 mb-0 text-lg text-fg-muted">
+            Researcher in AI &amp; Meteorology · BMKG
+          </p>
+        </div>
+      </div>
+
+<p class="mt-5">
+        Saya peneliti yang mengembangkan model deep learning untuk meteorologi.
+        Fokus utama saya adalah prakiraan cuaca dan hidrologi, mencakup
+        perancangan arsitektur model, pelatihan pada data observasi, hingga
+        evaluasi untuk kebutuhan operasional. Saya juga aktif menulis dan
+        membagikan catatan teknis serta hasil eksperimen di blog ini, agar
+        pendekatan machine learning untuk sains kebumian lebih mudah diakses.
+      </p>
+
+      <div class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+        <a
+          target="_blank"
+          rel="noopener"
+          href="https://www.linkedin.com/in/kanadakurniawan/"
+          class="inline-flex items-center gap-1.5 hover:text-accent-strong hover:underline"
+          aria-label="LinkedIn"
+        >
+          <IconLinkedin class="size-4.5" />
+          LinkedIn
+        </a>
+        <a
+          target="_blank"
+          rel="noopener"
+          href="https://scholar.google.com/citations?user=lLQWmDAAAAAJ&hl=en"
+          class="inline-flex items-center gap-1.5 hover:text-accent-strong hover:underline"
+          aria-label="Google Scholar"
+        >
+          <IconScholar class="size-4.5" />
+          Google Scholar
+        </a>
+        <a
+          href="mailto:kanada.kurniawan@bmkg.go.id"
+          class="inline-flex items-center gap-1.5 hover:text-accent-strong hover:underline"
+          aria-label="Email BMKG"
+        >
+          <IconMail class="size-4.5" />
+          kanada.kurniawan@bmkg.go.id
+        </a>
+      </div>
+    </section>
+
+    {
+      featuredPosts.length > 0 && (
+        <section
+          id="featured"
+          class:list={[
+            "pt-12 pb-6",
+            { "border-border border-b": recentPosts.length > 0 },
+          ]}
+        >
+          <h2 class="text-2xl font-semibold tracking-wide">
+            {t.home.featured}
+          </h2>
+          <ul>
+            {featuredPosts.map(data => (
+              <Card variant="h3" {...data} />
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    {
+      recentPosts.length > 0 && (
+        <section id="recent-posts" class="pt-12 pb-6">
+          <h2 class="text-2xl font-semibold tracking-wide">
+            {t.home.recentPosts}
+          </h2>
+          <ul>
+            {recentPosts.slice(0, postsConfig.perIndex).map(data => (
+              <Card variant="h3" {...data} />
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    <div class="my-8 text-center">
+      <LinkButton href={getRelativeLocaleUrl(locale, "posts")}>
+        {t.home.allPosts}
+        <IconArrowRight class="inline-block rtl:-rotate-180" />
+      </LinkButton>
+    </div>
+  </main>
+  <Footer />
+</Layout>
+
+<script>
+  document.addEventListener("astro:page-load", () => {
+    const indexLayout = (document.querySelector("#main-content") as HTMLElement)
+      ?.dataset;
+    const baseRoot = import.meta.env.BASE_URL.replace(/\/?$/, "/");
+    if (indexLayout?.layout) {
+      sessionStorage.setItem("backUrl", indexLayout.homePath ?? baseRoot);
+    }
+  });
+</script>

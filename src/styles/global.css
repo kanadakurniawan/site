@@ -325,9 +325,46 @@ th {
 
 .content table {
 	display: block;
+	max-width: 100%;
 	width: 100%;
 	overflow-x: auto;
 	-webkit-overflow-scrolling: touch;
+	table-layout: auto;
+}
+
+.content table th,
+.content table td {
+	min-width: 0;
+	overflow-wrap: break-word;
+	word-break: break-word;
+}
+
+.content .table-wrap {
+	max-width: 100%;
+	min-width: 0;
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+	margin-block: 1.25rem;
+	border: 1px solid var(--border);
+	border-radius: var(--radius-sm);
+}
+
+.content .table-wrap table {
+	width: max-content;
+	min-width: 100%;
+	margin-block: 0;
+	border: 0;
+}
+
+.content .table-wrap table th,
+.content .table-wrap table td {
+	white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+	.content .table-wrap {
+		border-radius: var(--radius-sm);
+	}
 }
 
 .content img {

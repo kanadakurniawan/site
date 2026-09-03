@@ -37,7 +37,7 @@ jobs:
         run: npm ci
 
       - name: Sync konten buku -> blog
-        run: node book/build/sync-to-blog.mjs
+        run: node scripts/sync-book.mjs
 
       - name: Build
         run: npm run build

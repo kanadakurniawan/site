@@ -8,8 +8,6 @@ draft: true
 ---
 
 
-# Bab 3 — Klasifikasi: Mengenali Kategori Fenomena Cuaca
-
 > **Prasyarat:** Bab 1 (konsep ML/DL, lingkungan Colab) dan Bab 2 (neuron, fungsi aktivasi,
 > MAE/MSE, split waktu). TensorFlow/Keras siap di lingkungan Anda.
 

@@ -338,4 +338,12 @@ th {
 html,
 body {
 	overflow-x: clip;
+	max-width: 100%;
+	width: 100%;
+}
+
+.code-inline,
+.content code:not(pre code) {
+	word-break: break-word;
+	overflow-wrap: anywhere;
 }

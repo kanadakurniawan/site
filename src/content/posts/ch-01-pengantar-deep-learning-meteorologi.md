@@ -8,8 +8,6 @@ draft: false
 ---
 
 
-# Pengantar Deep Learning untuk Meteorologi
-
 Buku ini ditujukan sebagai **materi pengenalan**, bukan hasil riset baru. Seluruh isi
 merupakan ringkasan dan penyusunan ulang dari literatur klasik machine learning, dengan
 contoh-contoh yang dekat dengan dunia meteorologi Indonesia.

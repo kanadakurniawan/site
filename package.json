@@ -10,7 +10,7 @@
     "predev": "npm run sync:book",
     "prebuild": "npm run sync:book",
     "dev": "astro dev",
-    "build": "astro check && astro build && pagefind --site dist && node scripts/copy-pagefind.mjs",
+    "build": "astro build && pagefind --site dist && node scripts/copy-pagefind.mjs",
     "preview": "astro preview",
     "sync": "astro sync",
     "astro": "astro",

@@ -1,6 +1,6 @@
 ---
 title: "About"
-description: "Tentang Kanada Kurniawan — peneliti AI dan meteorologi."
+description: "Tentang Kanada Kurniawan — praktisi meteorologi yang gemar meneliti AI."
 ---
 
 Saya **Kanada Kurniawan** — Meteorology Officer di BMKG (Stasiun Meteorologi Kelas III Maritim Dwikora, Pontianak).

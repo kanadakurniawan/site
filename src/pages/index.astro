@@ -3,7 +3,7 @@ import { getCollection } from "astro:content";
 import { getRelativeLocaleUrl } from "astro:i18n";
 import IconArrowRight from "@/assets/icons/IconArrowRight.svg";
 import IconLinkedin from "@/assets/icons/socials/linkedin.svg";
-import IconScholar from "@/assets/icons/socials/scholar.svg";
+import IconGoogleScholar from "@/assets/icons/socials/scholar.webp";
 import IconMail from "@/assets/icons/socials/mail.svg";
 import Layout from "@/layouts/Layout.astro";
 import Header from "@/components/Header.astro";
@@ -47,16 +47,16 @@ const homePath = getRelativeLocaleUrl(locale, "");
         <div>
           <h1 class="my-0 text-4xl font-bold sm:text-5xl">Kanada Kurniawan</h1>
           <p class="mt-2 mb-0 text-lg text-fg-muted">
-            Researcher in AI &amp; Meteorology · BMKG
+            Praktisi Meteorologi &amp; Pembelajar Deep Learning · BMKG
           </p>
         </div>
       </div>
 
 <p class="mt-5">
-        Saya peneliti yang mengembangkan model deep learning untuk meteorologi.
-        Fokus utama saya adalah prakiraan cuaca dan hidrologi, mencakup
-        perancangan arsitektur model, pelatihan pada data observasi, hingga
-        evaluasi untuk kebutuhan operasional. Saya juga aktif menulis dan
+        Saya praktisi meteorologi yang gemar meneliti, dengan fokus pada
+        pengembangan model deep learning untuk prakiraan cuaca dan hidrologi —
+        mulai dari perancangan arsitektur, pelatihan pada data observasi,
+        hingga evaluasi untuk kebutuhan operasional. Saya juga menulis dan
         membagikan catatan teknis serta hasil eksperimen di blog ini, agar
         pendekatan machine learning untuk sains kebumian lebih mudah diakses.
       </p>
@@ -79,7 +79,12 @@ const homePath = getRelativeLocaleUrl(locale, "");
           class="inline-flex items-center gap-1.5 hover:text-accent-strong hover:underline"
           aria-label="Google Scholar"
         >
-          <IconScholar class="size-4.5" />
+          <img
+            src={IconGoogleScholar.src}
+            alt=""
+            class="size-4.5"
+            loading="lazy"
+          />
           Google Scholar
         </a>
         <a

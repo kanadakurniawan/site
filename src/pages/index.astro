@@ -3,7 +3,6 @@ import { getCollection } from "astro:content";
 import { getRelativeLocaleUrl } from "astro:i18n";
 import IconArrowRight from "@/assets/icons/IconArrowRight.svg";
 import IconLinkedin from "@/assets/icons/socials/linkedin.svg";
-import IconScholar from "@/assets/icons/socials/scholar.svg";
 import IconMail from "@/assets/icons/socials/mail.svg";
 import Layout from "@/layouts/Layout.astro";
 import Header from "@/components/Header.astro";
@@ -71,16 +70,6 @@ const homePath = getRelativeLocaleUrl(locale, "");
         >
           <IconLinkedin class="size-4.5" />
           LinkedIn
-        </a>
-        <a
-          target="_blank"
-          rel="noopener"
-          href="https://scholar.google.com/citations?user=lLQWmDAAAAAJ&hl=en"
-          class="inline-flex items-center gap-1.5 hover:text-accent-strong hover:underline"
-          aria-label="Google Scholar"
-        >
-          <IconScholar class="size-4.5" />
-          Google Scholar
         </a>
         <a
           href="mailto:kanada.kurniawan@bmkg.go.id"

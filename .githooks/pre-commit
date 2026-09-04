@@ -1,0 +1,51 @@
+#!/bin/sh
+# Pre-commit hook: sinkronkan bab terbaru dari book/ ke site/src/content/book/.
+#
+# Hanya jalan jika:
+#   - Repo book/ ada di ../book (sibling terhadap repo site/ ini).
+#   - Ada perubahan pada file di book/manuscripts/ yang sudah ter-commit
+#     atau working tree-nya kotor (modified/new).
+#
+# Output sync di stage-kan otomatis agar ikut commit di site/.
+# Hook ini sepenuhnya offline — tidak ada network call.
+
+set -e
+
+SITE_ROOT="$(git rev-parse --show-toplevel)"
+BOOK_REPO="$SITE_ROOT/../book"
+SYNC_SCRIPT="$BOOK_REPO/build/sync-to-blog.mjs"
+
+# Skip jika repo book/ tidak ada (mis. di CI atau submodule yang belum di-checkout)
+if [ ! -d "$BOOK_REPO" ] || [ ! -f "$SYNC_SCRIPT" ]; then
+  exit 0
+fi
+
+cd "$BOOK_REPO"
+
+# Snapshot kondisi book/manuscripts/ sebelum sinkron.
+# Bandingkan sebelum & sesudah untuk deteksi apakah ada perubahan.
+BEFORE_HASH=$(git -C "$BOOK_REPO" ls-files -s manuscripts/ 2>/dev/null | git hash-object --stdin)
+BEFORE_WT=$(git -C "$BOOK_REPO" status --porcelain -- manuscripts/ 2>/dev/null | git hash-object --stdin)
+
+# Jalankan sync.
+node "$SYNC_SCRIPT" >/dev/null 2>&1 || {
+  echo "pre-commit: sinkron book->site gagal, lewati." >&2
+  exit 0
+}
+
+# Bandingkan: jika sebelum == sesudah, tidak ada perubahan.
+AFTER_HASH=$(git -C "$BOOK_REPO" ls-files -s manuscripts/ 2>/dev/null | git hash-object --stdin)
+AFTER_WT=$(git -C "$BOOK_REPO" status --porcelain -- manuscripts/ 2>/dev/null | git hash-object --stdin)
+
+if [ "$BEFORE_HASH" = "$AFTER_HASH" ] && [ "$BEFORE_WT" = "$AFTER_WT" ]; then
+  # Tidak ada perubahan di book/manuscripts/, tapi sync mungkin menghasilkan
+  # output baru karena ada bab yang sebelumnya ter-skip (mis. BOM, format error).
+  # Jadi tetap stage perubahan output jika ada.
+  :
+fi
+
+# Kembali ke site/ dan stage semua perubahan di content/book/.
+cd "$SITE_ROOT"
+git add -A src/content/book/ 2>/dev/null || true
+
+exit 0

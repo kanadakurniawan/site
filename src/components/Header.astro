@@ -75,7 +75,7 @@ const isActive = (path: string) => {
     >
       <ul
         id="menu-items"
-        class="m-0 w-full list-none place-items-center gap-2 p-0 text-center [&>li>a]:block [&>li>a]:px-4 [&>li>a]:py-2.5 [&>li>a]:text-2xl [&>li>a]:font-semibold [&>li>a]:hover:text-accent"
+        class="m-0 w-full list-none place-items-center gap-2 p-0 text-center [&>li>a]:block [&>li>a]:px-4 [&>li>a]:py-2.5 [&>li>a]:text-2xl [&>li>a]:font-semibold [&>li>a]:no-underline [&>li>a]:hover:text-accent"
       >
         <li>
           <a
@@ -101,15 +101,46 @@ const isActive = (path: string) => {
             Publications
           </a>
         </li>
-        <li>
-          <span class="mt-2 block text-lg font-semibold tracking-wider text-fg-muted uppercase">Apps</span>
-          <ul class="m-0 flex flex-col items-center gap-1 p-0">
+        <li class="group/apps relative flex flex-col items-center">
+          <button
+            id="apps-toggle"
+            type="button"
+            class="focus-outline inline-flex items-center justify-center gap-1 px-4 py-2.5 text-2xl font-semibold no-underline hover:text-accent"
+            aria-expanded="false"
+            aria-controls="apps-submenu"
+          >
+            {t.nav.apps}
+            <svg
+              class="apps-chevron size-5 transition-transform duration-200"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+          <ul
+            id="apps-submenu"
+            class="m-0 hidden flex-col items-center gap-1 p-0 no-underline group-hover/apps:flex"
+          >
+            <li>
+              <a
+                href={getRelativeLocaleUrl(locale, "apps")}
+                class:list={["no-underline", { "active-nav": isActive("/apps") }]}
+              >
+                All apps
+              </a>
+            </li>
             <li>
               <a
                 href="https://model.kanadakurniawan.com"
                 rel="noopener"
                 target="_blank"
-                class:list={{ "active-nav": false }}
+                class="no-underline"
               >
                 Model
               </a>
@@ -202,6 +233,23 @@ const isActive = (path: string) => {
     });
   }
 
+  function toggleAppsSubmenu() {
+    const appsToggle = document.querySelector<HTMLButtonElement>("#apps-toggle");
+    const submenu = document.querySelector<HTMLElement>("#apps-submenu");
+    const chevron = document.querySelector<SVGElement>(".apps-chevron");
+
+    if (!appsToggle || !submenu || !chevron) return;
+
+    appsToggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const open = appsToggle.getAttribute("aria-expanded") === "true";
+      appsToggle.setAttribute("aria-expanded", open ? "false" : "true");
+      submenu.classList.toggle("hidden", open);
+      submenu.classList.toggle("flex", !open);
+      chevron.style.transform = open ? "rotate(0deg)" : "rotate(180deg)";
+    });
+  }
+
   function handleSkipToContent() {
     const skipLink = document.getElementById("skip-to-content");
     if (!skipLink) return;
@@ -233,6 +281,9 @@ const isActive = (path: string) => {
 
   toggleNav();
   document.addEventListener("astro:after-swap", toggleNav);
+
+  toggleAppsSubmenu();
+  document.addEventListener("astro:after-swap", toggleAppsSubmenu);
 
   handleSkipToContent();
   document.addEventListener("astro:after-swap", handleSkipToContent);

@@ -8,6 +8,7 @@ export default {
     about: "About",
     archives: "Archives",
     search: "Search",
+    apps: "Apps",
   },
   post: {
     publishedAt: "Published at",
@@ -52,6 +53,9 @@ export default {
 
     searchTitle: "Search",
     searchDesc: "Search any article ...",
+
+    appsTitle: "Apps",
+    appsDesc: "Kumpulan aplikasi yang saya buat.",
   },
   a11y: {
     skipToContent: "Skip to content",

@@ -1,0 +1,52 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/Header.astro";
+import Breadcrumb from "@/components/Breadcrumb.astro";
+import Main from "@/components/Main.astro";
+import Footer from "@/components/Footer.astro";
+import config from "@/config";
+---
+
+<Layout
+  title={`Publikasi | ${config.site.title}`}
+  description="Katalog publikasi Kanada Kurniawan — paper jurnal dan buku yang sedang ditulis."
+  ogImage={config.site.ogImage}
+>
+  <Header />
+
+  <Breadcrumb />
+
+  <Main pageTitle="Publikasi" class="app-prose">
+    <p>
+      Halaman ini mengumpulkan dua jenis karya tulis: <strong>paper</strong> jurnal
+      atau konferensi yang sudah terbit, dan <strong>buku</strong> yang sedang saya
+      tulis sebagai materi pengenalan deep learning untuk praktisi meteorologi
+      Indonesia.
+    </p>
+
+    <ul>
+      <li>
+        <a href="/paper/" class="text-accent text-lg font-medium no-underline decoration-dashed underline-offset-4 hover:underline">
+          <strong>Paper</strong>
+        </a>
+        <p class="text-muted-foreground text-base mt-1 mb-0">
+          Daftar paper jurnal dan konferensi yang dapat dikutip (DOI tersedia).
+          Karya lengkap juga ada di
+          <a href="https://scholar.google.com/citations?user=lLQWmDAAAAAJ&amp;hl=en" rel="noopener">Google Scholar</a>.
+        </p>
+      </li>
+      <li>
+        <a href="/buku/" class="text-accent text-lg font-medium no-underline decoration-dashed underline-offset-4 hover:underline">
+          <strong>Buku</strong>
+        </a>
+        <p class="text-muted-foreground text-base mt-1 mb-0">
+          Koleksi buku yang sedang saya tulis. Setiap buku punya halaman landas
+          sendiri dengan deskripsi, target pembaca, dan daftar bab yang sudah
+          dipublikasikan.
+        </p>
+      </li>
+    </ul>
+  </Main>
+
+  <Footer />
+</Layout>

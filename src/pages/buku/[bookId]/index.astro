@@ -1,0 +1,135 @@
+---
+import type { GetStaticPaths } from "astro";
+import { getCollection } from "astro:content";
+import { basename } from "node:path";
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/Header.astro";
+import Breadcrumb from "@/components/Breadcrumb.astro";
+import Main from "@/components/Main.astro";
+import Footer from "@/components/Footer.astro";
+import Datetime from "@/components/Datetime.astro";
+import { getBookMeta } from "@/utils/getBookMeta";
+import config from "@/config";
+
+const chapterSlug = (filePath: string | undefined, fallback: string) =>
+  filePath
+    ? basename(filePath, ".md").replace(/\.mdx$/, "")
+    : fallback.split("/").pop()!;
+
+export const getStaticPaths = (async () => {
+  const allChapters = await getCollection("book", ({ data }) => !data.draft);
+  const bookIds = [...new Set(allChapters.map((c) => c.data.bookId))];
+  return bookIds.map((bookId) => {
+    const chapters = allChapters
+      .filter((c) => c.data.bookId === bookId)
+      .sort((a, b) => a.data.chapter - b.data.chapter);
+    return {
+      params: { bookId },
+      props: {
+        bookId,
+        chapters,
+        meta: getBookMeta(bookId),
+      },
+    };
+  });
+}) satisfies GetStaticPaths;
+
+const { bookId, chapters, meta } = Astro.props;
+const totalChapters = meta?.totalChapters;
+const version = meta?.version ?? "v1.0.0";
+---
+
+<Layout
+  title={`${meta?.title ?? bookId} | ${config.site.title}`}
+  description={meta?.tagline ?? "Daftar bab buku yang sudah dipublikasikan."}
+  ogImage={config.site.ogImage}
+>
+  <Header />
+
+  <Breadcrumb />
+
+  <Main pageTitle={meta?.title ?? bookId} class="app-prose">
+    {
+      meta?.tagline && (
+        <p class="italic text-fg-muted">{meta.tagline}</p>
+      )
+    }
+
+    <p>
+      Buku pengenalan open-source berbahasa Indonesia yang saya tulis untuk
+      praktisi dan mahasiswa kebumian. Buku ini membahas posisi deep learning
+      dalam AI/ML, serta penerapannya pada data meteorologi Indonesia (cuaca,
+      pasang surut, hidrologi) menggunakan TensorFlow/Keras di Google Colab.
+    </p>
+
+    <p>
+      Buku ini dirancang sebagai materi pengantar, bukan hasil riset baru. Isinya
+      ringkasan dan penyusunan ulang literatur klasik machine learning, dengan
+      contoh-contoh yang dekat dengan dunia meteorologi Indonesia. Satu buku =
+      satu DOI Zenodo; versi terbaru buku utuh (PDF + DOCX) dipublikasikan per
+      milestone rilis (saat ini <strong>{version}</strong>).
+    </p>
+
+    <p>
+      <strong>{chapters.length}</strong>
+      {totalChapters ? ` dari ${totalChapters} bab` : ""} sudah dipublikasikan.
+      Daftar bab yang masih dalam penulisan tidak ditampilkan di sini sampai
+      bab tersebut rilis.
+    </p>
+
+    {
+      chapters.length > 0 && (
+        <ol class="book-chapters">
+          {chapters.map((ch) => (
+            <li class="book-chapter-item">
+              <span class="text-muted-foreground text-sm font-medium uppercase tracking-wide">
+                Bab {ch.data.chapter}
+              </span>
+              <a
+                href={`/buku/${ch.data.bookId}/${chapterSlug(ch.filePath, ch.id)}/`}
+                class="text-accent text-xl font-semibold no-underline decoration-dashed underline-offset-4 hover:underline"
+              >
+                {ch.data.title}
+              </a>
+              <Datetime
+                pubDatetime={ch.data.pubDatetime}
+                modDatetime={ch.data.modDatetime}
+                timezone={ch.data.timezone}
+              />
+              <p class="mt-1 mb-0">{ch.data.description}</p>
+            </li>
+          ))}
+        </ol>
+      )
+    }
+
+    <p class="mt-8">
+      Kode sumber buku, notebook, dan rencana lengkap ada di repositori
+      <a href={meta?.repository ?? "https://github.com/kanadakurniawan/book"} rel="noopener">buku</a>.
+      Pelacakan rilis dan bundel PDF/DOCX utuh mengikuti milestone di
+      <a href={`${meta?.repository ?? "https://github.com/kanadakurniawan/book"}/releases`} rel="noopener">halaman rilis</a>.
+    </p>
+  </Main>
+
+  <Footer />
+</Layout>
+
+<style>
+  .book-chapters {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0 0;
+  }
+
+  .book-chapter-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .book-chapter-item:last-child {
+    border-bottom: none;
+  }
+</style>

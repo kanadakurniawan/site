@@ -1,0 +1,49 @@
+---
+import type { GetStaticPaths } from "astro";
+import { getCollection, render } from "astro:content";
+import { basename } from "node:path";
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/Header.astro";
+import Breadcrumb from "@/components/Breadcrumb.astro";
+import Main from "@/components/Main.astro";
+import Footer from "@/components/Footer.astro";
+import config from "@/config";
+
+export const getStaticPaths = (async () => {
+  const chapters = await getCollection("book", ({ data }) => !data.draft);
+  return chapters.map((chapter) => {
+    const chapterSlug = chapter.filePath
+      ? basename(chapter.filePath, ".md").replace(/\.mdx$/, "")
+      : chapter.id.split("/").pop()!;
+    return {
+      params: { bookId: chapter.data.bookId, chapter: chapterSlug },
+      props: { chapter, chapterSlug },
+    };
+  });
+}) satisfies GetStaticPaths;
+
+const { chapter, chapterSlug } = Astro.props;
+const { Content } = await render(chapter);
+---
+
+<Layout
+  title={`Bab ${chapter.data.chapter}: ${chapter.data.title} | ${config.site.title}`}
+  description={chapter.data.description}
+  ogImage={config.site.ogImage}
+>
+  <Header />
+
+  <Breadcrumb />
+
+  <Main
+    pageTitle={`Bab ${chapter.data.chapter}: ${chapter.data.title}`}
+    class="app-prose"
+  >
+    <p>
+      <a href={`/buku/${chapter.data.bookId}/`}>← Kembali ke daftar bab</a>
+    </p>
+    <Content />
+  </Main>
+
+  <Footer />
+</Layout>

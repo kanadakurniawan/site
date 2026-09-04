@@ -1,0 +1,91 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/Header.astro";
+import Breadcrumb from "@/components/Breadcrumb.astro";
+import Main from "@/components/Main.astro";
+import Footer from "@/components/Footer.astro";
+import { getBookMeta } from "@/utils/getBookMeta";
+import config from "@/config";
+
+type BookEntry = {
+  bookId: string;
+  title: string;
+  tagline: string | undefined;
+  publishedCount: number;
+  totalChapters: number | undefined;
+  firstPubDatetime: Date;
+};
+
+const allChapters = await getCollection("book");
+const bookMap = new Map<string, BookEntry>();
+
+for (const ch of allChapters) {
+  if (ch.data.draft) continue;
+  const existing = bookMap.get(ch.data.bookId);
+  if (!existing) {
+    const meta = getBookMeta(ch.data.bookId);
+    bookMap.set(ch.data.bookId, {
+      bookId: ch.data.bookId,
+      title: meta?.title ?? ch.data.title,
+      tagline: meta?.tagline,
+      publishedCount: 1,
+      totalChapters: meta?.totalChapters,
+      firstPubDatetime: ch.data.pubDatetime,
+    });
+  } else {
+    existing.publishedCount += 1;
+    if (ch.data.pubDatetime < existing.firstPubDatetime) {
+      existing.firstPubDatetime = ch.data.pubDatetime;
+    }
+  }
+}
+
+const books = [...bookMap.values()].sort(
+  (a, b) => b.firstPubDatetime.getTime() - a.firstPubDatetime.getTime()
+);
+---
+
+<Layout
+  title={`Buku | ${config.site.title}`}
+  description="Daftar buku yang ditulis Kanada Kurniawan."
+  ogImage={config.site.ogImage}
+>
+  <Header />
+
+  <Breadcrumb />
+
+  <Main pageTitle="Buku" class="app-prose">
+    <p>
+      Kumpulan buku yang saya tulis. Setiap buku memiliki DOI Zenodo sendiri dan
+      satu halaman landas yang merangkum deskripsi, target pembaca, serta daftar
+      bab yang sudah dipublikasikan.
+    </p>
+
+    {
+      books.length === 0 ? (
+        <p><em>Belum ada buku yang dipublikasikan.</em></p>
+      ) : (
+        <ol>
+          {books.map((book) => (
+            <li style={{ marginBottom: "1.5rem" }}>
+              <a
+                href={`/buku/${book.bookId}/`}
+                class="text-accent text-lg font-medium no-underline decoration-dashed underline-offset-4 hover:underline"
+              >
+                <strong>{book.title}</strong>
+              </a>
+              <span class="text-muted-foreground text-base block">
+                {book.publishedCount}
+                {book.totalChapters ? ` dari ${book.totalChapters}` : ""} bab dipublikasikan
+              </span>
+              {book.tagline && <p class="mt-1 mb-0 italic">{book.tagline}</p>}
+            </li>
+          ))}
+        </ol>
+      )
+    }
+  </Main>
+
+  <Footer />
+</Layout>

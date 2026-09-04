@@ -1,0 +1,55 @@
+---
+import type { GetStaticPaths } from "astro";
+import { getCollection, render } from "astro:content";
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/Header.astro";
+import Breadcrumb from "@/components/Breadcrumb.astro";
+import Main from "@/components/Main.astro";
+import Footer from "@/components/Footer.astro";
+import config from "@/config";
+
+export const getStaticPaths = (async () => {
+  const papers = await getCollection("paper");
+  return papers.map((paper) => ({
+    params: { id: paper.id },
+    props: { paper },
+  }));
+}) satisfies GetStaticPaths;
+
+const { paper } = Astro.props;
+const { Content } = await render(paper);
+---
+
+<Layout
+  title={`${paper.data.title} | ${config.site.title}`}
+  description={paper.data.abstract ?? `Publikasi ${paper.data.title}`}
+  ogImage={config.site.ogImage}
+>
+  <Header />
+
+  <Breadcrumb />
+
+  <Main pageTitle={paper.data.title} class="app-prose">
+    <p>
+      <span class="text-muted-foreground">
+        {paper.data.venue}, {paper.data.year}
+      </span>
+      {paper.data.doi && (
+        <>
+          {" "}· <a href={`https://doi.org/${paper.data.doi}`} rel="noopener">DOI: {paper.data.doi}</a>
+        </>
+      )}
+      {paper.data.url && (
+        <>
+          {" "}· <a href={paper.data.url} rel="noopener">Tautan</a>
+        </>
+      )}
+    </p>
+
+    {paper.data.abstract && <p class="italic">{paper.data.abstract}</p>}
+
+    <Content />
+  </Main>
+
+  <Footer />
+</Layout>

@@ -7,14 +7,14 @@ import Main from "@/components/Main.astro";
 import Footer from "@/components/Footer.astro";
 import config from "@/config";
 
-const pubs = (await getCollection("publications")).sort(
+const papers = (await getCollection("paper")).sort(
   (a, b) => b.data.year - a.data.year
 );
 ---
 
 <Layout
   title={`Paper | ${config.site.title}`}
-  description="Daftar publikasi riset Kanada Kurniawan — AI dan meteorologi."
+  description="Daftar publikasi jurnal & konferensi Kanada Kurniawan — AI dan meteorologi."
   ogImage={config.site.ogImage}
 >
   <Header />
@@ -28,18 +28,23 @@ const pubs = (await getCollection("publications")).sort(
     </p>
     <ol>
       {
-        pubs.map((pub) => (
+        papers.map((paper) => (
           <li style={{ marginBottom: "1.5rem" }}>
-            <strong>{pub.data.title}</strong>
+            <a
+              href={`/paper/${paper.id}/`}
+              class="text-accent text-lg font-medium no-underline decoration-dashed underline-offset-4 hover:underline"
+            >
+              <strong>{paper.data.title}</strong>
+            </a>
             <span class="text-muted-foreground text-base block">
-              {pub.data.venue}, {pub.data.year}
-              {pub.data.doi && (
-                <a href={`https://doi.org/${pub.data.doi}`} rel="noopener">
-                  {" "}· DOI: {pub.data.doi}
+              {paper.data.venue}, {paper.data.year}
+              {paper.data.doi && (
+                <a href={`https://doi.org/${paper.data.doi}`} rel="noopener">
+                  {" "}· DOI: {paper.data.doi}
                 </a>
               )}
-              {pub.data.url && (
-                <a href={pub.data.url} rel="noopener">
+              {paper.data.url && (
+                <a href={paper.data.url} rel="noopener">
                   {" "}· Tautan
                 </a>
               )}

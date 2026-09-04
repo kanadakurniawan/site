@@ -75,7 +75,7 @@ const isActive = (path: string) => {
     >
       <ul
         id="menu-items"
-        class="m-0 w-full list-none place-items-center gap-2 p-0 text-center [&>li>a]:block [&>li>a]:px-4 [&>li>a]:py-2.5 [&>li>a]:text-2xl [&>li>a]:font-semibold [&>li>a]:no-underline [&>li>a]:hover:text-accent"
+        class="m-0 w-full list-none place-items-center gap-2 p-0 text-center [&>li>a]:block [&>li>a]:px-4 [&>li>a]:py-2.5 [&>li>a]:text-2xl [&>li>a]:font-semibold [&>li>a]:no-underline [&_a]:hover:text-accent"
       >
         <li>
           <a
@@ -94,43 +94,54 @@ const isActive = (path: string) => {
           </a>
         </li>
         <li class="group/pubs relative flex flex-col items-center">
-          <button
-            id="pubs-toggle"
-            type="button"
-            class="focus-outline inline-flex items-center justify-center gap-1 px-4 py-2.5 text-2xl font-semibold no-underline hover:text-accent"
-            aria-expanded="false"
-            aria-controls="pubs-submenu"
-          >
-            Publications
-            <svg
-              class="pubs-chevron size-5 transition-transform duration-200"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
+          <span class="inline-flex items-center justify-center">
+            <a
+              href={getRelativeLocaleUrl(locale, "publikasi")}
+              class:list={[
+                "inline-flex items-center justify-center px-4 py-2.5 text-2xl font-semibold no-underline hover:text-accent",
+                { "active-nav": isActive("/publikasi") },
+              ]}
             >
-              <path d="M6 9l6 6 6-6" />
-            </svg>
-          </button>
+              Publikasi
+            </a>
+            <button
+              id="pubs-toggle"
+              type="button"
+              class="focus-outline inline-flex items-center justify-center px-1 py-2.5 text-2xl font-semibold no-underline hover:text-accent"
+              aria-expanded="false"
+              aria-controls="pubs-submenu"
+              aria-label="Toggle publikasi submenu"
+            >
+              <svg
+                class="pubs-chevron size-5 transition-transform duration-200"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+          </span>
           <ul
             id="pubs-submenu"
             class="m-0 hidden flex-col items-center gap-1 p-0 no-underline group-hover/pubs:flex"
           >
             <li>
               <a
-                href={getRelativeLocaleUrl(locale, "publications/paper")}
-                class:list={["no-underline", { "active-nav": isActive("/publications/paper") }]}
+                href={getRelativeLocaleUrl(locale, "paper")}
+                class:list={["no-underline", { "active-nav": isActive("/paper") }]}
               >
                 Paper
               </a>
             </li>
             <li>
               <a
-                href={getRelativeLocaleUrl(locale, "publications/buku")}
-                class:list={["no-underline", { "active-nav": isActive("/publications/buku") }]}
+                href={getRelativeLocaleUrl(locale, "buku")}
+                class:list={["no-underline", { "active-nav": isActive("/buku") }]}
               >
                 Buku
               </a>
@@ -138,39 +149,42 @@ const isActive = (path: string) => {
           </ul>
         </li>
         <li class="group/apps relative flex flex-col items-center">
-          <button
-            id="apps-toggle"
-            type="button"
-            class="focus-outline inline-flex items-center justify-center gap-1 px-4 py-2.5 text-2xl font-semibold no-underline hover:text-accent"
-            aria-expanded="false"
-            aria-controls="apps-submenu"
-          >
-            {t.nav.apps}
-            <svg
-              class="apps-chevron size-5 transition-transform duration-200"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
+          <span class="inline-flex items-center justify-center">
+            <a
+              href={getRelativeLocaleUrl(locale, "apps")}
+              class:list={[
+                "inline-flex items-center justify-center px-4 py-2.5 text-2xl font-semibold no-underline hover:text-accent",
+                { "active-nav": isActive("/apps") },
+              ]}
             >
-              <path d="M6 9l6 6 6-6" />
-            </svg>
-          </button>
+              {t.nav.apps}
+            </a>
+            <button
+              id="apps-toggle"
+              type="button"
+              class="focus-outline inline-flex items-center justify-center px-1 py-2.5 text-2xl font-semibold no-underline hover:text-accent"
+              aria-expanded="false"
+              aria-controls="apps-submenu"
+              aria-label="Toggle apps submenu"
+            >
+              <svg
+                class="apps-chevron size-5 transition-transform duration-200"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+          </span>
           <ul
             id="apps-submenu"
-            class="m-0 hidden flex-col items-center gap-1 p-0 no-underline group-hover/apps:flex"
+            class="m-0 mt-1 hidden flex-col items-center gap-1 p-0 no-underline group-hover/apps:flex"
           >
-            <li>
-              <a
-                href={getRelativeLocaleUrl(locale, "apps")}
-                class:list={["no-underline", { "active-nav": isActive("/apps") }]}
-              >
-                All apps
-              </a>
-            </li>
             <li>
               <a
                 href="https://model.kanadakurniawan.com"
@@ -278,6 +292,7 @@ const isActive = (path: string) => {
 
     appsToggle.addEventListener("click", (e) => {
       e.stopPropagation();
+      e.preventDefault();
       const open = appsToggle.getAttribute("aria-expanded") === "true";
       appsToggle.setAttribute("aria-expanded", open ? "false" : "true");
       submenu.classList.toggle("hidden", open);

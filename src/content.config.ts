@@ -21,7 +21,6 @@ const posts = defineCollection({
       canonicalURL: z.string().optional(),
       hideEditPost: z.boolean().optional(),
       timezone: z.string().optional(),
-      bookChapter: z.number().int().positive().optional(),
     }),
 });
 
@@ -35,16 +34,35 @@ const pages = defineCollection({
   }),
 });
 
-const publications = defineCollection({
-  loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/publications" }),
+const paper = defineCollection({
+  loader: glob({ pattern: "**/[^_]*.{md,mdx}", base: "./src/content/paper" }),
   schema: z.object({
     title: z.string(),
     venue: z.string(),
     year: z.coerce.number(),
+    authors: z.array(z.string()).optional(),
     doi: z.string().optional(),
     url: z.string().optional(),
+    abstract: z.string().optional(),
     citation: z.string().optional(),
   }),
 });
 
-export const collections = { posts, pages, publications };
+const book = defineCollection({
+  loader: glob({ pattern: "**/[^_]*.{md,mdx}", base: "./src/content/book" }),
+  schema: ({ image }) =>
+    z.object({
+      title: z.string(),
+      pubDatetime: z.date(),
+      modDatetime: z.date().optional().nullable(),
+      description: z.string(),
+      draft: z.boolean().optional(),
+      chapter: z.number().int().positive(),
+      bookId: z.string(),
+      tags: z.array(z.string()).default([]),
+      ogImage: image().or(z.string()).optional(),
+      timezone: z.string().optional(),
+    }),
+});
+
+export const collections = { posts, pages, paper, book };

@@ -23,6 +23,9 @@ import config from "./astro-paper.config";
 
 export default defineConfig({
   site: config.site.url,
+  redirects: {
+    "/publications": "/publications/paper",
+  },
   integrations: [
     mdx(),
     sitemap({

@@ -4,6 +4,7 @@ description: "Bab 2 — membangun model regresi pertama untuk prediksi besaran m
 pubDatetime: 2026-09-01
 tags: ["Deep Learning", "Meteorologi", "regresi", "neural network", "perceptron", "fungsi aktivasi", "reLU", "time series"]
 draft: true
+bookChapter: 2
 ---
 
 

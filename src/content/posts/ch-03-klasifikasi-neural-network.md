@@ -4,6 +4,7 @@ description: "Bab 3 — membangun model klasifikasi biner dan multi-kelas untuk 
 pubDatetime: 2026-09-01
 tags: ["Deep Learning", "Meteorologi", "klasifikasi", "hujan", "sigmoid", "softmax", "class imbalance", "precision", "recall"]
 draft: true
+bookChapter: 3
 ---
 
 

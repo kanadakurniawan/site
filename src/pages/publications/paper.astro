@@ -13,7 +13,7 @@ const pubs = (await getCollection("publications")).sort(
 ---
 
 <Layout
-  title={`Publications | ${config.site.title}`}
+  title={`Paper | ${config.site.title}`}
   description="Daftar publikasi riset Kanada Kurniawan — AI dan meteorologi."
   ogImage={config.site.ogImage}
 >
@@ -21,7 +21,7 @@ const pubs = (await getCollection("publications")).sort(
 
   <Breadcrumb />
 
-  <Main pageTitle="Publications" class="app-prose">
+  <Main pageTitle="Paper" class="app-prose">
     <p>
       Daftar publikasi yang dapat dikutip (DOI tersedia). Karya lengkap juga ada di
       <a href="https://scholar.google.com/citations?user=lLQWmDAAAAAJ&amp;hl=en" rel="noopener"> Google Scholar</a>.
@@ -31,7 +31,7 @@ const pubs = (await getCollection("publications")).sort(
         pubs.map((pub) => (
           <li style={{ marginBottom: "1.5rem" }}>
             <strong>{pub.data.title}</strong>
-            <span class="text-muted text-base block">
+            <span class="text-muted-foreground text-base block">
               {pub.data.venue}, {pub.data.year}
               {pub.data.doi && (
                 <a href={`https://doi.org/${pub.data.doi}`} rel="noopener">

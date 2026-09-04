@@ -1,0 +1,106 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/Header.astro";
+import Breadcrumb from "@/components/Breadcrumb.astro";
+import Main from "@/components/Main.astro";
+import Footer from "@/components/Footer.astro";
+import Datetime from "@/components/Datetime.astro";
+import { getPostUrl } from "@/utils/getPostPaths";
+import config from "@/config";
+
+const bookPosts = (
+  await getCollection("posts", ({ data }) => !data.draft && typeof data.bookChapter === "number")
+).sort((a, b) => (a.data.bookChapter ?? 0) - (b.data.bookChapter ?? 0));
+
+const publishedCount = bookPosts.length;
+---
+
+<Layout
+  title={`Buku | ${config.site.title}`}
+  description="Buku Pengantar Deep Learning untuk Meteorologi — karya tulis Kanada Kurniawan untuk praktisi dan mahasiswa kebumian di Indonesia."
+  ogImage={config.site.ogImage}
+>
+  <Header />
+
+  <Breadcrumb />
+
+  <Main pageTitle="Buku" class="app-prose">
+    <p>
+      <strong>Pengantar Deep Learning untuk Meteorologi</strong> — buku pengenalan
+      open-source berbahasa Indonesia yang saya tulis untuk praktisi dan mahasiswa
+      kebumian. Buku ini membahas posisi deep learning dalam AI/ML, serta penerapannya
+      pada data meteorologi Indonesia (cuaca, pasang surut, hidrologi) menggunakan
+      TensorFlow/Keras di Google Colab.
+    </p>
+
+    <p>
+      Buku ini dirancang sebagai materi pengantar, bukan hasil riset baru. Isinya
+      ringkasan dan penyusunan ulang literatur klasik machine learning, dengan
+      contoh-contoh yang dekat dengan dunia meteorologi Indonesia. Satu buku =
+      satu DOI Zenodo; versi terbaru buku utuh (PDF + DOCX) dipublikasikan per
+      milestone rilis (saat ini <strong>v1.0.0</strong>).
+    </p>
+
+    <p>
+      <strong>{publishedCount}</strong> bab sudah dipublikasikan. Daftar bab
+      yang masih dalam penulisan tidak ditampilkan di sini sampai bab tersebut
+      rilis.
+    </p>
+
+    {
+      bookPosts.length > 0 && (
+        <ol class="book-chapters">
+          {bookPosts.map((post) => (
+            <li class="book-chapter-item">
+              <span class="text-muted-foreground text-sm font-medium uppercase tracking-wide">
+                Bab {post.data.bookChapter}
+              </span>
+              <a
+                href={getPostUrl(post.id, post.filePath, Astro.currentLocale)}
+                class="text-accent text-xl font-semibold no-underline decoration-dashed underline-offset-4 hover:underline"
+              >
+                {post.data.title}
+              </a>
+              <Datetime
+                pubDatetime={post.data.pubDatetime}
+                modDatetime={post.data.modDatetime}
+                timezone={post.data.timezone}
+              />
+              <p class="mt-1 mb-0">{post.data.description}</p>
+            </li>
+          ))}
+        </ol>
+      )
+    }
+
+    <p class="mt-8">
+      Kode sumber buku, notebook, dan rencana lengkap (10 bab) ada di repositori
+      <a href="https://github.com/kanadakurniawan/book" rel="noopener">kanadakurniawan/book</a>.
+      Pelacakan rilis dan bundel PDF/DOCX utuh mengikuti milestone di
+      <a href="https://github.com/kanadakurniawan/book/releases" rel="noopener">halaman rilis</a>.
+    </p>
+  </Main>
+
+  <Footer />
+</Layout>
+
+<style>
+  .book-chapters {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0 0;
+  }
+
+  .book-chapter-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .book-chapter-item:last-child {
+    border-bottom: none;
+  }
+</style>

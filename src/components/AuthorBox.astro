@@ -1,0 +1,48 @@
+---
+import config from "@/config";
+import Socials from "./Socials.astro";
+import { getAssetPath } from "@/utils/withBase";
+
+// Author info shown at the end of every post. Reinforces E-E-A-T by tying
+// the content to a named, linkable person (About page + social profiles).
+const { site } = config;
+
+const authorName = site.author;
+const profileUrl = site.profile ?? site.url;
+const photoSrc = getAssetPath("images/kanada-kurniawan.webp");
+---
+
+<aside
+  aria-label="Tentang penulis"
+  class="border-border bg-background/60 not-prose mt-10 flex flex-col gap-4 rounded-xl border p-5 sm:flex-row sm:items-center"
+>
+  <a href={profileUrl} class="shrink-0">
+    <img
+      src={photoSrc}
+      alt={authorName}
+      width={72}
+      height={72}
+      loading="lazy"
+      decoding="async"
+      class="grad-ring size-[72px] rounded-full object-cover"
+    />
+  </a>
+
+  <div class="min-w-0 flex-1">
+    <a href={profileUrl} class="text-foreground font-semibold no-underline hover:text-accent">
+      {authorName}
+    </a>
+    <p class="text-muted-foreground mt-0.5 text-sm">
+      Praktisi Meteorologi BMKG · Pembelajar Deep Learning
+    </p>
+    <p class="mt-2 text-sm leading-relaxed">
+      Praktisi meteorologi di BMKG yang menekuni deep learning untuk sains
+      atmosfer — model time series, downscaling cuaca, dan riset AI yang
+      diterapkan nyata, bukan sekadar teori.
+    </p>
+  </div>
+
+  <div class="shrink-0">
+    <Socials />
+  </div>
+</aside>

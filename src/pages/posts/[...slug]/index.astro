@@ -3,6 +3,7 @@ import { type CollectionEntry, getCollection, render } from "astro:content";
 import PostLayout from "@/layouts/PostLayout.astro";
 import Header from "@/components/Header.astro";
 import Footer from "@/components/Footer.astro";
+import AuthorBox from "@/components/AuthorBox.astro";
 import Datetime from "@/components/Datetime.astro";
 import Tag from "@/components/Tag.astro";
 import { getPostSlug } from "@/utils/getPostPaths";
@@ -169,6 +170,8 @@ const heroWebp = heroWebpUrl
     >
       <Content />
     </article>
+
+    <AuthorBox />
 
     <hr class="my-8 border-dashed" />
 

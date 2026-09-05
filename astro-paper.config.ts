@@ -7,10 +7,14 @@ export default defineAstroPaperConfig({
     description: "Research on artificial intelligence and meteorology.",
     author: "Kanada Kurniawan",
     profile: "https://kanadakurniawan.com",
-    ogImage: "default-og.jpg",
+    ogImage: "og.jpg",
     lang: "en",
     timezone: "Asia/Pontianak",
     dir: "ltr",
+    // Facebook App ID (required to silence fb:app_id warning in the FB
+    // Sharing Debugger). Create one at https://developers.facebook.com →
+    // "Create App" → type "Consumer". Copy the App ID here once created.
+    // facebookAppId: "1234567890123456",
   },
   posts: {
     perPage: 4,

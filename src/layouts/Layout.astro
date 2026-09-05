@@ -61,6 +61,11 @@ const rssHref = getRelativeLocaleUrl(
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={site.title} />
+    {/* Optional FB App ID — silences the "fb:app_id missing" warning in the
+        Facebook Sharing Debugger and enables page insights. */}
+    {site.facebookAppId && (
+      <meta property="fb:app_id" content={site.facebookAppId} />
+    )}
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonicalURL} />

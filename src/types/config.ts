@@ -19,6 +19,12 @@ interface SiteConfig {
   dir?: "ltr" | "rtl" | "auto";
   /** Google Search Console verification meta tag value */
   googleVerification?: string;
+  /**
+   * Facebook App ID for the `fb:app_id` Open Graph tag.
+   * Create one at https://developers.facebook.com → "Create App" → "Consumer".
+   * Required by the Facebook Sharing Debugger for analytics + link previews.
+   */
+  facebookAppId?: string;
 }
 
 interface PostsConfig {
@@ -115,7 +121,7 @@ type ResolvedSiteConfig = Required<
     | "ogImage"
   >
 > &
-  Pick<SiteConfig, "profile" | "googleVerification">;
+  Pick<SiteConfig, "profile" | "googleVerification" | "facebookAppId">;
 
 export interface ResolvedAstroPaperConfig {
   site: ResolvedSiteConfig;

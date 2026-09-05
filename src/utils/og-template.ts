@@ -26,7 +26,7 @@
 // Branding rule: the author name appears only as "by <author>" (footerLeft),
 // and the domain only as "kanadakurniawan.com" — always inside a gradient pill.
 //
-// Used by /og.jpg (site default), /og/[name].jpg and /og/[name].webp (per post).
+// Used by /kanadakurniawan.jpg (site default), /og/[name].jpg and /og/[name].webp (per post).
 // Output: JPEG q80 (mozjpeg) or WebP q85 — small and sharp.
 import type { ReactNode } from "react";
 import satori from "satori";

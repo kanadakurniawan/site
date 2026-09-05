@@ -8,7 +8,7 @@ import userConfig from "@/astro-paper.config";
 import type { ResolvedAstroPaperConfig } from "./types/config";
 import { PUBLIC_GOOGLE_SITE_VERIFICATION } from "astro:env/client";
 
-const DEFAULT_OG_IMAGE = "og.jpg";
+const DEFAULT_OG_IMAGE = "kanadakurniawan.jpg";
 
 const config: ResolvedAstroPaperConfig = {
   site: {

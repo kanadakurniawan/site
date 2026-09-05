@@ -29,6 +29,16 @@ const rssHref = getRelativeLocaleUrl(
   Astro.currentLocale ?? config.site.lang,
   "rss.xml"
 );
+
+// Truncate a string at a word boundary to fit a max character budget.
+// og:description is capped ~300 chars, twitter:description ~200.
+function truncateText(str: string, maxLen: number): string {
+  const clean = str.replace(/\s+/g, " ").trim();
+  if (clean.length <= maxLen) return clean;
+  const cut = clean.slice(0, maxLen);
+  const lastSpace = cut.lastIndexOf(" ");
+  return `${cut.slice(0, lastSpace > -1 ? lastSpace : maxLen).trim()}…`;
+}
 ---
 
 <!doctype html>
@@ -67,7 +77,7 @@ const rssHref = getRelativeLocaleUrl(
       <meta property="fb:app_id" content={site.facebookAppId} />
     )}
     <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
+    <meta property="og:description" content={truncateText(description, 300)} />
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:image" content={socialImageURL} />
     <meta property="og:image:alt" content={title} />
@@ -78,7 +88,7 @@ const rssHref = getRelativeLocaleUrl(
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content={canonicalURL} />
     <meta property="twitter:title" content={title} />
-    <meta property="twitter:description" content={description} />
+    <meta property="twitter:description" content={truncateText(description, 200)} />
     <meta property="twitter:image" content={socialImageURL} />
     <meta property="twitter:image:alt" content={title} />
 

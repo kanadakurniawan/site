@@ -8,14 +8,14 @@ function existsInPublic(filename: string): boolean {
 }
 
 /**
- * Resolves the absolute OG image path used for pages/posts.
+ * Resolves the default OG image path used for pages/posts.
  *
  * Security note: `site.ogImage` must be a single filename under `public/` to avoid
  * path traversal or referencing arbitrary files.
  *
  * Behavior:
  * - When `features.dynamicOgImage` is enabled, prefers `public/{site.ogImage}` when present,
- *   otherwise falls back to the generated `/og.jpg`.
+ *   otherwise falls back to the generated `/kanadakurniawan.jpg`.
  * - When disabled, requires `public/{site.ogImage}` to exist.
  */
 export function resolveDefaultOgImagePath(
@@ -28,19 +28,19 @@ export function resolveDefaultOgImagePath(
     filename.includes("\\")
   ) {
     throw new Error(
-      `site.ogImage must be a single filename in public/ (e.g. "default-og.jpg"), got "${filename}"`
+      `site.ogImage must be a single filename in public/ (e.g. "kanadakurniawan.jpg"), got "${filename}"`
     );
   }
 
   if (config.features.dynamicOgImage) {
     return existsInPublic(filename)
       ? getAssetPath(filename)
-      : getAssetPath("og.jpg");
+      : getAssetPath("kanadakurniawan.jpg");
   }
 
   if (!existsInPublic(filename)) {
     throw new Error(
-      `AstroPaper: missing public/${filename}. Add that file, or set site.ogImage to an existing file under public/, or enable features.dynamicOgImage to fall back to /og.jpg.`
+      `AstroPaper: missing public/${filename}. Add that file, or set site.ogImage to an existing file under public/, or enable features.dynamicOgImage to fall back to /kanadakurniawan.jpg.`
     );
   }
 

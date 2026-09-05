@@ -4,10 +4,11 @@ export default defineAstroPaperConfig({
   site: {
     url: "https://kanadakurniawan.com",
     title: "Kanada Kurniawan",
-    description: "Research on artificial intelligence and meteorology.",
+    description:
+      "Kanada Kurniawan - praktisi meteorologi BMKG dan pembelajar deep learning. Menulis pengalaman nyata seputar AI untuk sains atmosfer: time series LSTM, downscaling curah hujan, studi kasus pasang surut, sampai panduan praktis memilih perangkat seperti Google Colab dan laptop.",
     author: "Kanada Kurniawan",
     profile: "https://kanadakurniawan.com",
-    ogImage: "og.jpg",
+    ogImage: "kanadakurniawan.jpg",
     lang: "en",
     timezone: "Asia/Pontianak",
     dir: "ltr",

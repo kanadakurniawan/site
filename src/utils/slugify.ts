@@ -16,3 +16,14 @@ export const slugifyStr = (str: string): string => {
 };
 
 export const slugifyAll = (arr: string[]) => arr.map(str => slugifyStr(str));
+
+/**
+ * Aggressive slug for filesystem/image names (no punctuation at all).
+ * e.g. "Colab vs Laptop: A Guide?" → "colab-vs-laptop-a-guide"
+ */
+export const imageSlug = (str: string): string => {
+  if (hasNonLatin(str)) {
+    return kebabcase(str).replace(/[^a-zA-Z0-9]+/g, "-");
+  }
+  return slugify(str, { lower: true, strict: true });
+};

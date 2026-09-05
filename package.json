@@ -7,8 +7,9 @@
   },
   "scripts": {
     "sync:book": "node scripts/sync-book.mjs",
-    "predev": "npm run sync:book",
-    "prebuild": "npm run sync:book",
+    "profile:build": "node scripts/build-brand-profile.mjs && node scripts/build-profile-data-url.mjs",
+    "predev": "npm run sync:book && npm run profile:build",
+    "prebuild": "npm run sync:book && npm run profile:build",
     "dev": "astro dev",
     "build": "astro build && pagefind --site dist && node scripts/copy-pagefind.mjs",
     "preview": "astro preview",

@@ -15,7 +15,7 @@ function existsInPublic(filename: string): boolean {
  *
  * Behavior:
  * - When `features.dynamicOgImage` is enabled, prefers `public/{site.ogImage}` when present,
- *   otherwise falls back to the generated `/og.png`.
+ *   otherwise falls back to the generated `/og.jpg`.
  * - When disabled, requires `public/{site.ogImage}` to exist.
  */
 export function resolveDefaultOgImagePath(
@@ -35,12 +35,12 @@ export function resolveDefaultOgImagePath(
   if (config.features.dynamicOgImage) {
     return existsInPublic(filename)
       ? getAssetPath(filename)
-      : getAssetPath("og.png");
+      : getAssetPath("og.jpg");
   }
 
   if (!existsInPublic(filename)) {
     throw new Error(
-      `AstroPaper: missing public/${filename}. Add that file, or set site.ogImage to an existing file under public/, or enable features.dynamicOgImage to fall back to /og.png.`
+      `AstroPaper: missing public/${filename}. Add that file, or set site.ogImage to an existing file under public/, or enable features.dynamicOgImage to fall back to /og.jpg.`
     );
   }
 

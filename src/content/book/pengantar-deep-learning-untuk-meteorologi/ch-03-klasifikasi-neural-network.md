@@ -21,7 +21,7 @@ Setelah menyelesaikan bab ini, Anda diharapkan mampu:
 2. **Menjelaskan** peran sigmoid dan softmax serta binary/categorical cross-entropy.
 3. **Mendiagnosis** *class imbalance* dan memilih metrik yang tepat (precision, recall, F1,
    pengenalan CSI/FAR) — bukan hanya akurasi.
-4. **Menerapkan** trade-off threshold ala praktisi peramalan untuk fenomena langka.
+4. **Menerapkan** *trade-off* *threshold* ala praktisi peramalan untuk fenomena langka.
 
 ## 3.1 Dari Angka ke Kategori: Mengapa Klasifikasi Berbeda
 
@@ -49,7 +49,7 @@ dua kelas berdasarkan ambang [2].
 Mengapa kita perlu probabilitas, bukan sekadar label? Karena informasi **seberapa yakin**
 model sangat berharga di operasional. Dua model yang sama-sama memprediksi "hujan"
 tidaklah setara jika yang satu yakin 90% dan yang lain 51%. Probabilitas memberi kita
-ruang untuk menetapkan ambang keputusan yang sesuai risiko — topik §3.7.
+ruang untuk menetapkan ambang keputusan yang sesuai risiko, topik Bagian 3.7.
 
 ### Regresi vs klasifikasi: tabel perbandingan
 
@@ -85,9 +85,9 @@ keyakinan 85% bahwa sampel masuk kelas `1` (misal *hujan*). Sifat sigmoid yang p
 
 Gambar 3.1 memperlihatkan kurva *S* khas sigmoid: mulus, monoton naik, dan terampatkan.
 
-Aturan ambang (threshold) standar adalah 0.5: jika `σ(z) ≥ 0.5`, prediksi kelas `1`;
-selain itu kelas `0`. Namun threshold ini **tidak wajib** — untuk fenomena jarang seperti
-hujan lebat, kita sering menaikkan/menurunkan threshold (dibahas §3.7).
+Aturan ambang (*threshold*) standar adalah 0.5: jika `σ(z) ≥ 0.5`, prediksi kelas `1`;
+selain itu kelas `0`. Namun *threshold* ini **tidak wajib** — untuk fenomena jarang seperti
+hujan lebat, kita sering menaikkan/menurunkan *threshold* (dibahas Bagian 3.7).
 
 ### Contoh numerik sigmoid
 
@@ -95,7 +95,7 @@ Misalkan model memberi `z = 1.2`. Maka:
 
 $$ \sigma(1.2) = \frac{1}{1 + e^{-1.2}} = \frac{1}{1 + 0.301} \approx 0.77 $$
 
-Dengan threshold 0.5, sampel masuk kelas `1`. Jika kita menaikkan threshold ke 0.8,
+Dengan *threshold* 0.5, sampel masuk kelas `1`. Jika kita menaikkan *threshold* ke 0.8,
 sampel ini menjadi kelas `0` — keputusan berubah hanya karena ambang, bukan model.
 
 ## 3.3 Softmax: Aktivasi Keluaran untuk Banyak Kelas
@@ -284,7 +284,7 @@ operasional dikeluarkan WMO [4]. Di bab ini kita cukup paham mengapa akurasi tid
 ### Empat cara mengatasi imbalance (pratinjau)
 
 1. **Gunakan metrik yang tepat** — precision/recall/F1, bukan akurasi.
-2. **Atur threshold** — turunkan ambang agar kejadian langka lebih sering tertangkap (§3.7).
+2. **Atur *threshold***, turunkan ambang agar kejadian langka lebih sering tertangkap (Bagian 3.7).
 3. **Pemberian bobot kelas** — `class_weight` di Keras memberi penalti lebih besar untuk
    kesalahan pada kelas minoritas (contoh dalam notebook).
 4. **Resampling** — undersampling kelas mayoritas atau oversampling minoritas (konsekuensi:
@@ -307,9 +307,9 @@ menyertakan confusion matrix dan metrik langka**, bukan hanya akurasi.
 Model memberi probabilitas (kekuatan sigmoid/softmax). Pertanyaan praktisnya: **di ambang
 berapakah kita bertindak?**
 
-- Threshold rendah (mis. 0.2) → lebih banyak *hujan deras* terdeteksi (recall naik), tetapi
+- *Threshold* rendah (mis. 0.2) → lebih banyak *hujan deras* terdeteksi (recall naik), tetapi
   juga lebih banyak *false alarm* (precision turun).
-- Threshold tinggi (mis. 0.8) → lebih hati-hati; false alarm turun, tetapi banyak kejadian
+- *Threshold* tinggi (mis. 0.8) → lebih hati-hati; false alarm turun, tetapi banyak kejadian
   terlewat (recall turun).
 
 Tidak ada jawaban universal: tergantung **biaya kesalahan**. Untuk peringatan dini bencana,
@@ -317,30 +317,30 @@ false alarm mungkin lebih diterima daripada kejadian terlewat — maka pilih rec
 Untuk keputusan yang mahal (misal evakuasi), mungkin precision lebih penting.
 
 Kurva **precision-recall** dan **ROC** membantu memilih: kita mengevaluasi model di banyak
-threshold sekaligus, bukan hanya 0.5. Di Bab 9, trade-off ini diterapkan pada prediksi
+*threshold* sekaligus, bukan hanya 0.5. Di Bab 9, *trade-off* ini diterapkan pada prediksi
 hujan stasiun BMKG.
 
-Bagaimana memilih threshold secara sistematis? Salah satu cara sederhana: hitung precision
-dan recall untuk rentang threshold (mis. 0.1, 0.2, ..., 0.9), lalu pilih titik yang paling
+Bagaimana memilih *threshold* secara sistematis? Salah satu cara sederhana: hitung precision
+dan recall untuk rentang *threshold* (mis. 0.1, 0.2, ..., 0.9), lalu pilih titik yang paling
 sesuai kebutuhan. Cara lain: gunakan *cost matrix* — tetapkan berapa "harga" sebuah miss
-vs false alarm (misal 5:1), lalu pilih threshold yang meminimalkan total biaya pada
+vs false alarm (misal 5:1), lalu pilih *threshold* yang meminimalkan total biaya pada
 validasi. Tidak ada jawaban tunggal, tetapi prosesnya **harus eksplisit dan terdokumentasi**.
 
 ### Contoh keputusan threshold dalam konteks BMKG
 
-Bayangkan sistem peringatan dini banjir rob. Jika threshold terlalu tinggi (konservatif),
+Bayangkan sistem peringatan dini banjir rob. Jika *threshold* terlalu tinggi (konservatif),
 kita jarang mengeluarkan peringatan salah — tetapi ada risiko kejadian terlewat dan warga
-tidak sempat bersiap. Jika threshold terlalu rendah, kita sering "menangis serigala";
-lama-kelamaan masyarakat mengabaikan peringatan. Pilihan threshold karena itu adalah
+tidak sempat bersiap. Jika *threshold* terlalu rendah, kita sering "menangis serigala";
+lama-kelamaan masyarakat mengabaikan peringatan. Pilihan *threshold* karena itu adalah
 **keputusan kebijakan** yang melibatkan biaya sosial, bukan sekadar statistik.
 
 ### Threshold mana yang "paling baik"?
 
-Jika tidak ada preferensi biaya eksplisit, praktisi sering memilih threshold yang
+Jika tidak ada preferensi biaya eksplisit, praktisi sering memilih *threshold* yang
 memaksimalkan **F1** — karena F1 menyeimbangkan precision dan recall dalam satu angka.
 Namun dua model dengan F1 sama bisa memiliki perilaku berbeda di lapangan; karena itu
 jangan pernah hanya melihat F1, tapi periksa juga angka precision & recall-nya, dan
-— jika memungkinkan — *curve*-nya (ROC/precision-recall).
+— jika memungkinkan — *curve*-nya (ROC/*precision-recall*).
 
 ## 3.8 Confusion Matrix: Membaca yang Terlewat dan Keliru
 
@@ -372,11 +372,11 @@ Dari confusion matrix ini, semua metrik di atas diturunkan:
 
 ## 3.9 ROC dan Precision-Recall Curve
 
-Karena threshold bisa digeser, kinerja model lebih baik dinilai dengan **kurva** daripada
+Karena *threshold* bisa digeser, kinerja model lebih baik dinilai dengan **kurva** daripada
 satu titik:
 
 - **ROC curve**: plot *true positive rate* (recall) terhadap *false positive rate*
-  (`FP/(FP+TN)`) untuk semua threshold. Luas di bawahnya disebut **AUC** — semakin
+  (`FP/(FP+TN)`) untuk semua *threshold*. Luas di bawahnya disebut **AUC** — semakin
   mendekati 1 semakin baik.
 - **Precision-recall curve**: plot precision terhadap recall; lebih informatif untuk data
   sangat tidak seimbang, karena tidak terpengaruh oleh TN yang melimpah.
@@ -410,14 +410,14 @@ Berdasarkan seluruh bab, alur kerja praktis untuk setiap masalah klasifikasi:
 
 1. **Definisikan masalah** — biner atau multi-kelas? Apa "kelas positif" (yang paling
    penting menangkapnya)? Apa biaya FP vs FN?
-2. **Bangun baseline** — untuk klasifikasi meteo, baseline yang wajar adalah *klimatologi*
+2. **Bangun *baseline***, untuk klasifikasi meteo, *baseline* yang wajar adalah *klimatologi*
    (selalu prediksi kelas yang paling sering) atau *persistence*. Ukur metrik langka
-   (recall, F1) dari baseline dulu.
+   (recall, F1) dari *baseline* dulu.
 3. **Siapkan data** — split berbasis waktu (Bab 2), tidak ada leakage.
 4. **Bangun model** — MLP + ReLU, keluaran sigmoid/softmax, cross-entropy (Kode 3.1–3.2).
 5. **Evaluasi dengan metrik yang tepat** — confusion matrix, precision/recall/F1; untuk
    kejadian langka juga CSI/FAR (Bab 5).
-6. **Atur threshold** sesuai biaya (§3.7) dan tampilkan kurva PR/ROC (§3.9).
+6. **Atur *threshold*** sesuai biaya (Bagian 3.7) dan tampilkan kurva PR/ROC (Bagian 3.9).
 
 Baseline *klimatologi* untuk klasifikasi mengingatkan kita pada prinsip Bab 1: jangan
 impresif dengan akurasi tinggi jika kelas langka sama sekali tidak tertangkap. Kerangka
@@ -426,10 +426,10 @@ di atas akan dipakai berulang di Bab 5 dan Bab 9.
 ## 3.12 Kesalahan Umum pada Klasifikasi
 
 **1. Melaporkan hanya akurasi.** Pada data tidak seimbang, akurasi hampir tak bermakna.
-Selalu sertakan confusion matrix + precision/recall/F1 (dan akhirnya CSI/FAR).
+Selalu sertakan *confusion matrix* + *precision*/*recall*/F1 (dan akhirnya CSI/FAR).
 
-**2. Mengatur threshold tetapi tidak melaporkannya.** Hasil threshold 0.5 tidak otomatis
-"standar"; jika Anda menggesernya, tulislah threshold yang dipakai agar dapat ditiru.
+**2. Mengatur *threshold* tetapi tidak melaporkannya.** Hasil *threshold* 0.5 tidak otomatis
+"standar"; jika Anda menggesernya, tulislah *threshold* yang dipakai agar dapat ditiru.
 
 **3. Menggunakan akurasi untuk tuning pada data langka.** Optimasi model pada data tidak
 seimbang sebaiknya memakai metrik yang sesuai (F1/CSI), bukan akurasi.
@@ -437,7 +437,7 @@ seimbang sebaiknya memakai metrik yang sesuai (F1/CSI), bukan akurasi.
 **4. Normalisasi/statistik dari seluruh data.** Sama seperti Bab 2 — jangan sampai statistik
 test bocor ke train.
 
-**5. Menganggap softmax sebagai "probabilitas sejati".** Softmax hanya peringkat relatif,
+**5. Menganggap *softmax* sebagai "probabilitas sejati".** *Softmax* hanya peringkat relatif,
 bukan kalibrasi probabilistik sesungguhnya (model bisa terlalu yakin). Kalibrasi dibahas
 singkat di Bab 10.
 
@@ -448,29 +448,29 @@ kepercayaan yang mahal di dunia operasional.
 
 **Soal konsep**
 
-1. Jelaskan perbedaan keluaran sigmoid vs softmax, dan kapan masing-masing dipakai.
-2. Mengapa cross-entropy lebih cocok untuk klasifikasi daripada MSE (kuadrat)?
+1. Jelaskan perbedaan keluaran *sigmoid* vs *softmax*, dan kapan masing-masing dipakai.
+2. Mengapa *cross-entropy* lebih cocok untuk klasifikasi daripada MSE (kuadrat)?
 3. Data hujan deras hanya 1% dari hari. Mengapa akurasi 99% bisa menyesatkan?
-4. Jika biaya false alarm rendah tetapi biaya miss tinggi, ambang threshold apa yang Anda
+4. Jika biaya false alarm rendah tetapi biaya miss tinggi, ambang *threshold* apa yang Anda
    pilih? Jelaskan.
 
 **Latihan praktik (notebook `ch-03-02_klasifikasi_hujan.ipynb`)**
 
 5. Bangun model biner hujan/tidak hujan; hitung precision, recall, F1 pada beberapa
-   threshold (0.2, 0.5, 0.8) dan buat tabelnya.
+   *threshold* (0.2, 0.5, 0.8) dan buat tabelnya.
 6. Latih model multi-kelas intensitas (ringan/sedang/lebat). Catat confusion matrix.
 7. Bandingkan akurasi vs F1 pada data tidak seimbang; diskusikan mana yang lebih informatif.
 8. (Proyek mini) Gunakan data suhu/kelembapan stasiun lokal untuk prediksi hujan besok;
-   laporkan CSI/POD/FAR untuk threshold terbaik Anda.
+   laporkan CSI/POD/FAR untuk *threshold* terbaik Anda.
 
 ## Ringkasan
 
-- Klasifikasi = prediksi kategori; biner memakai sigmoid, multi-kelas memakai softmax.
+- Klasifikasi = prediksi kategori; biner memakai *sigmoid*, multi-kelas memakai *softmax*.
 - Cross-entropy adalah loss utama; akurasi menyesatkan pada data tidak seimbang.
 - Precision/recall/F1 dan CSI/FAR/POD adalah metrik yang lebih sesuai untuk fenomena langka.
-- Threshold bukan selalu 0.5 — atur sesuai biaya kesalahan (false alarm vs miss).
-- Confusion matrix adalah titik awal membaca kinerja; ROC/PR membantu memilih threshold.
-- Praktik yang benar: baseline dulu, split waktu, metrik langka, threshold terdokumentasi.
+- *Threshold* bukan selalu 0.5 — atur sesuai biaya kesalahan (false alarm vs miss).
+- Confusion matrix adalah titik awal membaca kinerja; ROC/PR membantu memilih *threshold*.
+- Praktik yang benar: *baseline* dulu, split waktu, metrik langka, *threshold* terdokumentasi.
 
 ## References
 

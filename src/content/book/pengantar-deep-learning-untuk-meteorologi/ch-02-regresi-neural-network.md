@@ -11,19 +11,19 @@ bookId: "pengantar-deep-learning-untuk-meteorologi"
 
 > **Prasyarat:** Bab 1 (tensor, konsep ML/DL). Kode memakai TensorFlow/Keras di Google
 > Colab (Bab 1: setup lingkungan). Jika Anda sudah paham regresi linear dan pernah menulis
-> `Dense` layer, Anda boleh lompat cepat ke §2.5 — tetapi pastikan Anda tahu istilah
+> `Dense` layer, Anda boleh lompat cepat ke Bagian 2.5, tetapi pastikan Anda tahu istilah
 > bobot, bias, dan fungsi aktivasi.
 
 ## Tujuan Pembelajaran
 
 Setelah menyelesaikan bab ini, Anda diharapkan mampu:
 
-1. **Membangun** model regresi neural network (perceptron/MLP) untuk prediksi besaran
+1. **Membangun** model regresi *neural network* (perceptron/MLP) untuk prediksi besaran
    meteorologi dengan TensorFlow/Keras.
 2. **Menjelaskan** peran bobot, bias, dan fungsi aktivasi (termasuk ReLU) serta kapan
    non-linearitas diperlukan.
-3. **Menerapkan** mini-kasus pasang surut: windowing, baseline persistence, dan perbandingan
-   MAE antara model neural vs baseline.
+3. **Menerapkan** mini-kasus pasang surut: windowing, *baseline* *persistence*, dan perbandingan
+   MAE antara model *neural* vs *baseline*.
 4. **Memilih** antara MAE dan MSE berdasarkan sifat data dan tujuan, serta membagi data
    deret waktu secara kronologis yang mencegah *leakage*.
 
@@ -41,7 +41,7 @@ Kata "kontinu" penting: keluarannya adalah bilangan nyata (mis. `26.5°C`, `34 m
 kategori. Ini kontras dengan **klasifikasi** (Bab 3) yang memprediksi label, misalnya
 "hujan" atau "tidak hujan".
 
-Mengapa regresi sering menjadi tempat pertama belajar neural network? Karena cara kerja
+Mengapa regresi sering menjadi tempat pertama belajar *neural network*? Karena cara kerja
 neuronnya sama persis dengan klasifikasi; perbedaannya hanya di bagian ujung: lapisan
 keluaran dan fungsi *loss* yang dipakai. Jika Anda menguasai regresi, setengah jalan menuju
 klasifikasi sudah terlewati.
@@ -50,7 +50,7 @@ Ada jenis pertanyaan yang *terlihat* seperti angka tetapi sebenarnya bukan regre
 Misalnya "berapa hari hujan bulan depan?" — satu angka, memang, tetapi pertanyaan ini
 lebih baik diperlakukan sebagai masalah *count* atau dibentuk ulang sebagai deret waktu
 bulanan. Contoh yang jelas bukan regresi: "apakah akan berpotensi banjir?" — ini
-klasifikasi (ya/tidak). Bab 1 §1.8 sudah melatih Anda membedakan keduanya; di Bab 2 kita
+klasifikasi (ya/tidak). Bab 1 Bagian 1.8 sudah melatih Anda membedakan keduanya; di Bab 2 kita
 fokus pada regresi sungguhan.
 
 ### Contoh target regresi dalam meteorologi
@@ -66,7 +66,7 @@ fokus pada regresi sungguhan.
 
 Tabel 2.1 (diperluas di Bab 6) menunjukkan bahwa "regresi meteo" bukan satu jenis data
 yang sama: hujan berbeda jauh dari suhu. Pilihan *loss*, metrik, dan arsitektur model
-akan tergantung pada sifat ini (kita bahas di §2.6).
+akan tergantung pada sifat ini (kita bahas di Bagian 2.6).
 
 ## 2.2 Anatomi Neuron: Bobot, Bias, dan Fungsi Aktivasi
 
@@ -120,19 +120,19 @@ Persamaan (2.3) identik dengan **regresi linear** yang biasa Anda pelajari di st
 Bedanya hanya di jalur penemuan parameter:
 
 - Statistika klasik: `w` dan `b` dihitung dengan rumus kuadrat terkecil (closed-form).
-- Neural network: `w` dan `b` ditemukan lewat proses berulang (gradient descent, Bab 4).
+- *Neural network*: `w` dan `b` ditemukan lewat proses berulang (*gradient descent*, Bab 4).
 
 Hasil akhirnya sama. Karena itu, satu neuron linear sebaiknya dianggap sebagai
 **baseline** — bukan "neural network yang mengesankan". Prinsip di Bab 1 tetap berlaku:
 mulai dari model paling sederhana, ukur kinerjanya, lalu tingkatkan jika perlu.
 
-Mengapa kita tetap mempelajari regresi linear di buku deep learning? Tiga alasan:
+Mengapa kita tetap mempelajari regresi linear di buku *deep learning*? Tiga alasan:
 
 1. **Interpretasi**: `w` memiliki arti langsung ("kenaikan satu unit x menaikkan y sebesar
    w"). Ini sangat berharga di meteorologi, di mana rekan kerja bertanya "kenapa model
    bilang begini?".
-2. **Baseline wajib**: hampir semua Bab 8–9 membandingkan LSTM/MLP dengan baseline linear.
-   Tanpa memahami baseline, kita tidak bisa menilai "apakah DL benar-benar menambah nilai?".
+2. ***Baseline* wajib**: hampir semua Bab 8–9 membandingkan LSTM/MLP dengan *baseline* linear.
+   Tanpa memahami *baseline*, kita tidak bisa menilai "apakah DL benar-benar menambah nilai?".
 3. **Blok bangunan**: regresi linear adalah neuron tunggal; jaringan saraf adalah
    kumpulan neuron yang dihubungkan. Semua konsep (bobot, bias, loss) muncul di sini.
 
@@ -260,8 +260,8 @@ pasang surut, baseline paling natural adalah *persistence*: "prediksi tinggi bes
 hari ini" (`ŷ(t) = y(t-1)`). Tabel 2.2 memberi kita patokan: berapa MAE yang dihasilkan
 model yang selalu menebak nilai kemarin?
 
-Prinsip di Bab 1 menuntut: neural network layak dipakai hanya jika **mengalahkan
-persistence**. Jika tidak, lebih baik kita memakai persistence — sederhana, tanpa pelatihan,
+Prinsip di Bab 1 menuntut: *neural network* layak dipakai hanya jika **mengalahkan
+*persistence***. Jika tidak, lebih baik kita memakai *persistence* — sederhana, tanpa pelatihan,
 tanpa pemeliharaan.
 
 ### Langkah 3 — Latih jaringan
@@ -292,9 +292,9 @@ print(X_train.shape, X_val.shape, X_test.shape)
 ```
 
 Kode 2.2 memperlihatkan split yang **berurutan waktu**: 70% pertama untuk latih, 15%
-berikutnya validasi, 15% terakhir uji. (Pembahasan mengapa tidak acak ada di §2.7.)
+berikutnya validasi, 15% terakhir uji. (Pembahasan mengapa tidak acak ada di Bagian 2.7.)
 
-**Kode 2.3 — Compile, latih, dan evaluasi model terhadap baseline persistence.**
+**Kode 2.3 — Compile, latih, dan evaluasi model terhadap *baseline* *persistence*.**
 
 ```python
 model = tf.keras.Sequential([
@@ -322,12 +322,12 @@ print("MAE neural network:", round(mae(y_test, pred), 4))
 ```
 
 Jalankan Kode 2.3 di notebook `ch-02-01_regresi_pasang_surut.ipynb`. Anda akan melihat dua
-angka MAE. Jika MAE jaringan **lebih kecil** daripada persistence, model bekerja; jika tidak,
+angka MAE. Jika MAE jaringan **lebih kecil** daripada *persistence*, model bekerja; jika tidak,
 tinjau ulang — mungkin butuh fitur lain atau arsitektur lain (Bab 7).
 
 ### Interpretasi hasil, bukan hanya angka
 
-Kadang MAE jaringan lebih kecil dari persistence tetapi *tipis* (misalnya 0.02 vs 0.03 m).
+Kadang MAE jaringan lebih kecil dari *persistence* tetapi *tipis* (misalnya 0.02 vs 0.03 m).
 Apakah itu berarti DL "menang"? Di Bab 5–9 kita akan membahas pertanyaan ini lebih serius:
 perbedaan kecil mungkin tidak signifikan secara operasional, dan biaya memelihara model
 harus diperhitungkan. Memiliki patokan operasional (misalnya toleransi tinggi pasang
@@ -340,11 +340,11 @@ Tidak ada jawaban universal, tetapi ada tiga lensa yang berguna:
 1. **Lensa operasional**: seberapa akurat yang dibutuhkan untuk keputusan? Untuk pasang
    surut, pertanyaan praktisnya: "apakah selisih ini mengubah keputusan pelabuhan?" Jika
    MAE model jauh di bawah toleransi yang disyaratkan, model sudah cukup.
-2. **Lensa statistik**: apakah model mengalahkan baseline secara konsisten di beberapa
+2. **Lensa statistik**: apakah model mengalahkan *baseline* secara konsisten di beberapa
    periode uji (bukan hanya satu kali beruntung)? Latihan di Bab 5–9 memakai beberapa
    periode.
-3. **Lensa pragmatis**: apakah model sederhana (misal ARIMA atau persistence) sudah
-   mencukupi? Jika ya, memakai neural network menambah biaya tanpa nilai — kembali ke
+3. **Lensa pragmatis**: apakah model sederhana (misal ARIMA atau *persistence*) sudah
+   mencukupi? Jika ya, memakai *neural network* menambah biaya tanpa nilai — kembali ke
    prinsip Bab 1.
 
 Tidak ada model "sempurna"; yang dicari adalah model yang **cukup baik untuk tujuan** dan
@@ -365,7 +365,7 @@ Setelah model menghasilkan prediksi, kita perlu mengukur **seberapa salah**. Dua
 
 Di meteorologi, keduanya dipakai (Tabel 2.3); data seperti curah hujan memiliki distribusi
 dengan ekor kanan (kadang nilai sangat besar), sehingga pilihan loss bisa memengaruhi
-perilaku model. Prinsip: pilih sesuai skala & tujuan, dan selalu bandingkan dengan baseline
+perilaku model. Prinsip: pilih sesuai skala & tujuan, dan selalu bandingkan dengan *baseline*
 (Bab 7).
 
 ### Contoh numerik sederhana
@@ -466,9 +466,9 @@ supaya tidak curang: memakai test berkali-kali untuk menyetel model sama saja de
 ### Ringkas alur mini-kasus
 
 1. Bentuk windowing (Tabel 2.2, Kode 2.2).
-2. Ukur baseline persistence.
+2. Ukur *baseline* *persistence*.
 3. Bangun & latih MLP (Kode 2.1–2.3).
-4. Bandingkan MAE dengan baseline.
+4. Bandingkan MAE dengan *baseline*.
 5. Jika jaringan tidak kalah, pakai; jika sebanding, pertimbangkan biaya.
 
 ## 2.8 Latihan
@@ -486,27 +486,27 @@ supaya tidak curang: memakai test berkali-kali untuk menyetel model sama saja de
    Kapan model mulai *overfit* (train jauh lebih baik daripada val)?
 6. Tambahkan fitur ketiga `tinggi(t-3)`. Apakah MAE membaik? Apa alasan Anda?
 7. Ganti `loss="mse"` dengan `loss="mae"`. Bandingkan akhir MAE test. Diskusikan perbedaan.
-8. Buat baseline kedua: rata-rata klimatologis (nilai tengah keseluruhan train) sebagai
-   prediksi tetap untuk seluruh test. Bandingkan dengan persistence dan jaringan.
+8. Buat *baseline* kedua: rata-rata klimatologis (nilai tengah keseluruhan train) sebagai
+   prediksi tetap untuk seluruh test. Bandingkan dengan *persistence* dan jaringan.
 9. **Proyek mini:** ambil data suhu harian stasiun lokal (misal dari BMKG — Bab 6),
-   lakukan windowing 2 langkah, dan bandingkan MLP 2 lapisan vs persistence. Laporkan MAE.
+   lakukan windowing 2 langkah, dan bandingkan MLP 2 lapisan vs *persistence*. Laporkan MAE.
 
 Jawaban latihan tidak harus "menang": yang penting adalah Anda terbiasa membandingkan
-model dengan baseline dan membaca angka MAE secara kritis — itulah sikap praktisi.
+model dengan *baseline* dan membaca angka MAE secara kritis — itulah sikap praktisi.
 
 ## 2.9 Kesalahan Umum Pemula
 
 Beberapa jebakan yang sering muncul saat pertama kali membangun model regresi, beserta
 cara menghindarinya:
 
-**1. Tidak memakai baseline.** Membangun MLP lalu menyimpulkan "bekerja" tanpa pernah
-mengukurnya terhadap persistence/linear. Solusi: selalu ukur baseline dulu (Bab 2.5).
+**1. Tidak memakai *baseline*.** Membangun MLP lalu menyimpulkan "bekerja" tanpa pernah
+mengukurnya terhadap *persistence*/linear. Solusi: selalu ukur *baseline* dulu (Bab 2.5).
 
 **2. Split acak untuk data waktu.** Memakai `train_test_split` default (acak) pada deret
-waktu menyebabkan *leakage*. Solusi: potong berurutan berdasarkan waktu (§2.7).
+waktu menyebabkan *leakage*. Solusi: potong berurutan berdasarkan waktu (Bagian 2.7).
 
 **3. Melihat data test berulang kali.** Menyetel model terhadap test sampai "jadi" adalah
-bentuk bocor. Solusi: simpan test untuk evaluasi akhir; pakai validasi untuk tuning (§2.7).
+bentuk bocor. Solusi: simpan test untuk evaluasi akhir; pakai validasi untuk tuning (Bagian 2.7).
 
 **4. Mengubah skala tanpa menyimpan statistiknya.** Jika Anda menormalisasi fitur, Anda
 harus menyimpan rata-rata/deviasi dari *train* dan menerapkannya pada *test* dan produksi.
@@ -531,10 +531,10 @@ dari kesimpulan yang keliru tentang kinerja model.
 - 1 neuron linear identik regresi linear; non-linearitas (ReLU) diperlukan untuk pola
   yang tidak lurus.
 - Mini-kasus pasang surut memperkenalkan penggunaan langsung pada data laut Indonesia;
-  baseline persistence selalu dipakai sebagai pembanding.
+  *baseline* *persistence* selalu dipakai sebagai pembanding.
 - MAE vs MSE: pilih sesuai skala & tujuan; Adam & learning rate; split berbasis waktu untuk
   melawan *leakage*.
-- Proyek ML selalu: bentuk data → baseline → model → bandingkan → putuskan.
+- Proyek ML selalu: bentuk data → *baseline* → model → bandingkan → putuskan.
 
 ## References
 

@@ -27,7 +27,7 @@ Ada dua alasan praktis yang akan sering kita temui sepanjang buku ini.
 
 **1. Materi DL berbahasa Indonesia masih jarang, dan yang ada jarang yang kontekstual.**
 Sebagian besar referensi fundamental *deep learning* (kursus daring, buku teks, makalah)
-ditulis dalam bahasa Inggris dan dengan contoh dari belahan dunia lain [4]. Mahasiswa
+ditulis dalam bahasa Inggris dan dengan contoh dari belahan dunia lain [1]. Mahasiswa
 S1 kebumian di Indonesia yang ingin belajar DL biasanya harus menerjemahkan dua hal
 sekaligus: bahasa dan konteks. Buku ini mencoba menurunkan salah satu dari dua hambatan
 itu. Kami tidak menggantikan sumber primer; kami menyediakan **jembatan** ke sumber
@@ -60,13 +60,13 @@ Setelah menyelesaikan bab ini, Anda diharapkan mampu:
 
 *Artificial intelligence* (AI, kecerdasan buatan) adalah bidang yang mempelajari cara
 membuat mesin meniru kemampuan kognitif manusia, seperti memahami bahasa, mengenali pola,
-dan mengambil keputusan [1]. Istilah ini sudah ada sejak 1956 ketika para ilmuwan mulai
+dan mengambil keputusan [2]. Istilah ini sudah ada sejak 1956 ketika para ilmuwan mulai
 menyelidiki apakah mesin dapat "berpikir". Seiring waktu, AI berkembang menjadi banyak
 sub-bidang: sistem berbasis aturan, pengenalan pola, robotika, pemrosesan bahasa alami,
 dan *machine learning* (pembelajaran mesin).
 
 *Machine learning* (ML) adalah cabang AI yang membuat komputer belajar pola dari data
-tanpa diprogram secara eksplisit untuk setiap aturan [2]. Alih-alih menulis aturan manual
+tanpa diprogram secara eksplisit untuk setiap aturan [3]. Alih-alih menulis aturan manual
 seperti "jika hari ini hujan dan kelembapan tinggi, maka besok akan hujan", kita memberi model ribuan contoh dan membiarkannya **menemukan sendiri** pola yang berguna, misalnya,
 variabel mana yang paling berpengaruh terhadap hujan. Contoh sederhana: jika kita memberi
 model data riwayat hujan, suhu, dan kelembapan selama bertahun-tahun, model dapat
@@ -75,12 +75,12 @@ belajar itu akan dijelaskan di Bab 4.
 
 *Deep learning* (DL) adalah salah satu cabang machine learning yang menggunakan **jaringan
 saraf berlapis (*neural network*)**, model matematis yang terinspirasi dari susunan
-neuron biologis [3]. "Dalam" (*deep*) merujuk pada banyaknya lapisan: model tersusun dari
+neuron biologis [4]. "Dalam" (*deep*) merujuk pada banyaknya lapisan: model tersusun dari
 banyak lapisan unit sederhana, dan semakin banyak lapisannya, model mampu menangkap pola
-yang semakin rumit, seperti hubungan rumit antara banyak variabel meteorologi [3].
+yang semakin rumit, seperti hubungan rumit antara banyak variabel meteorologi [4].
 Kekuatan DL justru datang dari *kedalaman* ini: lapisan-lapisan awal mempelajari pola
 sederhana, lalu lapisan-lapisan berikutnya menggabungkannya menjadi representasi yang
-semakin abstrak [4].
+semakin abstrak [1].
 
 ![Gambar 1.1: Keterkaitan artificial intelligence, machine learning, dan deep learning](ch-01-pengantar-deep-learning-meteorologi/figures/fig-1-1-hierarki-ai-by-chatgpt.png)
 
@@ -113,9 +113,9 @@ penting adalah memahami *trade-off* (kita bahas dalam Bagian 1.4).
 
 ## 1.2 Mengapa Deep Learning Relevan Sekarang
 
-*Deep learning* bukan teknologi baru dalam konsep (perceptron pertama lahir 1958 [5]),
-tetapi baru praktis digunakan secara luas dalam dekade terakhir karena tiga hal bertemu
-sekaligus:
+*Deep learning* bukan teknologi baru dalam konsep (cikal bakalnya, perceptron,
+lahir tahun 1958 [5]), tetapi baru praktis digunakan secara luas dalam dekade
+terakhir karena tiga hal bertemu sekaligus:
 
 1. **Data besar**, sensor otomatis, *reanalysis* seperti ERA5 (data cuaca historis dari
    gabungan model dan observasi), dan arsip klimatologi menyediakan data meteorologi
@@ -136,11 +136,13 @@ memadai (bisa pakai cloud gratis), dan kemauan belajar.
 
 ### Sejarah singkat (agar konteksnya jelas)
 
-- 1958, **Perceptron** oleh Frank Rosenblatt: jaringan satu lapis yang bisa belajar [5].
+- 1958, **Perceptron** oleh Frank Rosenblatt: cikal bakal jaringan saraf, namun masih
+  **satu lapis** (bukan *deep learning* seperti yang kita kenal sekarang) [5].
 - 1986, **Backpropagation** dipopulerkan: cara melatih jaringan bertingkat banyak.
 - 2012, **AlexNet** memenangkan kompetisi ImageNet dengan CNN; titik balik modern.
-- 2015, Ulasan "Deep learning" di *Nature* menempatkan DL sebagai teknik inti AI [3].
-- 2019, Ulasan Reichstein et al. menegaskan peluang besar DL dalam sains kebumian [7].
+- 2015, Ulasan "Deep learning" di *Nature* menempatkan DL sebagai teknik inti AI [4].
+- 2019, Ulasan Reichstein et al. menegaskan bahwa DL tidak hanya berpeluang besar untuk
+  prediksi, tetapi juga membantu pemahaman proses dalam sistem kebumian [7].
 
 Anda tidak perlu hafal tahun-tahun ini, tetapi memahami bahwa DL bukan "ajaib" yang
 baru lahir kemarin membantu Anda menilai klaim-klaim besar di berita.
@@ -205,17 +207,22 @@ seluruh buku:
 - **Gunakan model statistik klasik dulu sebagai pembanding (*baseline*).** Regresi linear,
   ARIMA (model statistik untuk deret waktu), atau *persistence* ("keadaan besok = keadaan
   hari ini") sering kali lebih dari cukup untuk data pendek atau pola sederhana. Deep
-   learning hanya layak jika **mengalahkan *baseline*** dengan data yang cukup, prinsip ini
+   learning hanya layak jika **mengalahkan *baseline*** dengan data yang cukup Prinsip ini
   menjadi tulang punggung Bab 7–9. Jika model sederhana sudah melebihi kebutuhan, tidak
   ada alasan memperkenalkan kompleksitas.
 - **Perhatikan ukuran data.** Jaringan saraf besar membutuhkan banyak data untuk belajar.
   Untuk deret waktu stasiun dengan puluhan ribu pengamatan, model sekuensial (*sequence*)
   seperti LSTM (Bab 7) adalah pilihan yang masuk akal, tetapi jangan langsung melompat
   ke arsitektur masif yang dirancang untuk miliaran parameter (butuh data jauh lebih
-  besar).
+  besar). Catatan penting: sejak beberapa tahun terakhir, ***transfer learning*** dan model
+  terlatih (*pre-trained model*) memungkinkan *deep learning* tetap berguna meskipun data
+  kita terbatas — misalnya mengambil model yang dilatih pada data reanalisis global lalu
+  menyesuaikannya (*fine-tuning*) dengan data stasiun lokal. Poin "data besar" di atas
+  tidak lagi mutlak; Bab 10 membahas *transfer learning* singkat sebagai salah satu arah
+  riset.
 - **Utamakan keterbacaan dan kepercayaan di konteks operasional.** Di lingkungan seperti
   BMKG, model yang sederhana dan dapat dijelaskan kadang lebih diterima daripada model
-  "kotak hitam" (hasilnya sulit dijelaskan), Bab 10 membahas interpretasi dan keterbatasan.
+  "kotak hitam" (hasilnya sulit dijelaskan). Bab 10 membahas interpretasi dan keterbatasan.
   Tidak semua pengguna akhir (kepala stasiun, peramal, pengambil keputusan) nyaman dengan
   hasil tanpa alasan yang bisa dijelaskan.
 - **Perhatikan biaya dan pemeliharaan.** Model DL perlu dijalankan, dimonitor, dan
@@ -241,10 +248,10 @@ mereka menentukan kapan *deep learning* benar-benar dibutuhkan dan kapan model s
 sudah cukup.
 
 **1. Variabilitas tinggi dan rezim ganda.** Curah hujan di Indonesia dipengaruhi
-monselensi Australia–Asia, *Madden–Julian Oscillation* (MJO) [8], *El Niño–Southern
+monsun Australia–Asia, *Madden–Julian Oscillation* (MJO) [8], *El Niño–Southern
 Oscillation* (ENSO), dan siklus diurnal laut–darat. Pola yang sama bisa muncul dengan
 amplitudo sangat berbeda antara musim kemarau dan musim hujan. Model yang belajar dari
-satu rezim saja akan gagal saat rezim berganti, Bab 6 membahas bagaimana membagi dan
+satu rezim saja akan gagal saat rezim berganti. Bab 6 membahas bagaimana membagi dan
 menyeimbangkan data sehingga model tidak "lupa" pada satu musim.
 
 **2. Ekor kanan (*right tail*) yang berat pada curah hujan.** Distribusi hujan harian
@@ -261,7 +268,7 @@ digital dihitung ulang; inhomogenitas seperti ini adalah salah satu tantangan ut
 yang disoroti dalam literatur pembelajaran mesin untuk sains kebumian [7]. Bab 6
 membahas imputasi dasar dan eksplorasi data yang hati-hati.
 
-**4. Sinyal pasang surut yang kuat tetapi nonstationer.** Di Pontianak (Bab 8), sinyal
+**4. Sinyal pasang surut yang kuat tetapi nonstasioner.** Di Pontianak (Bab 8), sinyal
 pasang surut Kapuas memiliki komponen harmonik yang kuat (semi-diurnal, diurnal, dan
 campuran) tetapi amplitudo dan fase dipengaruhi debit sungai, perubahan morfologi
 alur, dan pasang surut laut jauh. Ini menjadikannya kasus menarik untuk model sekuensial:
@@ -277,8 +284,10 @@ Implikasi untuk *deep learning*:
 
 - **Ukuran data meteorologi Indonesia cukup untuk LSTM/GRU ukuran kecil–menengah** (Bab 7),
   tetapi jarang cukup untuk melatih arsitektur masif dari nol. Kita akan selalu
-   membandingkan dengan *baseline* sederhana, *persistence*, rata-rata klimatologis, atau
-  ARIMA singkat.
+  membandingkan dengan *baseline* sederhana, *persistence*, rata-rata klimatologis, atau
+  ARIMA singkat. Untuk data yang sangat terbatas, *transfer learning* dari model yang
+  dilatih pada data reanalisis global adalah pintu masuk alternatif yang sedang berkembang
+  (Bab 10).
 - **Pemilihan fitur tetap penting.** Walau DL dapat belajar representasi, fitur
   meteorologi yang baik (lag, musiman, indeks ENSO) membuat model jauh lebih efisien.
 - **Cross-validation harus menghormati waktu.** Bab 5 memperkenalkan walk-forward
@@ -301,8 +310,7 @@ Masalah → Data → Persiapan → Model → Evaluasi → (Putuskan: cukup / per
    train/val/test dengan benar (Bab 2, 5, 6).
 4. **Bangun model.** Mulai dari *baseline* sederhana, lalu tingkatkan (Bab 2–4, 7).
 5. **Evaluasi.** Gunakan metrik yang sesuai dengan tujuan operasional (Bab 5).
-6. **Putuskan.** Jika model cukup baik, pakai; jika tidak, ulangi satu atau beberapa
-   langkah, ini normal.
+6. **Putuskan.** Jika model cukup baik, model siap digunakan. Jika tidak, Anda harus melakukan iterasi (pengulangan): mulai dari menyesuaikan parameter, mengganti arsitektur model dengan yang lebih sesuai, hingga kembali memperbaiki kualitas data awal.
 7. **Pantau dan rawat.** Setelah dipakai, atmosfer berubah (Bab 10): distribusi data
    bergeser, sensor diganti, rezim iklim bergeser. Model perlu dimonitor dan dilatih
    ulang secara berkala. Ini bukan "bonus", ini bagian dari siklus hidup.
@@ -510,7 +518,7 @@ Sebelum Bab 2, mari latih naluri memetakan masalah ke jenis model. Untuk masing-
 pertanyaan berikut, tentukan (a) regresi atau klasifikasi, dan (b) apakah *deep learning*
 layak dicoba (asumsikan data tersedia cukup):
 
-1. Prediksi suhu minimum esok hari di Pontianak.
+1. Prediksi suhu minimum besok di Pontianak.
 2. Deteksi apakah hari ini akan hujan deras (>50 mm/24 jam) ya atau tidak.
 3. Menentukan level siaga banjir rob: waspada / siaga / awas.
 4. Prediksi jumlah hari hujan pada bulan depannya (satu angka per bulan).
@@ -546,7 +554,7 @@ muncul dijelaskan dengan bahasa sehari-hari dan contoh konkret meteorologi, sehi
 tetap bisa mengikuti.
 
 **Kapan harus berhenti dan belajar lebih dalam?** Jika Anda berencana meneliti atau
-mengembangkan arsitektur baru, Anda perlu matematika lebih dalam, kami sarankan [4] untuk itu. Tetapi untuk penggunaan praktis (membangun model, mengevaluasi, menerapkan),
+mengembangkan arsitektur baru, Anda perlu matematika lebih dalam, kami sarankan [1] untuk itu. Tetapi untuk penggunaan praktis (membangun model, mengevaluasi, menerapkan),
 bekal di atas cukup.
 
 ## 1.10 Mengapa Buku Ini "Bukan Riset Baru"
@@ -574,7 +582,7 @@ buku ini?" Jawabannya ada di ekosistem yang akan Anda pakai, dan di mana buku in
 di antara sumber-sumber tersebut.
 
 Untuk **penggunaan umum DL**, referensi utama komunitas adalah *Deep Learning* dari
-Goodfellow, Bengio, dan Courville [4], sangat mendalam tetapi cenderung teoretis. Untuk
+Goodfellow, Bengio, dan Courville [1], sangat mendalam tetapi cenderung teoretis. Untuk
 **praktik dengan Keras/TensorFlow**, buku dari François Chollet dan tutorial situs resmi
 TensorFlow sangat membantu. Buku ini berbeda karena dua hal:
 
@@ -664,21 +672,20 @@ sumber, lisensi, dan kualitas, bekal penting untuk Bab 8–9.
 - Lingkungan kerja: Google Colab + TensorFlow/Keras; semua data dibawa sebagai tensor.
 - Alur kerja proyek ML (masalah → data → persiapan → model → evaluasi) menjadi pola
   acuan semua bab.
-- Matematika yang dibutuhkan terbatas pada aljabar linear, kalkulus, dan statistika dasar
- , cukup untuk penggunaan praktis.
-- Buku ini "bukan riset baru"; ia kurasi literatur mapan untuk konteks meteorologi
+- Matematika yang dibutuhkan terbatas pada aljabar linear, kalkulus, dan statistika dasar, cukup untuk penggunaan praktis.
+- Buku ini "bukan riset baru"; buku ini merupakan hasil kurasi literatur untuk konteks meteorologi
   Indonesia, dengan referensi lanjutan untuk pendalaman.
 
 ## References
 
-1. S. Russell and P. Norvig, *Artificial Intelligence: A Modern Approach*, 4th ed.
-   Harlow, UK: Pearson, 2021. ISBN: 978-0134610993.
-2. T. M. Mitchell, *Machine Learning*. New York, NY, USA: McGraw-Hill, 1997.
-   ISBN: 978-0070428072.
-3. Y. LeCun, Y. Bengio, and G. Hinton, "Deep learning," *Nature*, vol. 521, no. 7553,
-   pp. 436–444, May 2015, doi: 10.1038/nature14539.
-4. I. Goodfellow, Y. Bengio, and A. Courville, *Deep Learning*. Cambridge, MA, USA:
+1. I. Goodfellow, Y. Bengio, and A. Courville, *Deep Learning*. Cambridge, MA, USA:
    MIT Press, 2016.
+2. S. Russell and P. Norvig, *Artificial Intelligence: A Modern Approach*, 4th ed.
+   Harlow, UK: Pearson, 2021. ISBN: 978-0134610993.
+3. T. M. Mitchell, *Machine Learning*. New York, NY, USA: McGraw-Hill, 1997.
+   ISBN: 978-0070428072.
+4. Y. LeCun, Y. Bengio, and G. Hinton, "Deep learning," *Nature*, vol. 521, no. 7553,
+   pp. 436–444, May 2015, doi: 10.1038/nature14539.
 5. F. Rosenblatt, "The perceptron: A probabilistic model for information storage and
    organization in the brain," *Psychological Review*, vol. 65, no. 6, pp. 386–408, 1958,
    doi: 10.1037/h0042519.

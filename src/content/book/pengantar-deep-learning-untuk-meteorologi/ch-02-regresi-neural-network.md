@@ -3,7 +3,7 @@ title: "Regresi: Perceptron dan Jaringan Saraf untuk Prediksi Besaran"
 description: "Bab 2 — membangun model regresi pertama untuk prediksi besaran meteorologi: anatomi neuron (bobot, bias, fungsi aktivasi), regresi linear sebagai kasus khusus, kebutuhan non-linearitas (ReLU), mini-kasus pasang surut, perbandingan MAE vs MSE, dan alasan split berbasis waktu."
 pubDatetime: 2026-09-01
 tags: ["Deep Learning", "Meteorologi", "regresi", "neural network", "perceptron", "fungsi aktivasi", "reLU", "time series"]
-draft: true
+draft: false
 chapter: 2
 bookId: "pengantar-deep-learning-untuk-meteorologi"
 ---

@@ -310,10 +310,8 @@ Masalah → Data → Persiapan → Model → Evaluasi → (Putuskan: cukup / per
    train/val/test dengan benar (Bab 2, 5, 6).
 4. **Bangun model.** Mulai dari *baseline* sederhana, lalu tingkatkan (Bab 2–4, 7).
 5. **Evaluasi.** Gunakan metrik yang sesuai dengan tujuan operasional (Bab 5).
-6. **Putuskan.** Jika model cukup baik, model siap digunakan. Jika tidak, Anda harus melakukan iterasi (pengulangan): mulai dari menyesuaikan parameter, mengganti arsitektur model dengan yang lebih sesuai, hingga kembali memperbaiki kualitas data awal.
-7. **Pantau dan rawat.** Setelah dipakai, atmosfer berubah (Bab 10): distribusi data
-   bergeser, sensor diganti, rezim iklim bergeser. Model perlu dimonitor dan dilatih
-   ulang secara berkala. Ini bukan "bonus", ini bagian dari siklus hidup.
+6. **Putuskan.** Gunakan model jika hasilnya memuaskan. Jika belum, lakukan iterasi: perbaiki data, sesuaikan parameter, atau ganti arsitektur model.
+7. **Pantau dan rawat.** Kondisi atmosfer dan sensor terus berubah. Memantau dan melatih ulang model secara berkala adalah kewajiban dalam siklus hidup model, bukan sekadar bonus.
 
 Konsep ***baseline*** akan menjadi teman sepanjang buku. Sebelum menantang dengan deep
 learning, Anda harus punya patokan sederhana yang bisa Anda kalahkan. Ini menjauhkan Anda

@@ -41,7 +41,9 @@ adalah kemiringan (slope) suatu fungsi pada satu titik. Jika kita punya fungsi l
 
 Aturan umum: bergerak **berlawanan arah gradien**. Inilah **gradient descent**.
 
-$$ w \leftarrow w - \eta \frac{\partial L}{\partial w} \tag{4.1} $$
+$$
+w \leftarrow w - \eta \frac{\partial L}{\partial w} \tag{4.1}
+$$
 
 Persamaan (4.1) menyatakan: bobot baru = bobot lama dikurangi `η` (learning rate) dikali
 gradien. Learning rate `η` mengontrol besar langkah: terlalu besar → melompat melewati
@@ -93,7 +95,9 @@ terhadap loss? Jawabannya: **aturan rantai** (chain rule).
 Untuk jaringan 2 lapisan, pengaruh bobot `w` di lapisan tersembunyi terhadap loss `L`
 merantai melalui nilai aktivasi `a`:
 
-$$ \frac{\partial L}{\partial w} = \frac{\partial L}{\partial a} \cdot \frac{\partial a}{\partial z} \cdot \frac{\partial z}{\partial w} \tag{4.2} $$
+$$
+\frac{\partial L}{\partial w} = \frac{\partial L}{\partial a} \cdot \frac{\partial a}{\partial z} \cdot \frac{\partial z}{\partial w} \tag{4.2}
+$$
 
 Persamaan (4.2) adalah inti backpropagation: kesalahan di lapisan keluaran "dipropagasikan
 mundur" (backward) melalui turunan berantai, memberitahu tiap lapisan seberapa besar
@@ -172,7 +176,9 @@ nilai turunan fungsi ini menentukan seberapa cepat bobot di belakangnya berubah.
 
 Untuk sigmoid `σ`, turunannya adalah:
 
-$$ \sigma'(z) = \sigma(z) \cdot (1 - \sigma(z)) \tag{4.3} $$
+$$
+\sigma'(z) = \sigma(z) \cdot (1 - \sigma(z)) \tag{4.3}
+$$
 
 Persamaan (4.3) punya sifat penting: `σ'(z)` **selalu < 1**, dan mendekati 0 ketika `z`
 jauh dari 0. Akibatnya, dalam jaringan yang dalam, perkalian berantai dari gradien kecil

@@ -118,7 +118,9 @@ callbacks = [
 
 Menambahkan penalti ke loss sebanding dengan kuadrat besarnya bobot:
 
-$$ \mathcal{L}_{\text{total}} = \mathcal{L}_{\text{data}} + \lambda \sum_j w_j^2 \tag{5.1} $$
+$$
+\mathcal{L}_{\text{total}} = \mathcal{L}_{\text{data}} + \lambda \sum_j w_j^2 \tag{5.1}
+$$
 
 Persamaan (5.1): `λ` (lambda) mengontrol kekuatan penalti. Model "didorong" memakai bobot
 kecil, sehingga tidak terlalu bergantung pada satu fitur. Di Keras:

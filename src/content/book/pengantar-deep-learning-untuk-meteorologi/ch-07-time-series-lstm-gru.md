@@ -104,7 +104,9 @@ Konversi ini - *windowing* - identik yang sudah dipakai di Bab 2 (§2.5), hanya 
 masukannya berupa **urutan panjang `w`**, bukan dua fitur terpisah. Bentuk tensor masukan
 untuk model sekuensial adalah 3D:
 
-$$ \text{input shape} = (\,\text{batch},\; \text{waktu}\; w,\; \text{fitur}\; f\,) \tag{7.1} $$
+$$
+\text{input shape} = (\,\text{batch},\; \text{waktu}\; w,\; \text{fitur}\; f\,) \tag{7.1}
+$$
 
 Persamaan (7.1): dimensi pertama adalah jumlah sampel per *batch* (otomatis di Keras),
 dimensi kedua adalah panjang *window* `w`, dimensi ketiga jumlah fitur `f`. Untuk
@@ -206,7 +208,9 @@ memang tidak butuh LSTM). Ini juga yang membuat evaluasi Bab 8-9 dapat dipercaya
 waktu, ia mengkombinasikan masukan saat ini `x(t)` dengan **state tersembunyi** dari
 langkah sebelumnya `h(t-1)`:
 
-$$ h_t = \tanh(W_x x_t + W_h h_{t-1} + b) \tag{7.2} $$
+$$
+h_t = \tanh(W_x x_t + W_h h_{t-1} + b) \tag{7.2}
+$$
 
 Persamaan (7.2): `h_t` adalah "ingatan ringkas" sampai langkah `t`; `W` adalah matriks
 bobot (dibagikan di semua langkah waktu - parameter sedikit, komputasi efisien). RNN
@@ -249,9 +253,15 @@ dipertahankan, atau dikosongkan, dengan tiga pintu:
 Tiga pintu inilah yang membuat LSTM mampu mengingat pola jauh (misal siklus pasang surut
 yang lalu) sambil melupakan yang tidak relevan - tanpa meledakkan gradien.
 
-$$ f_t = \sigma(W_f x_t + U_f h_{t-1} + b_f) \tag{7.3} $$
-$$ i_t = \sigma(W_i x_t + U_i h_{t-1} + b_i) \tag{7.4} $$
-$$ o_t = \sigma(W_o x_t + U_o h_{t-1} + b_o) \tag{7.5} $$
+$$
+f_t = \sigma(W_f x_t + U_f h_{t-1} + b_f) \tag{7.3}
+$$
+$$
+i_t = \sigma(W_i x_t + U_i h_{t-1} + b_i) \tag{7.4}
+$$
+$$
+o_t = \sigma(W_o x_t + U_o h_{t-1} + b_o) \tag{7.5}
+$$
 
 Persamaan (7.3)-(7.5): tiap pintu memakai sigmoid (nilai 0-1) sehingga "terbuka atau
 tertutup" secara mulus, dan dihubungkan dengan `tanh` untuk penulis memori kandidat.
@@ -411,7 +421,9 @@ Praktik ini mengembalikan kesimpulan "LSTM keren!" menjadi klaim yang terukur.
 
 Untuk melaporkan perbaikan relatif terhadap *baseline*, gunakan kesamaan *skill score*:
 
-$$ \text{SS} = 1 - \frac{\text{MAE}_{\text{model}}}{\text{MAE}_{\text{baseline}}} \tag{7.6} $$
+$$
+\text{SS} = 1 - \frac{\text{MAE}_{\text{model}}}{\text{MAE}_{\text{baseline}}} \tag{7.6}
+$$
 
 Persamaan (7.6): `SS > 0` artinya model lebih baik daripada *baseline*; `SS = 0` setara;
 `SS < 0` lebih buruk. Skill score sangat mudah diapresiasi - nilai 0.30 berarti model

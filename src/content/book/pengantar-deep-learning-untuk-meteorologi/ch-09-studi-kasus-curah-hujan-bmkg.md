@@ -219,7 +219,9 @@ argument visual mengapa threshold tertentu dipilih.
 
 Persamaan yang dipakai (dari Tabel 5.3 Bab 5, pedoman WMO [6]):
 
-$$ \text{POD} = \frac{TP}{TP+FN}, \quad \text{FAR} = \frac{FP}{TP+FP}, \quad \text{CSI} = \frac{TP}{TP+FP+FN} \tag{9.1} $$
+$$
+\text{POD} = \frac{TP}{TP+FN}, \quad \text{FAR} = \frac{FP}{TP+FP}, \quad \text{CSI} = \frac{TP}{TP+FP+FN} \tag{9.1}
+$$
 
 Persamaan (9.1) memberi tiga sudut pandang yang saling melengkapi. Contoh membaca hasil:
 

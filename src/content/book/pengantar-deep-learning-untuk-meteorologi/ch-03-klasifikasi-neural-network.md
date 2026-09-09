@@ -76,7 +76,9 @@ jaringan dan cara mengukurnya.
 Untuk klasifikasi biner, lapisan terakhir memakai **sigmoid**, yang memampatkan nilai `z`
 ke rentang 0-1:
 
-$$ \sigma(z) = \frac{1}{1 + e^{-z}} \tag{3.1} $$
+$$
+\sigma(z) = \frac{1}{1 + e^{-z}} \tag{3.1}
+$$
 
 Sigmoid pada Persamaan (3.1) memberi interpretasi probabilistik: keluaran `0.85` berarti
 keyakinan 85% bahwa sampel masuk kelas `1` (misal *hujan*). Sifat sigmoid yang penting:
@@ -97,7 +99,9 @@ hujan lebat, kita sering menaikkan/menurunkan *threshold* (dibahas Bagian 3.7).
 
 Misalkan model memberi `z = 1.2`. Maka:
 
-$$ \sigma(1.2) = \frac{1}{1 + e^{-1.2}} = \frac{1}{1 + 0.301} \approx 0.77 $$
+$$
+\sigma(1.2) = \frac{1}{1 + e^{-1.2}} = \frac{1}{1 + 0.301} \approx 0.77
+$$
 
 Dengan *threshold* 0.5, sampel masuk kelas `1`. Jika kita menaikkan *threshold* ke 0.8,
 sampel ini menjadi kelas `0` - keputusan berubah hanya karena ambang, bukan model.
@@ -107,7 +111,9 @@ sampel ini menjadi kelas `0` - keputusan berubah hanya karena ambang, bukan mode
 Untuk klasifikasi multi-kelas, kita memakai **softmax**, yang mengubah vektor nilai `z`
 menjadi distribusi probabilitas yang **menjumlahkan ke 1**:
 
-$$ \text{softmax}(z)_i = \frac{e^{z_i}}{\sum_{j=1}^{K} e^{z_j}} \tag{3.2} $$
+$$
+\text{softmax}(z)_i = \frac{e^{z_i}}{\sum_{j=1}^{K} e^{z_j}} \tag{3.2}
+$$
 
 Softmax pada Persamaan (3.2) memberi probabilitas untuk tiap kelas `i` di antara `K` kelas.
 Contoh: `[0.70, 0.20, 0.10]` untuk kelas `[ringan, sedang, lebat]` - model paling yakin
@@ -124,7 +130,7 @@ lama sama. Ini berbeda dari sigmoid yang "mandiri" per kelas (untuk biner, hanya
 | | Sigmoid | Softmax |
 |---|---|---|
 | Jumlah kelas | 1 neuron, 2 kelas (komplementer) | K neuron, K kelas |
-| Jumlah probabilitas | Tidak harus 1 | Selalu 1 |
+| Jumlah probabilitas | `p` tunggal; komplemen `1-p` implisit | Vektor `K` nilai, jumlah 1 |
 | Fungsi | $\frac{1}{1+e^{-z}}$ | $\frac{e^{z_i}}{\sum_j e^{z_j}}$ |
 | Kapan dipakai | Masalah biner | Masalah multi-kelas |
 
@@ -139,7 +145,9 @@ Seperti MAE/MSE untuk regresi, klasifikasi memakai fungsi loss khusus:
 
 Formula untuk binary cross-entropy (per sampel):
 
-$$ \mathcal{L} = -\left[ y \log(p) + (1 - y) \log(1 - p) \right] \tag{3.3} $$
+$$
+\mathcal{L} = -\left[ y \log(p) + (1 - y) \log(1 - p) \right] \tag{3.3}
+$$
 
 di mana `y` label (0 atau 1) dan `p` probabilitas prediksi. Intuisi: jika `y=1` dan `p`
 mendekati 1, `log(p)` mendekati 0 → loss kecil. Jika `y=1` tetapi `p` mendekati 0, loss
@@ -158,8 +166,12 @@ Ada dua alasan utama:
    "hukuman" sesuai makna probabilitas. Cross-entropy lahir dari teori informasi dan cocok
    dengan keluaran 0-1.
 2. **Pelatihan.** Dengan sigmoid + MSE, gradien bisa sangat kecil ketika kurva sigmoid
-   datar (model yakin), belajar melambat [1]. Cross-entropy + sigmoid/softmax menghasilkan
-   gradien yang lebih sehat. Detail di Bab 4.
+   datar - terutama saat model yakin **tetapi salah** (misal label `1`, prediksi `p ≈ 0`),
+   karena turunan sigmoid mendekati nol dan gradien MSE mengecil, belajar melambat [1].
+   Sebaliknya, saat model yakin dan benar (`y=1`, `p ≈ 1`), gradien cross-entropy juga kecil
+   - justru yang kita ingin. Cross-entropy + sigmoid/softmax menghasilkan gradien yang lebih
+   sehat, karena proporsional terhadap `(p - y)` dan tetap besar ketika model yakin salah.
+   Detail di Bab 4.
 
 ## 3.5 Kode: Model Klasifikasi Pertama
 
@@ -232,7 +244,10 @@ history = model.fit(
 ```
 
 Bobot `10.0` pada kelas `1` membuat kesalahan pada kejadian langka dihukum 10× lipat.
-Pilih angkanya berdasarkan rasio ketidakseimbangan (mis. bila 5% kejadian, bobot ~19).
+Rasio ketidakseimbangan (mis. bila 5% kejadian, bobot ~19) adalah **titik awal** yang
+membantu, bukan aturan baku: bobot optimal tidak selalu melihan dari frekuensi invers, dan
+nilai terlalu ekstrem bisa menaikkan *overfit* pada kelas minoritas. Sebaiknya tuning bobot
+empiris (misal telai 2, 5, 10, 19) dan pilih yang memberi F1/CSI terbaik pada validasi.
 Bandingkan hasil Kode 3.3 dengan tanpa bobot di notebook.
 
 ### Memahami keluaran satu-panas (one-hot)
@@ -268,9 +283,13 @@ Tabel berikut menggambarkan jebakan ini:
 
 ![Gambar 3.2 - Confusion matrix contoh data tidak seimbang (2 benar, 8 miss, 20 false alarm, 970 benar-tidak)](ch-03-klasifikasi-neural-network/figures/fig-3-2-confusion-matrix.png)
 
-Gambar 3.2 memvisualkan Tabel 3.3. Akurasi di sini = `(2+970)/1000 = 97.2%`. Tetapi dari
-10 hari hujan deras sungguhan, model hanya menangkap **2** (recall 20%) dan melaporkan
-**20** false alarm. Untuk peringatan dini, model seperti ini hampir tidak berguna.
+Gambar 3.2 memvisualkan Tabel 3.3. Akurasi di sini = `(2+970)/1000 = 97.2%`. Catatan:
+angka 99% di atas adalah skenario **hipotetis** di mana model selalu berprediksi "tidak
+hujan deras" (untuk data dengan ~1% kejadian langka, akurasi = `990/1000 = 99%`), sema
+Tabel 3.3 menggambarkan model yang **lain** yang masih melaporkan 20 *false alarm* - dua
+skenario, dua angka. Tetapi dari 10 hari hujan deras sungguhan, model hanya menangkap **2**
+(recall 20%) dan melaporkan **20** false alarm. Untuk peringatan dini, model seperti ini
+hampir tidak berguna.
 
 Karena itu, metrik utama yang dipakai:
 
@@ -280,7 +299,9 @@ Karena itu, metrik utama yang dipakai:
   `TP/(TP+FN) = 2/10 = 20%`.
 - **F1** - rata-rata harmonik precision-recall (seimbang):
 
-$$ F_1 = \frac{2 \cdot \text{precision} \cdot \text{recall}}{\text{precision} + \text{recall}} \tag{3.4} $$
+$$
+F_1 = \frac{2 \cdot \text{precision} \cdot \text{recall}}{\text{precision} + \text{recall}} \tag{3.4}
+$$
 
 Untuk kejadian langka dalam meteorologi operasional, kuartet yang lebih terpercaya adalah
 **CSI, POD, FAR, TS** - akan dibahas penuh di Bab 5. Pedoman resmi verifikasi perkiraan
@@ -343,9 +364,13 @@ lama-kelamaan masyarakat mengabaikan peringatan. Pilihan *threshold* karena itu 
 
 Jika tidak ada preferensi biaya eksplisit, praktisi sering memilih *threshold* yang
 memaksimalkan **F1** - karena F1 menyeimbangkan precision dan recall dalam satu angka.
-Namun dua model dengan F1 sama bisa memiliki perilaku berbeda di lapangan; karena itu
-jangan pernah hanya melihat F1, tapi periksa juga angka precision & recall-nya, dan
-- jika memungkinkan - *curve*-nya (ROC/*precision-recall*).
+Peringatan: F1 adalah rata-rata harmonik dengan bobot yang **sama** untuk precision dan
+recall - ia implisit mengasumsikan bahwa biaya *false alarm* = biaya *miss*. Jika biaya miss
+jauh lebih besar (sering dalam peringatan dini bencana), *threshold* yang memaksimalkan F1
+bisa bukan pilihan optimal; dalam hal itu gunakan *cost matrix* dengan biaya yang jelas.
+Selain itu, dua model dengan F1 sama bisa memiliki perilaku berbeda di lapangan; karena itu
+jangan pernah hanya melihat F1, tapi periksa juga angka precision & recall-nya dan, jika
+memungkinkan, *curve*-nya (ROC/*precision-recall*).
 
 ## 3.8 Confusion Matrix: Membaca yang Terlewat dan Keliru
 
@@ -407,8 +432,10 @@ yang tepat + bobot kelas, lalu evaluasi dengan CSI/FAR. Nanti di Bab 5.
 **Mengapa memakai softmax, bukan beberapa sigmoid untuk multi-kelas?** Softmax memaksa
 total probabilitas = 1 dan "bersaing" antar kelas, sesuai asumsi label saling eksklusif [1].
 Beberapa sigmoid (multi-label) cocok jika sebuah sampel bisa punya lebih dari satu label
-sekaligus (misal "hujan" DAN "angin kencang" bersamaan), sebagai varian yang dilaporkan
-dalam literatur klasifikasie [1].
+sekaligus (misal "hujan" DAN "angin kencang" bersamaan). Untuk multi-label, lapisan keluaran
+berisi beberapa neuron sigmoid dan loss yang dipakai adalah `binary_crossentropy` per neuron
+- bukan `categorical_crossentropy`, yang menuntut distribusi softmax. Varian ini dilaporkan
+dalam literatur klasifikasi [1].
 
 ## 3.11 Alur Kerja Model Klasifikasi
 
@@ -440,12 +467,14 @@ Selalu sertakan *confusion matrix* + *precision*/*recall*/F1 (dan akhirnya CSI/F
 **3. Menggunakan akurasi untuk tuning pada data langka.** Optimasi model pada data tidak
 seimbang sebaiknya memakai metrik yang sesuai (F1/CSI), bukan akurasi.
 
-**4. Normalisasi/statistik dari seluruh data.** Sama seperti Bab 2 - jangan sampai statistik
-test bocor ke train.
+**4. Normalisasi/statistik dari seluruh data.** Sama seperti Bab 2 - jangan sampai
+informasi/statistik dari data test bocor ke dalam proses training (data leakage).
 
 **5. Menganggap *softmax* sebagai "probabilitas sejati".** *Softmax* hanya peringkat relatif,
-bukan kalibrasi probabilistik sesungguhnya (model bisa terlalu yakin). Kalibrasi dibahas
-singkat di Bab 10.
+bukan kalibrasi probabilistik sesungguhnya (model bisa terlalu yakin). Misal, dengan logit
+`[10, 5, 5]` softmax memberikan `[0.99, 0.005, 0.005]` - "yakin" ~99% pada kelas pertama,
+sampai data yang di lapangan tidak jelas. Ini fenomena yang dikenal sebagai *overconfidence*
+pada neural network [5]. Kalibrasi dibahas singkat di Bab 10.
 
 Dengan menghindari kesalahan ini, laporan klasifikasi Anda jujur dan berguna - nilai
 kepercayaan yang mahal di dunia operasional.
@@ -490,3 +519,6 @@ kepercayaan yang mahal di dunia operasional.
 4. World Meteorological Organization, "WMO guidelines on the verification of operational
    forecasts," WMO, Geneva, Switzerland, 2018. [Online]. Available:
    https://library.wmo.int (diakses: September 2026).
+5. C. Guo, G. Pleiss, Y. Sun, and K. Weinberger, "On calibration of modern neural networks,"
+   in *Proc. 34th Int. Conf. on Machine Learning (ICML)*, PMLR, vol. 70, 2017, pp. 1321-1330.
+   [Online]. Available: https://arxiv.org/abs/1706.04596 (diakses: September 2026).

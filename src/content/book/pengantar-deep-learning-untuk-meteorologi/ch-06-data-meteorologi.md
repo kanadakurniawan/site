@@ -351,7 +351,9 @@ df = df.join(rmm.set_index("tanggal"), how="left")
 Model di Bab 2-5 dilatih dengan `Adam` yang sensitif pada skala. Normalisasi *z-score*
 adalah pilihan umum:
 
-$$ x' = \frac{x - \mu_{\text{train}}}{\sigma_{\text{train}}} \tag{6.1} $$
+$$
+x' = \frac{x - \mu_{\text{train}}}{\sigma_{\text{train}}} \tag{6.1}
+$$
 
 **Sangat penting:** `μ` dan `σ` dihitung **hanya dari data latih**, lalu diterapkan ke
 validasi, *test*, dan data produksi (Persamaan 6.1). Jika dihitung dari seluruh data,
@@ -378,7 +380,9 @@ Salah satu cara yang umum digunakan praktisi: transformasi monotonic seperti
 `log1p(y) = log(y + 1)` pada *target* sebelum dilatih, lalu eksponensialkan kembali saat
 melaporkan:
 
-$$ y_{\text{train}} = \log(y + 1) \tag{6.2} $$
+$$
+y_{\text{train}} = \log(y + 1) \tag{6.2}
+$$
 
 Transformasi (Persamaan 6.2) meredam ekor kanan, membuat distribusi target lebih "kecil"
 dan pelatihan lebih stabil. Kehati-hatian yang perlu:

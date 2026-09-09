@@ -78,11 +78,15 @@ Neuron buatan (*artificial neuron*) adalah unit dasar jaringan saraf. Ia menerim
 masukan `x`, mengalikan tiap masukan dengan **bobot** `w`, menjumlahkannya, lalu
 menambahkan **bias** `b`:
 
-$$ z = w_1 x_1 + w_2 x_2 + \dots + w_n x_n + b \tag{2.1} $$
+$$
+z = w_1 x_1 + w_2 x_2 + \dots + w_n x_n + b \tag{2.1}
+$$
 
 Hasilnya "diaktifkan" oleh **fungsi aktivasi** `f`, menghasilkan keluaran:
 
-$$ a = f(z) \tag{2.2} $$
+$$
+a = f(z) \tag{2.2}
+$$
 
 Bobot `w` mencerminkan **seberapa penting** tiap masukan; bias `b` adalah "ambang" yang
 memungkinkan neuron aktif bahkan ketika semua masukan nol. Keduanya adalah parameter yang
@@ -107,7 +111,9 @@ Misalkan kita memprediksi suhu minimum besok (`y`) dari dua variabel: suhu hari 
 (`x₁ = 26`) dan kelembapan (`x₂ = 90%`). Jika bobot `w₁ = 0.5`, `w₂ = -0.05`, dan `bias
 b = 10`, maka:
 
-$$ z = (0.5 \times 26) + (-0.05 \times 90) + 10 = 13 - 4.5 + 10 = 18.5 $$
+$$
+z = (0.5 \times 26) + (-0.05 \times 90) + 10 = 13 - 4.5 + 10 = 18.5
+$$
 
 Tanpa fungsi aktivasi (identitas), prediksi `ŷ = 18.5°C`. Pembaca bisa melihat intuisi:
 suhu hari ini menaikkan prediksi (bobot positif), kelembapan tinggi menurunkannya (bobot
@@ -118,7 +124,9 @@ data - bukan menentukannya manual.
 
 Sebuah neuron **tanpa fungsi aktivasi** (identitas) untuk satu masukan:
 
-$$ \hat{y} = wx + b \tag{2.3} $$
+$$
+\hat{y} = wx + b \tag{2.3}
+$$
 
 Persamaan (2.3) identik dengan **regresi linear** yang biasa Anda pelajari di statistika.
 Bedanya hanya di jalur penemuan parameter:
@@ -163,7 +171,9 @@ berdimensi banyak.
 Agar model mampu menangkap pola non-linear, setiap lapisan menyisipkan **fungsi aktivasi
 non-linear**. Fungsi yang paling umum sekarang adalah **ReLU** (*rectified linear unit*):
 
-$$ \text{ReLU}(x) = \max(0, x) \tag{2.4} $$
+$$
+\text{ReLU}(x) = \max(0, x) \tag{2.4}
+$$
 
 ReLU mengeluarkan nilai masukan jika positif, dan nol jika negatif (persamaan (2.4)).
 Sederhana, murah dihitung (satu perbandingan), dan menjadi komponen dasar banyak jaringan
@@ -390,9 +400,13 @@ perilaku model. Prinsip: pilih sesuai skala & tujuan, dan selalu bandingkan deng
 Misalkan tiga data uji memiliki aktual `y = [10, 12, 8]` dan model memprediksi
 `ŷ = [9, 15, 8]`. Selisihnya `[-1, +3, 0]`, sehingga:
 
-$$ \text{MAE} = \frac{|{-1}| + |3| + |0|}{3} = \frac{4}{3} \approx 1.33 \tag{2.5} $$
+$$
+\text{MAE} = \frac{|{-1}| + |3| + |0|}{3} = \frac{4}{3} \approx 1.33 \tag{2.5}
+$$
 
-$$ \text{MSE} = \frac{(-1)^2 + (3)^2 + (0)^2}{3} = \frac{10}{3} \approx 3.33 \tag{2.6} $$
+$$
+\text{MSE} = \frac{(-1)^2 + (3)^2 + (0)^2}{3} = \frac{10}{3} \approx 3.33 \tag{2.6}
+$$
 
 Perhatikan: satu kesalahan `3` "menyumbang" 9 ke MSE (kuadrat), jauh lebih besar daripada
 kontribusinya di MAE (3). Itulah inti perbedaan: **MSE lebih sensitif pada kesalahan

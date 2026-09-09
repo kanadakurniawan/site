@@ -1,18 +1,22 @@
 ---
 title: "Backpropagation, Optimasi dan Pelatihan"
-description: "Bab 4 — memahami bagaimana neural network belajar: intuisi gradient descent dan backpropagation, fungsi aktivasi dari sisi gradien (vanishing gradient), learning rate & scheduler, SGD vs Adam, dan callback untuk pelatihan yang sehat."
+description: "Bab 4 - memahami bagaimana neural network belajar: intuisi gradient descent dan backpropagation, fungsi aktivasi dari sisi gradien (vanishing gradient), learning rate & scheduler, SGD vs Adam, dan callback untuk pelatihan yang sehat."
 pubDatetime: 2026-09-01
 tags: ["Deep Learning", "Meteorologi", "backpropagation", "gradient descent", "optimasi", "learning rate", "adam", "callback", "early stopping"]
-draft: true
+draft: false
 chapter: 4
 bookId: "pengantar-deep-learning-untuk-meteorologi"
 ---
 
 
-# Bab 4 — Backpropagation, Optimasi dan Pelatihan
+# Bab 4 - Backpropagation, Optimasi dan Pelatihan
 
 > **Prasyarat:** Bab 2 (neuron, regresi, MAE/MSE) dan Bab 3 (klasifikasi, cross-entropy).
-> Diperlukan kalkulus dasar: turunan (derivatif) — diingatkan ulang di §4.1.
+> Diperlukan kalkulus dasar: turunan (derivatif) - diingatkan ulang di §4.1.
+
+> **Catatan:** Materi bab ini adalah **materi pengenalan**, bukan hasil riset baru. Seluruh isi
+> merupakan ringkasan ulang literatur *machine learning*, dengan contoh-contoh yang dekat dengan
+> dunia meteorologi Indonesia.
 
 ## Tujuan Pembelajaran
 
@@ -48,18 +52,18 @@ minimum; terlalu kecil → lambat.
 Bayangkan Anda berdiri di atas gunung berkabut (ruang bobot) dan ingin turun ke lembah
 (loss minimum). Anda tidak bisa melihat jauh; yang Anda rasakan hanya kemiringan di kaki.
 Gradient descent: rasakan arah turun paling curam, ambil langkah, ulangi. Semakin dekat
-ke lembah, semakin kecil kemiringan, sehingga langkah mengecil — sampai Anda berhenti.
+ke lembah, semakin kecil kemiringan, sehingga langkah mengecil - sampai Anda berhenti.
 
 ### Tiga varian gradient descent
 
 Berdasarkan berapa banyak data yang dipakai untuk satu langkah update:
 
-- **Batch gradient descent** — gunakan *seluruh* training set per langkah. Akurat, tapi
+- **Batch gradient descent** - gunakan *seluruh* training set per langkah. Akurat, tapi
   sangat lambat untuk data besar.
-- **Stochastic gradient descent (SGD)** — gunakan *satu sampel* per langkah. Cepat, tapi
+- **Stochastic gradient descent (SGD)** - gunakan *satu sampel* per langkah. Cepat, tapi
   sangat berisik (tiap sampel bisa "menarik" ke arah berbeda).
-- **Mini-batch gradient descent** — gunakan *subkelompok* kecil (misal 32 sampel) per
-  langkah. **Kompromi terbaik dan yang standar dipakai** — termasuk oleh Keras.
+- **Mini-batch gradient descent** - gunakan *subkelompok* kecil (misal 32 sampel) per
+  langkah. **Kompromi terbaik dan yang standar dipakai** - termasuk oleh Keras.
 
 Istilah "SGD" di Keras/PyTorch sebenarnya merujuk pada varian mini-batch: kerangka yang
 sama, batch kecil. Konsistensi di seluruh buku: kita menyebutnya **batch size** untuk
@@ -70,13 +74,13 @@ jumlah sampel per langkah.
 Untuk satu bobot, loss `L(w)` berupa kurva; untuk dua bobot, berupa permukaan bergelombang
 ("loss landscape"). Gradient descent menuruni permukaan ini. Dua sifat yang perlu dikenal:
 
-- **Minimum lokal** — lembah kecil tempat kurva turun lalu naik lagi; gradient descent
+- **Minimum lokal** - lembah kecil tempat kurva turun lalu naik lagi; gradient descent
   bisa "terjebak" di sana padahal ada lembah lebih dalam di tempat lain.
-- **Saddle point** — titik datar yang bukan minimum; di sini gradient ≈ 0 sehingga langkah
+- **Saddle point** - titik datar yang bukan minimum; di sini gradient ≈ 0 sehingga langkah
   nyaris berhenti.
 
 Kabar baiknya: di ruang berdimensi tinggi (model besar), minimum lokal "tidak selalu
-buruk" — banyak yang memberikan error hampir sama baiknya. Untuk masalah praktis di buku
+buruk" - banyak yang memberikan error hampir sama baiknya. Untuk masalah praktis di buku
 ini (model kecil, data cukup), algoritma di atas hampir selalu menemukan solusi yang
 cukup. Yang jauh lebih menentukan adalah **kualitas data & fitur**, bukan terjebak minimum.
 
@@ -96,7 +100,7 @@ mundur" (backward) melalui turunan berantai, memberitahu tiap lapisan seberapa b
 sumbangannya terhadap kesalahan akhir. Nama *backpropagation* merujuk persis pada alur ini:
 hitung error di depan, lalu **kirim mundur** untuk memperbarui bobot.
 
-**Kode 4.1 — Backpropagation is implemented by `model.fit` (end-to-end contoh gradient tape).**
+**Kode 4.1 - Backpropagation is implemented by `model.fit` (end-to-end contoh gradient tape).**
 
 ```python
 import tensorflow as tf
@@ -121,16 +125,16 @@ print("w:", w.numpy(), "| b:", b.numpy(), "| loss:", loss.numpy())
 
 Kode 4.1 memperlihatkan otot-otot backpropagation secara manual: `GradientTape` mencatat
 operasi, menghitung gradien ke `[w, b]`, lalu optimizer menggeser nilai. Dalam produk,
-`saraf.fit` melakukan semua ini di balik layar — tetapi memahami langkah ini menjelaskan
+`model.fit` melakukan semua ini di balik layar - tetapi memahami langkah ini menjelaskan
 apa yang sebenarnya terjadi.
 
 ### Kenapa "propagasi" penting untuk jaringan dalam
 
 Tanpa aturan rantai, kita harus menghitung turunan numerik brute-force untuk setiap bobot
-(ribuan hingga jutaan) — sangat mahal. Backpropagation menghitung semuanya dalam **satu
+(ribuan hingga jutaan) - sangat mahal. Backpropagation menghitung semuanya dalam **satu
 pass maju + satu pass mundur**, dengan efisiensi yang membuat pelatihan jaringan besar
 menjadi mungkin. Kertas asli yang memperkenalkan teknik ini adalah Rumelhart, Hinton, dan
-Williams (1986) [1], dan fondasinya diuraikan lebih lengkap dalam [3].
+Williams (1986) [1], dan fondasinya diuraikan lebih lengkap dalam [2].
 
 ### Perjalanan sinyal dalam backpropagation (ringkasan 2 lapisan)
 
@@ -144,26 +148,26 @@ Untuk memahami alur, ikuti "perjalanan" satu sampel melalui jaringan 2 lapisan:
 
 Intuisi penting: lapisan tersembunyi "belajar" bukan dari data langsung, melainkan dari
 **sinyal kesalahan yang dikirim mundur** dari lapisan setelahnya. Inilah sebabnya kedalaman
-bisa bermakna — setiap lapisan menyesuaikan representasinya agar kesalahan total berkurang.
+bisa bermakna - setiap lapisan menyesuaikan representasinya agar kesalahan total berkurang.
 
 ### Contoh numerik sederhana backpropagation
 
 Bayangkan jaringan dengan satu neuron `y = w·x`, satu sampel `x=2, y_target=4`, dan loss
-MSE `L = (wx − y_t)² / 1`. Misal `w = 1`. Maka:
+MSE `L = (wx - y_t)² / 1`. Misal `w = 1`. Maka:
 
-1. **Forward:** `pred = 1·2 = 2`, `L = (2−4)² = 4`.
-2. **Turunan:** `dL/dpred = 2(pred − y_t) = 2(2−4) = −4`; `dpred/dw = x = 2`.
-3. **Chain rule:** `dL/dw = (−4)·2 = −8`.
-4. **Update** (η=0.1): `w ← 1 − 0.1·(−8) = 1 + 0.8 = 1.8`.
+1. **Forward:** `pred = 1·2 = 2`, `L = (2-4)² = 4`.
+2. **Turunan:** `dL/dpred = 2(pred - y_t) = 2(2-4) = -4`; `dpred/dw = x = 2`.
+3. **Chain rule:** `dL/dw = (-4)·2 = -8`.
+4. **Update** (η=0.1): `w ← 1 - 0.1·(-8) = 1 + 0.8 = 1.8`.
 
-Perhatikan: gradien negatif (−8) membuat bobot **naik** ke arah 2 — persis "berlawanan
+Perhatikan: gradien negatif (-8) membuat bobot **naik** ke arah 2 - persis "berlawanan
 arah" prinsip §4.1. Setelah beberapa iterasi `w` mendekati 2 (mengingat `y_t = 4/2`).
 Inilah inti loop pelatihan, dan `model.fit` mengulanginya jutaan kali dengan
 vektor-matriks pada semua bobot sekaligus.
 
 ## 4.3 Fungsi Aktivasi dari Sisi Gradien: Vanishing Gradient
 
-Di Bab 2–3 kita memakai ReLU, sigmoid, dan softmax. Sekarang lihat dari sisi **gradien**:
+Di Bab 2-3 kita memakai ReLU, sigmoid, dan softmax. Sekarang lihat dari sisi **gradien**:
 nilai turunan fungsi ini menentukan seberapa cepat bobot di belakangnya berubah.
 
 Untuk sigmoid `σ`, turunannya adalah:
@@ -172,35 +176,35 @@ $$ \sigma'(z) = \sigma(z) \cdot (1 - \sigma(z)) \tag{4.3} $$
 
 Persamaan (4.3) punya sifat penting: `σ'(z)` **selalu < 1**, dan mendekati 0 ketika `z`
 jauh dari 0. Akibatnya, dalam jaringan yang dalam, perkalian berantai dari gradien kecil
-"menguap" — lapisan dekat masukan nyaris tidak belajar. Ini disebut **vanishing gradient**.
+"menguap" - lapisan dekat masukan nyaris tidak belajar. Ini disebut **vanishing gradient**.
 
 Illustrasinya: jika tiap lapisan mengalikan gradien dengan (misal) 0.2, setelah 10 lapisan
-faktornya `0.2^10 ≈ 1e-7` — praktis nol.
+faktornya `0.2^10 ≈ 1e-7` - praktis nol.
 
 Perbandingan fungsi aktivasi:
 
-**Tabel 4.1** — Perbandingan fungsi aktivasi dari sisi gradien.
+**Tabel 4.1**: Perbandingan fungsi aktivasi dari sisi gradien.
 
 | Aktivasi | Rentang | Turunan | Masalah |
 |---|---|---|---|
 | `sigmoid(z)` | (0, 1) | ≤ 0.25 | Vanishing gradient |
-| `tanh(z)` | (−1, 1) | ≤ 1 | Vanishing tapi lebih baik |
+| `tanh(z)` | (-1, 1) | ≤ 1 | Vanishing tapi lebih baik |
 | `ReLU(z)` | [0, ∞) | `1` jika `z>0`, `0` jika `z<0` | *Dying ReLU* (neuron mati) |
-| `leaky ReLU` | (−∞, ∞) | kecil tapi tidak 0 | Menghindari dying ReLU |
+| `leaky ReLU` | (-∞, ∞) | kecil tapi tidak 0 | Menghindari dying ReLU |
 
-ReLU unggul karena turunannya `1` untuk `z > 0` — gradien tidak menyusut di bagian
+ReLU unggul karena turunannya `1` untuk `z > 0` - gradien tidak menyusut di bagian
 positif, sehingga jaringan dalam dapat belajar. Kelemahannya: untuk `z < 0` turunan 0,
 bisa "membunuh" neuron. Leaky ReLU menambal ini.
 
-**Kapan vanishing gradient relevan di buku ini?** Untuk model kecil 1–3 lapisan (Bab 2–3),
+**Kapan vanishing gradient relevan di buku ini?** Untuk model kecil 1-3 lapisan (Bab 2-3),
 jarang fatal. Tetapi ketika kita ke LSTM (Bab 7) dan jaringan yang lebih dalam, pemahaman
-ini penting — LSTM dirancang sebagian untuk mengatasi masalah gradien pada data sekuensial.
+ini penting - LSTM dirancang sebagian untuk mengatasi masalah gradien pada data sekuensial.
 
 ### Tanh vs sigmoid: mengapa tanh "lebih baik" di lapisan tengah?
 
 Turunan `tanh` maksimal 1 (vs sigmoid 0.25), sehingga gradien tidak menyusut secepat
 sigmoid. Namun tetap < 1, sehingga di jaringan yang sangat dalam "penguapan" masih terjadi
-— hanya lebih lambat. Inilah mengapa ReLU (turunan 1) menjadi pilihan default untuk
+- hanya lebih lambat. Inilah mengapa ReLU (turunan 1) menjadi pilihan default untuk
 lapisan tersembunyi di jaringan modern. Nilai ini penting saat kita membandingkan
 arsitektur & fungsi aktivasi di Bab 7.
 
@@ -222,12 +226,12 @@ menggunakan gradien dari satu *batch* kecil data (stochastic).
 - Menghitung rata-rata gradien (momentum) sehingga langkah lebih halus.
 - Menyesuaikan learning rate per-parameter berdasarkan riwayat gradien.
 
-Adam diperkenalkan oleh Kingma & Ba (2015) [2]. Praktik umum: **start dengan Adam**,
+Adam diperkenalkan oleh Kingma & Ba (2015) [3]. Praktik umum: **start dengan Adam**,
 karena bekerja baik pada banyak masalah tanpa tuning banyak. SGD kadang memberi hasil
 sedikit lebih baik akhirnya jika di-tune dengan hati-hati, tetapi butuh lebih banyak
-usaha. Untuk buku ini, Adam adalah default (seperti yang sudah dipakai di Bab 2–3).
+usaha. Untuk buku ini, Adam adalah default (seperti yang sudah dipakai di Bab 2-3).
 
-**Tabel 4.2** — Perbandingan SGD dan Adam untuk pemula.
+**Tabel 4.2**: Perbandingan SGD dan Adam untuk pemula.
 
 | Aspek | SGD | Adam |
 |---|---|---|
@@ -240,19 +244,19 @@ usaha. Untuk buku ini, Adam adalah default (seperti yang sudah dipakai di Bab 2�
 
 Tiga hyperparameter utama yang menentukan perilaku pelatihan:
 
-- **Learning rate (`η`)** — besar langkah. Terlalu besar: loss melonjak / tidak konvergen.
+- **Learning rate (`η`)** - besar langkah. Terlalu besar: loss melonjak / tidak konvergen.
   Terlalu kecil: berjalan sangat lambat, mungkin terjebak.
-- **Batch size** — jumlah sampel per langkah update. Kecil (mis. 16–32): update sering,
+- **Batch size** - jumlah sampel per langkah update. Kecil (mis. 16-32): update sering,
   lebih "berisik". Besar (mis. 256+): update halus tetapi butuh memori. Untuk dataset
-  stasiun, batch 32–128 umum.
-- **Epoch** — berapa kali model melihat seluruh data latih. Terlalu banyak epochs + model
+  stasiun, batch 32-128 umum.
+- **Epoch** - berapa kali model melihat seluruh data latih. Terlalu banyak epochs + model
   besar = overfit (Bab 5); terlalu sedikit = underfit.
 
 ### Bagaimana ketiganya berinteraksi?
 
 Learning rate dan batch size saling memengaruhi. Batch besar memberi gradien "lebih
 tenang" sehingga LR lebih besar bisa dipakai; batch kecil lebih berisik sehingga LR kecil
-lebih aman. Epoch yang "cukup" tidak bisa diketahui langsung — dipantau lewat learning
+lebih aman. Epoch yang "cukup" tidak bisa diketahui langsung - dipantau lewat learning
 curve (val loss), bukan dipatok angka. Inilah mengapa **callback early stopping** hampir
 selalu direkomendasikan: ia menjawab "berapa epochs?" dengan melihat data, bukan tebakan.
 
@@ -267,12 +271,12 @@ selalu direkomendasikan: ia menjawab "berapa epochs?" dengan melihat data, bukan
 ### Efisiensi: kapan mempertimbangkan GPU vs CPU
 
 Di Colab, GPU mempercepat terutama untuk **matriks besar** (model besar, batch besar,
-banyak data). Untuk masalah kecil di Bab 2–4, selisihnya kecil. Anda tidak perlu
-berinvestasi pada GPU untuk mengikuti buku ini — Colab menyediakannya gratis (Bab 1).
+banyak data). Untuk masalah kecil di Bab 2-4, selisihnya kecil. Anda tidak perlu
+berinvestasi pada GPU untuk mengikuti buku ini - Colab menyediakannya gratis (Bab 1).
 Tips praktis:
 
 - Mulai di **CPU** untuk prototipe cepat & kecil; pindah **GPU** untuk eksperimen
-  panjang (Bab 8–9).
+  panjang (Bab 8-9).
 - Kurangi waktu eksperimen: latih di subset kecil dulu, baru full data setelah yakin.
 - Pantau waktu per epoch (`model.fit(..., verbose=1)`) untuk memperkirakan total waktu.
 
@@ -283,7 +287,7 @@ sesuai panduan: pindah dari LR 0.001 ke 0.01 → amati kurva; tambah neuron 8→
 aktifkan ReduceLROnPlateau agar LR menurun otomatis. Tiap perubahan **satu-satu** agar
 Anda tahu apa yang bekerja.
 
-**Kode 4.2 — Mengatur learning rate dan batch size di Keras.**
+**Kode 4.2 - Mengatur learning rate dan batch size di Keras.**
 
 ```python
 import tensorflow as tf
@@ -307,7 +311,7 @@ history = model.fit(
 )
 ```
 
-Kode 4.2 memakai `Adam(learning_rate=0.001)` eksplisit — nilai default; Anda bisa bereksperimen
+Kode 4.2 memakai `Adam(learning_rate=0.001)` eksplisit - nilai default; Anda bisa bereksperimen
 menaikkan/menurunkan untuk melihat efek. Semua contoh di bab ini berjalan di atas
 TensorFlow [4].
 
@@ -316,11 +320,11 @@ TensorFlow [4].
 Callbacks adalah "fungsi yang dipanggil selama pelatihan" oleh Keras. Tiga yang paling
 berguna:
 
-- **EarlyStopping** — hentikan pelatihan jika metrik validasi tidak membaik selama `patience`
+- **EarlyStopping** - hentikan pelatihan jika metrik validasi tidak membaik selama `patience`
   epoch (mencegah overfit & menghemat waktu).
-- **ModelCheckpoint** — simpan bobot terbaik (misal berdasarkan `val_loss`) ke file, agar
+- **ModelCheckpoint** - simpan bobot terbaik (misal berdasarkan `val_loss`) ke file, agar
   tidak kehilangan model terbaik saat overfit.
-- **ReduceLROnPlateau** — turunkan learning rate otomatis jika metrik validasi "stuck",
+- **ReduceLROnPlateau** - turunkan learning rate otomatis jika metrik validasi "stuck",
   membantu keluar dari pelatihan yang macet.
 
 Mengapa tiga sekaligus, bukan salah satu? Mereka melengkapi: **EarlyStopping** menentukan
@@ -330,10 +334,10 @@ Dipakai bersama, mereka membuat pelatihan hampir "set-and-forget" untuk masalah 
 
 Satu peringatan: **jangan** memilih arsitektur/hyperparameter terbaik berdasarkan nilai
 terbaik yang pernah terjadi di validasi selama pencarian, lalu melaporkannya sebagai hasil
-akhir tanpa menguji di test. Melihat validasi berkali-kali membuat validasi "bocor" —
+akhir tanpa menguji di test. Melihat validasi berkali-kali membuat validasi "bocor" -
 itu sebabnya data test dipakai sekali di akhir (Bab 2 §2.7, diulang di Bab 5).
 
-**Kode 4.3 — Callback untuk pelatihan yang sehat.**
+**Kode 4.3 - Callback untuk pelatihan yang sehat.**
 
 ```python
 import tensorflow as tf
@@ -381,10 +385,10 @@ Keduanya di-plot untuk melihat:
 - **Keduanya datar/tinggi** → **underfit**: model terlalu sederhana / LR terlalu kecil /
   data kurang.
 
-![Gambar 4.1 — Contoh learning curve: train turun, validation mulai naik pada epoch ±60 (overfit)](ch-04-backpropagation-optimasi/figures/fig-4-1-learning-curve.png)
+![Gambar 4.1 - Contoh learning curve: train turun, validation mulai naik pada epoch ±60 (overfit)](ch-04-backpropagation-optimasi/figures/fig-4-1-learning-curve.png)
 
 Gambar 4.1 menunjukkan pola overfit khas: train terus menurun, validation membentuk "U"
-terbalik. Di sinilah callback (early stopping) berguna — dan Bab 5 memperdalam diagnosis
+terbalik. Di sinilah callback (early stopping) berguna - dan Bab 5 memperdalam diagnosis
 serta pencegahannya (regularisasi).
 
 ### Apa yang harus dilakukan jika learning curve "aneh"?
@@ -406,9 +410,9 @@ Kurva adalah alat diagnosis cepat; Bab 5 memberikan alat untuk mengatasinya.
 
 Selain empat pola umum di atas, dua hal yang sering membingungkan:
 
-- **Val loss NA/NaN di awal** — biasanya learning rate terlalu besar atau skala data rusak
+- **Val loss NA/NaN di awal** - biasanya learning rate terlalu besar atau skala data rusak
   (nilai sangat besar/`NaN`). Periksa preprocessing.
-- **Val loss lebih rendah daripada train** — bisa terjadi karena dropout aktif hanya saat
+- **Val loss lebih rendah daripada train** - bisa terjadi karena dropout aktif hanya saat
   pelatihan (Bab 5) atau karena train kita ukur pada kondisi "lebih susah". Umumnya bukan
   masalah serius.
 
@@ -419,17 +423,17 @@ pola, makin cepat Anda tahu perbaikannya.
 
 Tidak ada rumus tunggal, tetapi urutan kerja berikut terbukti berjalan:
 
-1. **Mulai dengan default** — Adam LR 0.001, batch 32, ReLU, 1–3 lapisan kecil. Ukur
+1. **Mulai dengan default** - Adam LR 0.001, batch 32, ReLU, 1-3 lapisan kecil. Ukur
    baseline (Bab 2) dan kurva awal.
-2. **Cek skala data** — pastikan fitur tidak bervariasi liar (normalisasi, Bab 6); skala
+2. **Cek skala data** - pastikan fitur tidak bervariasi liar (normalisasi, Bab 6); skala
    yang buruk membuat pelatihan lambat/macet.
-3. **Uji learning rate** — buat *learning rate finder* sederhana: latih 1 epoch per LR,
+3. **Uji learning rate** - buat *learning rate finder* sederhana: latih 1 epoch per LR,
    plot loss. Pilih LR sekitar titik penurunan paling curam.
-4. **Naikkan kapasitas hanya jika perlu** — jika underfit, tambah neuron/lapisan;
+4. **Naikkan kapasitas hanya jika perlu** - jika underfit, tambah neuron/lapisan;
    jika overfit, tambah regularisasi (Bab 5) BUKAN sekadar mengecilkan model.
-5. **Gunakan callback semua-atau-apa** — EarlyStopping, Checkpoint, ReduceLROnPlateau
+5. **Gunakan callback semua-atau-apa** - EarlyStopping, Checkpoint, ReduceLROnPlateau
    selalu aktif selama mencoba-coba agar fair.
-6. **Cepat bereksperimen di sebagian data** — untuk pengembangan, cukup subset data;
+6. **Cepat bereksperimen di sebagian data** - untuk pengembangan, cukup subset data;
    baru full data saat sudah yakin.
 
 Pendekatan "mulai kecil + naikkan bertahap + pantau kurva" jauh lebih efisien daripada
@@ -437,7 +441,7 @@ mencoba semua kombinasi acak.
 
 ### Siklus pengembangan model (bukan sekali jalan)
 
-Bab 2–4 memberi Anda satu siklus penuh: bentuk data → training → evaluasi. Dalam praktik,
+Bab 2-4 memberi Anda satu siklus penuh: bentuk data → training → evaluasi. Dalam praktik,
 Anda akan mengulang siklus ini berkali-kali:
 
 ```
@@ -445,7 +449,7 @@ masalah → data → baseline → model → evaluasi → (analisis kesalahan) �
 ```
 
 Analisis kesalahan adalah bagian yang sering dilupakan pemula: setelah model pertama
-jalan, lihat **di mana yang salah** — misalnya, apakah error besar terjadi pada hari hujan
+jalan, lihat **di mana yang salah** - misalnya, apakah error besar terjadi pada hari hujan
 ekstrem? Fitur apa yang kurang? Pola apa yang model belum tangkap? Perbaikan bisa datang
 dari data (fitur baru, Bab 6), arsitektur (Bab 7), atau metrik/threshold (Bab 5). Modeling
 sekarang bukan lagi "menulis model sekali", melainkan iterasi yang cepat dan jujur.
@@ -453,32 +457,32 @@ sekarang bukan lagi "menulis model sekali", melainkan iterasi yang cepat dan juj
 ## 4.9 FAQ
 
 **Apakah saya perlu memilih optimizer selain Adam?** Untuk buku ini, tidak. Adam cukup
-untuk Bab 2–10. SGD lebih sederhana dan bisa di-tune lebih baik, tetapi itu topik lanjut.
+untuk Bab 2-10. SGD lebih sederhana dan bisa di-tune lebih baik, tetapi itu topik lanjut.
 
-**Mengapa loss kadang "naik turun"?** Karena SGD/Adam memakai batch acak — setiap langkah
+**Mengapa loss kadang "naik turun"?** Karena SGD/Adam memakai batch acak - setiap langkah
 sedikit berisik. Tren menurun dalam jangka panjang, bukan kurva mulus.
 
-**Berapa epochs "cukup"?** Gunakan EarlyStopping + patience wajar (10–30). Jangan menebak.
+**Berapa epochs "cukup"?** Gunakan EarlyStopping + patience wajar (10-30). Jangan menebak.
 
 **Apakah mustahil vanishing gradient?** Tidak; pada jaringan sangat dalam atau data
 berurutan panjang (Bab 7), tetap bisa muncul. Arsitektur modern menanganinya via
-residual/skip connections dan normalisasi — dibahas singkat di Bab 10.
+residual/skip connections dan normalisasi - dibahas singkat di Bab 10.
 
 **Apa beda `val_loss` dan `loss`?** `loss` dihitung pada data latih (yang sedang dilihat);
-`val_loss` pada data validasi (tidak dilatih). `val_loss` adalah kira-kira generalisasi —
+`val_loss` pada data validasi (tidak dilatih). `val_loss` adalah kira-kira generalisasi -
 di sinilah overfit terlihat.
 
 **Kapan saya tahu model "cukup dilatih"?** Kombinasi: (1) val loss tidak lagi menurun
 secara berarti, (2) train dan val tidak berbeda jauh (overfit kecil), (3) model mengalahkan
-baseline Bab 2. Tidak perlu mengejar loss mendekati nol — itu biasanya tanda overfit.
+baseline Bab 2. Tidak perlu mengejar loss mendekati nol - itu biasanya tanda overfit.
 
 **Apakah backpropagation perlu saya implementasi manual?** Untuk memakai buku ini, tidak;
 `model.fit` menanganinya. Memahami mekanismenya (Kode 4.1) membantu saat debugging dan
-membaca literatur — misalnya memahami mengapa "gradient flow" penting di Bab 7.
+membaca literatur - misalnya memahami mengapa "gradient flow" penting di Bab 7.
 
 **Yang paling sering salah pemula?** Mengubah banyak hal sekaligus tanpa memantau kurva.
 Ubah satu variabel, amati efeknya, catat. Itu disiplin yang akan dipakai ulang di Bab 5
-(tuning regularisasi) dan Bab 8–9 (eksperimen kasus).
+(tuning regularisasi) dan Bab 8-9 (eksperimen kasus).
 
 ## 4.10 Latihan
 
@@ -487,7 +491,7 @@ Ubah satu variabel, amati efeknya, catat. Itu disiplin yang akan dipakai ulang d
 1. Turunkan secara intuitif: mengapa kita bergerak *berlawanan* arah gradien saat gradient
    descent?
 2. Apa itu vanishing gradient dan bagaimana ReLU membantu?
-3. Apa beda learning rate, batch size, dan epochs — dan bagaimana masing-masing memengaruhi
+3. Apa beda learning rate, batch size, dan epochs - dan bagaimana masing-masing memengaruhi
    pelatihan?
 4. Mengapa early stopping tidak bisa menggantikan evaluasi yang jujur di test?
 
@@ -508,17 +512,17 @@ Ubah satu variabel, amati efeknya, catat. Itu disiplin yang akan dipakai ulang d
 - Vanishing gradient dihindari dengan ReLU (turunan 1 untuk z>0).
 - Adam adalah optimizer default; learning rate, batch size, epochs menentukan keseimbangan.
 - Callback (EarlyStopping, Checkpoint, ReduceLROnPlateau) mengotomasi pelatihan.
-- Learning curve mendiagnosa underfit/overfit — jembatan ke Bab 5.
+- Learning curve mendiagnosa underfit/overfit - jembatan ke Bab 5.
 - Praktik baik: baseline dulu, ubah satu variabel, pantau kurva, test sekali di akhir.
 
 ## References
 
 1. D. E. Rumelhart, G. E. Hinton, and R. J. Williams, "Learning representations by
-   back-propagating errors," *Nature*, vol. 323, no. 6088, pp. 533–536, Oct. 1986,
+   back-propagating errors," *Nature*, vol. 323, no. 6088, pp. 533-536, Oct. 1986,
    doi: 10.1038/323533a0.
-2. D. P. Kingma and J. Ba, "Adam: A method for stochastic optimization," in *Proc. Int.
-   Conf. Learn. Represent. (ICLR)*, 2015. [Online]. Available: https://arxiv.org/abs/1412.6980
-3. I. Goodfellow, Y. Bengio, and A. Courville, *Deep Learning*. Cambridge, MA, USA:
+2. I. Goodfellow, Y. Bengio, and A. Courville, *Deep Learning*. Cambridge, MA, USA:
    MIT Press, 2016.
+3. D. P. Kingma and J. Ba, "Adam: A method for stochastic optimization," in *Proc. Int.
+   Conf. Learn. Represent. (ICLR)*, 2015. [Online]. Available: https://arxiv.org/abs/1412.6980
 4. M. Abadi et al., "TensorFlow: Large-scale machine learning on heterogeneous systems,"
-   2016. [Online]. Available: https://arxiv.org/abs/1603.04467
+   2016. [Online]. Available: https://arxiv.org/abs/1603.04467 (diakses: September 2026)

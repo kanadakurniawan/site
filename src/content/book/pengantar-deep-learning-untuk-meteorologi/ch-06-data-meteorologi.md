@@ -1,6 +1,6 @@
 ---
 title: "Data Meteorologi: Sumber, Kualitas dan Persiapan"
-description: "Bab 6 — sumber data meteorologi Indonesia (stasiun BMKG, reanalysis ERA5, pasang surut, satelit), format berkas (CSV/NetCDF/GRIB), penanganan nilai hilang dan pencilan, eksplorasi, feature engineering, serta normalisasi dan split berbasis waktu yang bebas kebocoran."
+description: "Bab 6 - sumber data meteorologi Indonesia (stasiun BMKG, reanalysis ERA5, pasang surut, satelit), format berkas (CSV/NetCDF/GRIB), penanganan nilai hilang dan pencilan, eksplorasi, feature engineering, serta normalisasi dan split berbasis waktu yang bebas kebocoran."
 pubDatetime: 2026-09-01
 tags: ["Deep Learning", "Meteorologi", "Data", "data meteorologi", "ERA5", "BMKG", "netcdf", "grib", "xarray", "imputasi", "feature engineering", "data leakage"]
 draft: true
@@ -9,11 +9,15 @@ bookId: "pengantar-deep-learning-untuk-meteorologi"
 ---
 
 
-# Bab 6 — Data Meteorologi: Sumber, Kualitas dan Persiapan
+# Bab 6 - Data Meteorologi: Sumber, Kualitas dan Persiapan
 
 > **Prasyarat:** Bab 1 (lingkungan Colab), Bab 2 (split berbasis waktu, MAE/MSE),
 > Bab 5 (walk-forward, anti-*leakage*). Bab ini bersifat praktis: banyak kode, sedikit
 > teori.
+
+> **Catatan:** Materi bab ini adalah **materi pengenalan**, bukan hasil riset baru. Seluruh isi
+> merupakan ringkasan ulang literatur *machine learning*, dengan contoh-contoh yang dekat dengan
+> dunia meteorologi Indonesia.
 
 ## Tujuan Pembelajaran
 
@@ -30,8 +34,8 @@ Setelah menyelesaikan bab ini, Anda diharapkan mampu:
 
 ## 6.1 Mengapa Data Menentukan Segalanya
 
-Bab 2–5 membangun model; bab ini kembali ke fondasi: **data**. Di dunia meteorologi,
-ungkapan *garbage in, garbage out* terasa sangat nyata — model sehebat apa pun tidak
+Bab 2-5 membangun model; bab ini kembali ke fondasi: **data**. Di dunia meteorologi,
+ungkapan *garbage in, garbage out* terasa sangat nyata - model sehebat apa pun tidak
 berguna jika masukannya salah. Tiga kenyataan yang perlu dipahami sejak awal:
 
 1. **Data meteorologi tidaklah bersih.** Sensor rusak, nilai hilang, stasiun pindah
@@ -44,35 +48,35 @@ berguna jika masukannya salah. Tiga kenyataan yang perlu dipahami sejak awal:
    lembaga. Memahami aturan ini bagian dari etika riset (Kriteria Sitasi, bagian 3).
 
 Bab ini memberi peta sumber data + keterampilan teknis mengubahnya menjadi *dataset*
-yang siap dilatih — persis yang akan dipakai di Bab 7–9.
+yang siap dilatih - persis yang akan dipakai di Bab 7-9.
 
 ## 6.2 Sumber Data Meteorologi Indonesia
 
 Berikut sumber yang paling relevan untuk buku ini, diurutkan dari yang paling sering
 dipakai.
 
-**Tabel 6.1** — Sumber data utama untuk buku ini.
+**Tabel 6.1**: Sumber data utama untuk buku ini.
 
 | Sumber | Jenis data | Resolusi | Akses | Catatan lisensi & kutip |
 |---|---|---|---|---|
 | Stasiun BMKG | Observasi suhu, hujan, angin, dsb. | Harian/jam-an, per stasiun | `dataonline.bmkg.go.id`, permintaan data | Data publik untuk pendidikan; sebutkan BMKG [1] |
 | ERA5 / ERA5-Land (Copernicus) | *Reanalysis* suhu, hujan, angin, dll. | ±0.25° (~31 km) / ±0.1° (~9 km), per jam | Copernicus Climate Data Store [2] | Lisensi CC-BY untuk C3S; kutip Hersbach et al. [3] |
 | CMIP6 | Proyeksi iklim (skenario) | Lebih kasar, bulanan-harian | ESGF / Copernicus | Untuk konteks jangka panjang, Bab 10 |
-| PSMSL / IOC / BIG | Muka laut / pasang surut | Menit–jam, per stasiun | `psmsl.org` [4], `tides.big.go.id` [5] | Gratis; sertakan rujukan data & bottle/stasiun |
-| GSMaP / CHIRPS | Hujan satelit+kalibrasi | 0.1°–0.25°, 3 jam-harian | JAXA / CHC UCSB [6] | Kutip paper pembuat |
+| PSMSL / IOC / BIG | Muka laut / pasang surut | Menit-jam, per stasiun | `psmsl.org` [4], `tides.big.go.id` [5] | Gratis; sertakan rujukan data & bottle/stasiun |
+| GSMaP / CHIRPS | Hujan satelit+kalibrasi | 0.1°-0.25°, 3 jam-harian | JAXA / CHC UCSB [6] | Kutip paper pembuat |
 
 **Catatan penting:** stasiun BMKG [1] adalah sumber "kebenaran lokal" terbaik, tetapi
 tidak merata spasial dan kadang bergap. ERA5 [2][3] memberikan cakupan grid lengkap dan
-konsisten, tetapi merupakan *model* (taksiran) — bukan observasi murni. Praktik umum: tren
+konsisten, tetapi merupakan *model* (taksiran) - bukan observasi murni. Praktik umum: tren
 gabungkan observasi stasiun (untuk akurasi) dengan *reanalysis* (untuk fitur regional
-yang lengkap). Cara menggabungkan ini dibahas di §6.3–6.6.
+yang lengkap). Cara menggabungkan ini dibahas di §6.3-6.6.
 
 ### Memahami *reanalysis* secara singkat
 
 *Reanalysis* adalah hasil *running* model cuaca (misal IFS milik ECMWF) sepanjang sejarah
 sambil **menyerap observasi** (stasiun, balon udara, satelit) secara konsisten [3].
 Hasilnya: peta cuaca lengkap setiap jam sejak puluhan tahun lalu, meski di tempat tanpa
-pengamatan. Ini bukan "ramalan" masa lalu — melainkan perpaduan model + data terbaik yang
+pengamatan. Ini bukan "ramalan" masa lalu - melainkan perpaduan model + data terbaik yang
 tersedia. Untuk *machine learning*, *reanalysis* sering menjadi sumber fitur regional yang
 tidak dimiliki stasiun.
 
@@ -88,14 +92,14 @@ Catatan penggunaan di buku ini:
 - **Kapan dipakai**: sebagai fitur pelengkap atau pengganti saat stasiun bergap panjang.
 - **Kapan hati-hati**: estimasi satelit bisa bias di wilayah pantai dan gunung; verifikasi
   terhadap stasiun setempat bila memungkinkan.
-- **Jangan dipakai sebagai *target*** jika stasiun observasi tersedia — konsistensi target
+- **Jangan dipakai sebagai *target*** jika stasiun observasi tersedia - konsistensi target
   lebih penting (target dari sumber yang sama menjaga makna evaluasi).
 
 Bab 6 memperlakukan satelit sebagai "sumber bonus", bukan pengganti stasiun.
 
 ### Menggabungkan observasi dan *reanalysis* (praktik yang disarankan)
 
-Strategi yang dipakai di Bab 8–9 adalah menerapkan dua peran secara terpisah:
+Strategi yang dipakai di Bab 8-9 adalah menerapkan dua peran secara terpisah:
 
 - **Observasi stasiun** → *target* (`y`): yang ingin diprediksi (hujan, pasang surut).
 - **Reanalysis ERA5** → *fitur regional* (`X`): suhu, angin, kelembapan, dan variabel
@@ -103,7 +107,7 @@ Strategi yang dipakai di Bab 8–9 adalah menerapkan dua peran secara terpisah:
   stasiun.
 
 Alasan pemisahan ini: melatih model untuk mereproduksi observasi langsung (bukan taksiran
-model) menjaga makna evaluasi — kita mengukur seberapa baik model menebak kenyataan, bukan
+model) menjaga makna evaluasi - kita mengukur seberapa baik model menebak kenyataan, bukan
 menebak tebakan lain. Fitur regional dari *reanalysis* sah sebagai masukan karena tersedia
 secara konsisten dan tidak "mencurangi" target.
 
@@ -111,14 +115,14 @@ secara konsisten dan tidak "mencurangi" target.
 
 Tiga format yang paling sering ditemui:
 
-- **CSV** — tabel teks sederhana; paling mudah dibaca (pandas), cocok untuk data stasiun
+- **CSV** - tabel teks sederhana; paling mudah dibaca (pandas), cocok untuk data stasiun
   harian.
-- **NetCDF** — format biner ilmiah dengan metadata kaya (dimensi, koordinat, atribut);
+- **NetCDF** - format biner ilmiah dengan metadata kaya (dimensi, koordinat, atribut);
   standar untuk *reanalysis* (ERA5). Dibaca dengan **xarray**.
-- **GRIB** — format biner khas meteorologi operasional (prakiraan model); juga bisa dibaca
+- **GRIB** - format biner khas meteorologi operasional (prakiraan model); juga bisa dibaca
   xarray (via `cfgrib`) atau wgrib2.
 
-**Tabel 6.2** — Perbandingan format berkas.
+**Tabel 6.2**: Perbandingan format berkas.
 
 | Format | Baca cepat? | Metadata | Ukuran | Umum dipakai untuk |
 |---|---|---|---|---|
@@ -126,7 +130,7 @@ Tiga format yang paling sering ditemui:
 | NetCDF | Ya (xarray/netCDF4) | Kaya | Kompak | ERA5, model |
 | GRIB | Ya (cfgrib/wgrib2) | Kaya | Kompak | Prakiraan operasional |
 
-**Kode 6.1 — Membaca NetCDF dengan xarray (contoh ERA5 suhu harian).**
+**Kode 6.1 - Membaca NetCDF dengan xarray (contoh ERA5 suhu harian).**
 
 ```python
 import xarray as xr
@@ -144,7 +148,7 @@ pertama yang biasa.
 Untuk GRIB (prakiraan model operasional), dua jalur umum: xarray dengan *engine* `cfgrib`
 untuk eksplorasi cepat, atau `wgrib2` untuk ekstraksi presisi pada skala besar.
 
-**Kode 6.2 — Membaca GRIB dengan xarray + engine cfgrib.**
+**Kode 6.2 - Membaca GRIB dengan xarray + engine cfgrib.**
 
 ```python
 import xarray as xr
@@ -153,15 +157,15 @@ ds = xr.open_dataset("prakiraan.grib", engine="cfgrib")
 ```
 
 **Konvensi nama variabel:** ERA5 menggunakan nama seperti `t2m` (suhu 2 m), `tp`
-(total *precipitation*), `u10`/`v10` (angin 10 m). Selalu cek atribut `units` — mengubah
+(total *precipitation*), `u10`/`v10` (angin 10 m). Selalu cek atribut `units` - mengubah
 satuan tanpa sadar adalah sumber kesalahan klasik.
 
 ### Menyatukan banyak berkas menjadi satu tabel
 
-Pola yang akan berulang di Bab 8–9: baca banyak berkas → resample ke frekuensi yang sama
+Pola yang akan berulang di Bab 8-9: baca banyak berkas → resample ke frekuensi yang sama
 → gabung menjadi satu `DataFrame` berindex waktu.
 
-**Kode 6.3 — Menyatukan ERA5 per jam menjadi tabel harian.**
+**Kode 6.3 - Menyatukan ERA5 per jam menjadi tabel harian.**
 
 ```python
 import xarray as xr
@@ -174,7 +178,7 @@ s = d_harian.sel(latitude=-0.01, longitude=109.34, method="nearest").to_pandas()
 ```
 
 Menggabungkan stasiun (target) dan *reanalysis* (fitur) lewat indeks tanggal adalah operasi
-`merge`/`join` yang harus diperiksa hasilnya agar tidak ada baris yang hilang diam-diam —
+`merge`/`join` yang harus diperiksa hasilnya agar tidak ada baris yang hilang diam-diam -
 periksa ulang jumlah baris dan rentang tanggal sebelum membangun model.
 
 ## 6.4 Kualitas Data: Nilai Hilang, Pencilan, dan Imputasi
@@ -191,7 +195,7 @@ bukan menebak, melainkan **memahami polanya**:
   memotong periode tersebut atau memakai model terpisah.
 - Gap sistematis (mis. stasiun hanya mencatat pada jam kerja) → perlu penanganan khusus.
 
-**Kode 6.4 — Cek dan isi nilai hilang dasar dengan pandas.**
+**Kode 6.4 - Cek dan isi nilai hilang dasar dengan pandas.**
 
 ```python
 import pandas as pd
@@ -221,8 +225,8 @@ Bedakan dengan konteks:
 - Hujan 300 mm/hari → mungkin nyata; **jangan** otomatis hapus.
 
 Cara cepat mendeteksi: plot deret, statistik ringkas, dan *rule of thumb* (misal nilai di
-luar `median ± 5 × MAD`). Untuk studi kasus Bab 8–9, pendekatan yang dipakai adalah
-"jangan menghapus ekstrem sahih; pahami apakah model menyerapnya secara wajar" — ekstrem
+luar `median ± 5 × MAD`). Untuk studi kasus Bab 8-9, pendekatan yang dipakai adalah
+"jangan menghapus ekstrem sahih; pahami apakah model menyerapnya secara wajar" - ekstrem
 itulah yang sering paling penting diprediksi.
 
 ### Contoh QC numerik sederhana
@@ -236,7 +240,7 @@ Misalkan satu stasiun mencatat `r_hujan = -3.2, 0, 0, 255.0, 2.0, 0` (enam hari)
 
 Aturan praktis: kesalahan fisik (negatif, suhu >60 °C) dihapus; ekstrem yang masuk akal
 secara fisis dipertahankan sampai ada bukti salah. Menghapus ekstrem sahih agar model
-"tampak bagus" adalah bentuk kecurangan evaluasi — di dunia nyata ekstrem itu tetap
+"tampak bagus" adalah bentuk kecurangan evaluasi - di dunia nyata ekstrem itu tetap
 terjadi dan harus diprediksi.
 
 ## 6.5 Eksplorasi: Memahami Pola Sebelum Membangun Model
@@ -248,7 +252,7 @@ dilakukan untuk data deret waktu meteorologi:
 
 Data cuaca punya siklus harian, bulanan, dan musiman (monsun). Memisahkan
 *tren + musiman + residu* (misal `seasonal_decompose` di statsmodels) membantu melihat
-apakah pola musiman kuat — dan mengingatkan bahwa model perlu fitur musiman (§6.6).
+apakah pola musiman kuat - dan mengingatkan bahwa model perlu fitur musiman (§6.6).
 
 ### 2. Distribusi data
 
@@ -256,7 +260,7 @@ Hujan (Gambar 6.1) berbentuk *berat di nol* dengan ekor panjang ke kanan; suhu l
 mirip lonceng. Distribusi menentukan pilihan *loss* (Bab 2), trasformasi target, dan
 metrik yang jujur (Bab 5).
 
-![Gambar 6.1 — Distribusi curah hujan harian khas: banyak hari tanpa hujan dan ekor panjang ke kanan](ch-06-data-meteorologi/figures/fig-6-1-distribusi-hujan.png)
+![Gambar 6.1 - Distribusi curah hujan harian khas: banyak hari tanpa hujan dan ekor panjang ke kanan](ch-06-data-meteorologi/figures/fig-6-1-distribusi-hujan.png)
 
 ### 3. Korelasi silang
 
@@ -273,7 +277,7 @@ indikator musiman eksplisit.
 
 ### Kode contoh dekomposisi dan korelasi silang
 
-**Kode 6.5 — Dekomposisi musiman dan korelasi silang singkat.**
+**Kode 6.5 - Dekomposisi musiman dan korelasi silang singkat.**
 
 ```python
 import pandas as pd
@@ -304,7 +308,7 @@ memakai 2 deret tunda). Deret tunda menangkap *persistensi* dan *autokorelasi*.
 
 ### Indikator musiman
 
-Nomor hari dalam tahun (`1–366`), bulan, atau fungsi sinus/kosinus dari hari Julian
+Nomor hari dalam tahun (`1-366`), bulan, atau fungsi sinus/kosinus dari hari Julian
 (misal `sin(2π·doy/365.25)`, `cos(...)`) memberi model tahu "kapan dalam tahun ini".
 Fungsi sinus/kosinus dipakai agar siang-malam dan pergantian tahun kontinu, bukan
 melompat.
@@ -313,16 +317,16 @@ melompat.
 
 Fitur **regional** meningkatkan prediksi hujan Indonesia secara signifikan:
 
-- **ENSO** (El Niño–Southern Oscillation): indeks Nino3.4 atau MEI mengukur anomali
+- **ENSO** (El Niño-Southern Oscillation): indeks Nino3.4 atau MEI mengukur anomali
   suhu muka laut Pasifik; Indonesia cenderung lebih kering saat El Niño [7].
-- **MJO** (Madden–Julian Oscillation): bit fase & amplitudo MJO (mis. RMM1, RMM2 dari
-  Wheeler & Hendon [8]) berhubungan dengan osilasi hujan 30–60 hari di wilayah tropis.
+- **MJO** (Madden-Julian Oscillation): bit fase & amplitudo MJO (mis. RMM1, RMM2 dari
+  Wheeler & Hendon [8]) berhubungan dengan osilasi hujan 30-60 hari di wilayah tropis.
 
 Kedua indeks tersedia gratis (NOAA, BMKG). Memasukkan mereka sebagai fitur adalah contoh
-nyata "pengetahuan domain meningkatkan model" — sesuatu yang dimiliki praktisi meteo
+nyata "pengetahuan domain meningkatkan model" - sesuatu yang dimiliki praktisi meteo
 tetapi umumnya tidak dimiliki mahasiswa CS.
 
-**Kode 6.6 — Membangun fitur lag, musiman, dan indeks iklim.**
+**Kode 6.6 - Membangun fitur lag, musiman, dan indeks iklim.**
 
 ```python
 import numpy as np
@@ -344,16 +348,16 @@ df = df.join(rmm.set_index("tanggal"), how="left")
 
 ### Normalisasi: pasang hanya pada data latih
 
-Model di Bab 2–5 dilatih dengan `Adam` yang sensitif pada skala. Normalisasi *z-score*
+Model di Bab 2-5 dilatih dengan `Adam` yang sensitif pada skala. Normalisasi *z-score*
 adalah pilihan umum:
 
 $$ x' = \frac{x - \mu_{\text{train}}}{\sigma_{\text{train}}} \tag{6.1} $$
 
 **Sangat penting:** `μ` dan `σ` dihitung **hanya dari data latih**, lalu diterapkan ke
 validasi, *test*, dan data produksi (Persamaan 6.1). Jika dihitung dari seluruh data,
-informasi masa depan "bocor" — bentuk *leakage* yang paling sering luput (Bab 5 §5.5).
+informasi masa depan "bocor" - bentuk *leakage* yang paling sering luput (Bab 5 §5.5).
 
-**Kode 6.7 — Normalisasi dengan skala dari data latih + split berbasis waktu.**
+**Kode 6.7 - Normalisasi dengan skala dari data latih + split berbasis waktu.**
 
 ```python
 from sklearn.preprocessing import StandardScaler
@@ -393,15 +397,15 @@ Bab 9 akan menerapkan transformasi ini pada prediksi hujan stasiun BMKG.
 Ulangi aturan Bab 2 & 5: **jangan acak**. Potong deret secara kronologis:
 
 ```
-train (2000–2015) | validasi (2016–2018) | test (2019–2021)
+train (2000-2015) | validasi (2016-2018) | test (2019-2021)
 ```
 
-Untuk evaluasi temporal yang jujur, gunakan *walk-forward* (Bab 5). Pada Bab 8–9, aturan
+Untuk evaluasi temporal yang jujur, gunakan *walk-forward* (Bab 5). Pada Bab 8-9, aturan
 ini menjadi penentu kredibilitas hasil. Kerangka umum representasi data, *preprocessing*,
 dan evaluasi model yang dipakai sepanjang buku dapat dirujuk pada literatur dasar deep
 learning [9] dan panduan verifikasi prakiraan [10].
 
-**Catatan split vs transformasi:** urutkan pekerjaan dengan benar — transformasi target
+**Catatan split vs transformasi:** urutkan pekerjaan dengan benar - transformasi target
 dihitung dengan statistik **dari bagian latih saja** (seperti μ/σ normalisasi), diterapkan
 ke validasi/*test* dengan statistik tersebut; lalu lakukan *walk-forward*. Mencampur
 statistik seluruh data adalah *leakage*.
@@ -410,15 +414,15 @@ statistik seluruh data adalah *leakage*.
 
 Merangkai seluruh bab dalam satu alur yang akan dijadikan *template*:
 
-1. Baca stasiun (CSV) + *reanalysis* (NetCDF) → gabung per tanggal (Kode 6.1–6.3).
+1. Baca stasiun (CSV) + *reanalysis* (NetCDF) → gabung per tanggal (Kode 6.1-6.3).
 2. QC & imputasi pilihannya (Kode 6.4).
 3. Eksplorasi distribusi & musiman (Kode 6.5, Gambar 6.1).
 4. *Feature engineering*: lag, musiman, ENSO/MJO (Kode 6.6).
 5. Buang baris yang masih bermuatan `NaN` dari lag awal (sebelum fitur pertama tersedia).
 6. Normalisasi dengan skala latih + split berbasis waktu (Kode 6.7).
-7. Simpan hasil (`np.save` atau parquet) untuk diisi Bab 7–9.
+7. Simpan hasil (`np.save` atau parquet) untuk diisi Bab 7-9.
 
-**Kode 6.8 — Menyimpan hasil akhir untuk bab berikutnya.**
+**Kode 6.8 - Menyimpan hasil akhir untuk bab berikutnya.**
 
 ```python
 import numpy as np
@@ -431,7 +435,7 @@ np.savez("dataset_pasang_hujan.npz",
 ```
 
 Menyimpan (Kode 6.8) memudahkan memuat ulang di notebook yang berbeda tanpa mengulang
-keseluruhan pipeline — penting ketika bab berikutnya fokus pada model, bukan data.
+keseluruhan pipeline - penting ketika bab berikutnya fokus pada model, bukan data.
 
 ## 6.8 FAQ Singkat
 
@@ -439,7 +443,7 @@ keseluruhan pipeline — penting ketika bab berikutnya fokus pada model, bukan d
 stasiun, `pandas` cukup.
 
 **Berapa banyak data "cukup" untuk deep learning deret waktu?** Tidak ada angka baku;
-untuk stasiun harian, makin lama periode makin baik (1–2 dekade sudah wajar untuk kasus
+untuk stasiun harian, makin lama periode makin baik (1-2 dekade sudah wajar untuk kasus
 buku ini). Lebih penting daripada "banyak": data **bersih** dan *split* yang jujur.
 
 **Haruskah indeks iklim (ENSO/MJO) selalu ditambahkan?** Tidak selalu. Uji dulu: tambah,
@@ -453,7 +457,7 @@ gap menentukan pilihan.
 
 ## 6.9 Praktik Metadata dan Reproduksibilitas
 
-Setiap *dataset* yang dibangun harus bisa **direproduksi dan dijelaskan** — aturan
+Setiap *dataset* yang dibangun harus bisa **direproduksi dan dijelaskan** - aturan
 Kriteria Sitasi bagian 3 menuntut identifikasi dataset, versi, dan cara akses. Catat
 dalam berkas `README_data.md` (atau sel notebook) hal berikut:
 
@@ -465,9 +469,9 @@ dalam berkas `README_data.md` (atau sel notebook) hal berikut:
 4. **Baris & rentang tanggal** tiap split; seed acak (bila ada).
 5. **Hash berkas sumber** (mis. md5) agar perubahan diam-diam terdeteksi.
 
-Praktik ini (jadi "jejak data") bukan birokrasi — ia yang memungkinkan pembaca
+Praktik ini (jadi "jejak data") bukan birokrasi - ia yang memungkinkan pembaca
 memperdebatkan, meniru, dan menilai hasil Anda secara jujur, dan akan dipakai penuh di
-Bab 8–9.
+Bab 8-9.
 
 ## 6.10 Latihan
 
@@ -486,7 +490,7 @@ Bab 8–9.
 6. Bangun fitur: lag 1,2,3,7,14; musiman sinus; gabungkan indeks MJO/ENSO (berkas contoh).
 7. Normalisasi dengan skala latih; split berbasis waktu; dokumentasikan jumlah baris dan
    rentang tanggal tiap split.
-8. (Proyek mini) Buat pipeline data reusable (berkas + fungsi) untuk dipakai di Bab 8–9:
+8. (Proyek mini) Buat pipeline data reusable (berkas + fungsi) untuk dipakai di Bab 8-9:
    input tanggal & stasiun → output X/y bersih siap dilatih.
 
 ## Ringkasan
@@ -499,12 +503,12 @@ Bab 8–9.
   variabel (Tabel 6.2).
 - QC: bedakan nilai hilang (polanya) dan pencilan (salah vs ekstrem sahih) sebelum mengisi;
   hapus kesalahan fisik, pertahankan ekstrem yang masuk akal.
-- Eksplorasi: distribusi (Gambar 6.1), dekomposisi musiman, korelasi silang — dasar
+- Eksplorasi: distribusi (Gambar 6.1), dekomposisi musiman, korelasi silang - dasar
   *feature engineering*.
 - Fitur: deret tunda (lag), musiman sinusoidal, dan indeks ENSO/MJO memperkuat model hujan.
 - Normalisasi (μ/σ dari data latih saja, Persamaan 6.1) dan transformasi target
   `log1p` untuk data miring (Persamaan 6.2); split berbasis waktu dan *walk-forward*.
-- Catat metadata & hash berkas agar *dataset* dapat direproduksi (dipakai ulang Bab 8–9).
+- Catat metadata & hash berkas agar *dataset* dapat direproduksi (dipakai ulang Bab 8-9).
 
 ## References
 
@@ -515,21 +519,21 @@ Bab 8–9.
    reanalysis of the global climate," Copernicus Climate Data Store, [Online]. Available:
    https://cds.climate.copernicus.eu (Accessed: Sep. 2026).
 3. H. Hersbach et al., "The ERA5 global reanalysis," *Quarterly Journal of the Royal
-   Meteorological Society*, vol. 146, no. 730, pp. 1999–2049, 2020,
+   Meteorological Society*, vol. 146, no. 730, pp. 1999-2049, 2020,
    doi: 10.1002/qj.3803.
 4. Permanent Service for Mean Sea Level (PSMSL), "Global sea level data," [Online].
    Available: https://psmsl.org (Accessed: Sep. 2026).
 5. Badan Informasi Geospasial (BIG), "Peta pasang surut dan pola pasut perairan
    Indonesia," [Online]. Available: https://tides.big.go.id (Accessed: Sep. 2026).
-6. C. Funk et al., "The climate hazards infrared precipitation with stations — a new
+6. C. Funk et al., "The climate hazards infrared precipitation with stations - a new
    environmental record for monitoring extremes," *Scientific Data*, vol. 2, p. 150066,
    2015, doi: 10.1038/sdata.2015.66.
 7. K. Wolter and M. S. Timlin, "Monitoring ENSO in COADS with a seasonally adjusted
    principal component index," in *Proc. 17th Climate Diagnostics Workshop*, 1993,
-   pp. 52–57.
+   pp. 52-57.
 8. M. C. Wheeler and H. H. Hendon, "An all-season real-time multivariate MJO index:
    development of an index for monitoring and prediction," *Monthly Weather Review*,
-   vol. 132, no. 8, pp. 1917–1932, 2004,
+   vol. 132, no. 8, pp. 1917-1932, 2004,
    doi: 10.1175/1520-0493(2004)132<1917:AARMMI>2.0.CO;2.
 9. I. Goodfellow, Y. Bengio, and A. Courville, *Deep Learning*. Cambridge, MA, USA:
    MIT Press, 2016.

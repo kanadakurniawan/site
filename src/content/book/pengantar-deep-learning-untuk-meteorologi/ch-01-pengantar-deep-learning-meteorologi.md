@@ -15,7 +15,7 @@ contoh-contoh yang dekat dengan dunia meteorologi Indonesia.
 
 > **Prasyarat bab ini:** tidak ada, ini titik awal. Bab berikutnya mengasumsikan
 > Bab 1 dikuasai. Jika Anda sudah terbiasa dengan dasar TensorFlow, Anda boleh
-> melompat ke Bab 2, tetapi baca Bagian 1.6–1.8 untuk memahami notasi yang dipakai buku ini.
+> melompat ke Bab 2, tetapi baca Bagian 1.6-1.8 untuk memahami notasi yang dipakai buku ini.
 
 ## 1.0 Mengapa Buku Ini, dan Mengapa Sekarang untuk Pembaca Indonesia
 
@@ -152,10 +152,10 @@ secara mendalam dan mana yang hanya diarahkan ke literatur lanjut:
 
 | Aplikasi | Contoh pertanyaan | Dibahas di buku ini |
 |---|---|---|
-| Prediksi deret waktu (*time series*) | Berapa tinggi pasang surut besok? Berapa hujan minggu depan? | **Bab 6–9** |
+| Prediksi deret waktu (*time series*) | Berapa tinggi pasang surut besok? Berapa hujan minggu depan? | **Bab 6-9** |
 | Klasifikasi kejadian | Hujan lebat atau tidak? Level bahaya apa? | **Bab 3, 5, 9** |
 | Imputasi (pengisian) data hilang | Bagaimana mengisi gap data stasiun? | Bab 6 (dasar), Bab 10 (generatif) |
-| *Nowcasting* (prakiraan kini–6 jam) | Apa yang terjadi kini hingga 6 jam ke depan (radar/satelit)? | Bab 10 (arah riset) |
+| *Nowcasting* (prakiraan kini-6 jam) | Apa yang terjadi kini hingga 6 jam ke depan (radar/satelit)? | Bab 10 (arah riset) |
 | *Downscaling* / data spasial | Dari skala reanalysis ke skala lokal | Bab 10 (arah riset) |
 | Model generatif (*generative*) | Membuat skenario iklim, imputasi realistis, super-resolusi | Bab 10 (arah riset) |
 | Verifikasi & post-processing | Mengoreksi bias model cuaca, kalibrasi probabilistik | Bab 10 (singkat) |
@@ -190,7 +190,7 @@ tidak salah berharap:
 - **Arsitektur di luar MLP, LSTM/GRU.** CNN, Transformer, dan model generatif disentuh
   hanya di Bab 10 sebagai peta jalan.
 - **Pengembangan model untuk skala *big data* miliaran catatan.** Buku ini fokus pada
-  kasus yang dapat dieksekusi di Colab gratis dengan data ukuran MB–ratusan MB.
+  kasus yang dapat dieksekusi di Colab gratis dengan data ukuran MB-ratusan MB.
 - **Topik ML klasik murni** (regresi linear, ARIMA, SVM) hanya dibahas singkat sebagai
   *baseline*, bukan sebagai topik utama.
 
@@ -203,7 +203,7 @@ seluruh buku:
   ARIMA (model statistik untuk deret waktu), atau *persistence* ("keadaan besok = keadaan
   hari ini") sering kali lebih dari cukup untuk data pendek atau pola sederhana. *Deep
    learning* hanya layak jika **mengalahkan *baseline*** dengan data yang cukup Prinsip ini
-  menjadi tulang punggung Bab 7–9. Jika model sederhana sudah melebihi kebutuhan, tidak
+  menjadi tulang punggung Bab 7-9. Jika model sederhana sudah melebihi kebutuhan, tidak
   ada alasan memperkenalkan kompleksitas.
 - **Perhatikan ukuran data.** Jaringan saraf besar membutuhkan banyak data untuk belajar.
   Untuk deret waktu stasiun dengan puluhan ribu pengamatan, model sekuensial (*sequence*)
@@ -211,7 +211,7 @@ seluruh buku:
   ke arsitektur masif yang dirancang untuk miliaran parameter (butuh data jauh lebih
   besar). Catatan penting: sejak beberapa tahun terakhir, ***transfer learning*** dan model
   terlatih (*pre-trained model*) memungkinkan *deep learning* tetap berguna meskipun data
-  kita terbatas — misalnya mengambil model yang dilatih pada data reanalisis global lalu
+  kita terbatas - misalnya mengambil model yang dilatih pada data reanalisis global lalu
   menyesuaikannya (*fine-tuning*) dengan data stasiun lokal. Poin "data besar" di atas
   tidak lagi mutlak; Bab 10 membahas *transfer learning* singkat sebagai salah satu arah
   riset.
@@ -243,8 +243,8 @@ mereka menentukan kapan *deep learning* benar-benar dibutuhkan dan kapan model s
 sudah cukup.
 
 **1. Variabilitas tinggi dan rezim ganda.** Curah hujan di Indonesia dipengaruhi
-monsun Australia–Asia, *Madden–Julian Oscillation* (MJO) [10], *El Niño–Southern
-Oscillation* (ENSO), dan siklus diurnal laut–darat. Pola yang sama bisa muncul dengan
+monsun Australia-Asia, *Madden-Julian Oscillation* (MJO) [10], *El Niño-Southern
+Oscillation* (ENSO), dan siklus diurnal laut-darat. Pola yang sama bisa muncul dengan
 amplitudo sangat berbeda antara musim kemarau dan musim hujan. Model yang belajar dari
 satu rezim saja akan gagal saat rezim berganti. Bab 6 membahas bagaimana membagi dan
 menyeimbangkan data sehingga model tidak "lupa" pada satu musim.
@@ -277,7 +277,7 @@ langka.
 
 Implikasi untuk *deep learning*:
 
-- **Ukuran data meteorologi Indonesia cukup untuk LSTM/GRU ukuran kecil–menengah** (Bab 7),
+- **Ukuran data meteorologi Indonesia cukup untuk LSTM/GRU ukuran kecil-menengah** (Bab 7),
   tetapi jarang cukup untuk melatih arsitektur masif dari nol. Kita akan selalu
   membandingkan dengan *baseline* sederhana, *persistence*, rata-rata klimatologis, atau
   ARIMA singkat. Untuk data yang sangat terbatas, *transfer learning* dari model yang
@@ -303,7 +303,7 @@ Masalah → Data → Persiapan → Model → Evaluasi → (Putuskan: cukup / per
    resolusinya? (Bab 6).
 3. **Persiapkan data.** Bersihkan nilai hilang, normalisasi, buat fitur, bagi
    train/val/test dengan benar (Bab 2, 5, 6).
-4. **Bangun model.** Mulai dari *baseline* sederhana, lalu tingkatkan (Bab 2–4, 7).
+4. **Bangun model.** Mulai dari *baseline* sederhana, lalu tingkatkan (Bab 2-4, 7).
 5. **Evaluasi.** Gunakan metrik yang sesuai dengan tujuan operasional (Bab 5).
 6. **Putuskan.** Gunakan model jika hasilnya memuaskan. Jika belum, lakukan iterasi: perbaiki data, sesuaikan parameter, atau ganti arsitektur model.
 7. **Pantau dan rawat.** Kondisi atmosfer dan sensor terus berubah. Memantau dan melatih ulang model secara berkala adalah kewajiban dalam siklus hidup model, bukan sekadar bonus.
@@ -395,7 +395,7 @@ Beberapa hal yang sering mengganggu pemula Colab:
   drive.mount('/content/drive')
   ```
 - **Runtime tidak GPU.** Colab tidak selalu menyediakan GPU; coba lagi nanti, atau
-  gunakan TPU. Untuk buku ini, CPU cukup untuk latihan Bab 1–6.
+  gunakan TPU. Untuk buku ini, CPU cukup untuk latihan Bab 1-6.
 - **Memori habis.** Dataset besar (jutaan baris) dapat membuat Colab kehabisan RAM.
   Solusi: muat data dalam *chunk* (potongan), atau gunakan sampling. Bab 6 membahas
   strategi ini.
@@ -503,7 +503,7 @@ pola periodik kita sengaja masuk akal. Untuk fenomena dengan *persistence* tingg
 (pasang surut, suhu harian), *persistence* sering menang. Untuk yang periodik (curah
 hujan musiman), klimatologis sering lebih baik. *Deep learning* baru layak jika bisa
 mengalahkan keduanya secara konsisten, kita akan kembali ke prinsip ini di setiap bab
-kasus (Bab 8–9).
+kasus (Bab 8-9).
 
 ## 1.8 Latihan Mini: Mengenali Jenis Masalah
 
@@ -535,7 +535,7 @@ Banyak calon pembaca khawatir buku ini berisi matematika berat. Kabar baiknya: u
 **menggunakan** DL secara bertanggung jawab, Anda cukup menguasai tiga hal:
 
 1. **Aljabar linear dasar**, vektor dan matriks (Perkalian matriks adalah inti neuron).
-   Bab ini sudah mengenalkan tensor; kita hanya akan memakai sedikit notasi di Bab 2–4.
+   Bab ini sudah mengenalkan tensor; kita hanya akan memakai sedikit notasi di Bab 2-4.
 2. **Kalkulus dasar**, konsep turunan untuk memahami *gradient descent* (Bab 4). Anda
    tidak perlu menurunkan rumus, cukup paham intuisi kemiringan.
 3. **Statistika deskriptif**, rata-rata, varians, korelasi, dan sedikit probabilitas
@@ -564,7 +564,7 @@ Ada tiga alasan jujur:
    membangun dan mengevaluasi model DL-nya sendiri, bukan jika penulis dipandang sebagai
    penemu.
 
-Jadi, saat Anda membaca "studi kasus" di Bab 8–9, perlakukan sebagai latihan
+Jadi, saat Anda membaca "studi kasus" di Bab 8-9, perlakukan sebagai latihan
 *end-to-end* yang dapat diulang, bukan sebagai makalah penelitian. Ini adalah sikap yang
 juga Anda pegang sebagai praktisi: selalu tanya "apakah ini mengalahkan *baseline*?"
 
@@ -598,12 +598,12 @@ Di samping buku ini, berikut ekosistem yang bermanfaat:
 menulis Python dasar (variabel, loop, fungsi). Kode dalam buku selalu diberikan lengkap,
 dan setiap baris penting dijelaskan.
 
-**Apakah butuh paham meteorologi untuk Bab 2–5?** Tidak. Bab 2–5 berfokus pada konsep
-DL dengan contoh meteorologi sebagai ilustrasi. Bab 6–9 akan memerlukan pemahaman
+**Apakah butuh paham meteorologi untuk Bab 2-5?** Tidak. Bab 2-5 berfokus pada konsep
+DL dengan contoh meteorologi sebagai ilustrasi. Bab 6-9 akan memerlukan pemahaman
 konteks data, tetapi tetap dijelaskan.
 
 **Apakah GPU wajib?** Tidak. Notebook dapat berjalan di CPU, hanya lebih lambat. Untuk
-studi kasus di Bab 8–9, GPU mempermudah, tetapi Colab menyediakannya gratis.
+studi kasus di Bab 8-9, GPU mempermudah, tetapi Colab menyediakannya gratis.
 
 ## 1.12 Glosarium Mini Bab 1
 
@@ -617,15 +617,15 @@ Daftar istilah singkat yang muncul di bab ini. Glosarium lengkap buku ada di
 | DL | Pembelajaran mendalam | *Deep Learning* | ML dengan jaringan saraf berlapis. |
 | NN | Jaringan saraf | *Neural Network* | Model matematis berlapis unit sederhana. |
 | Baseline | Tolok ukur | *Baseline* | Model sederhana acuan (*persistence*, klimatologi). |
-| Persistence | — | *Persistence* | $\hat{y}_{t+1} = y_t$; besok = hari ini. |
-| Tensor | — | *Tensor* | "Kotak angka" generalisasi matriks ke banyak dimensi. |
-| GPU | — | *Graphics Processing Unit* | Kartu grafis untuk komputasi paralel; mempercepat DL. |
+| Persistence | - | *Persistence* | $\hat{y}_{t+1} = y_t$; besok = hari ini. |
+| Tensor | - | *Tensor* | "Kotak angka" generalisasi matriks ke banyak dimensi. |
+| GPU | - | *Graphics Processing Unit* | Kartu grafis untuk komputasi paralel; mempercepat DL. |
 | Notebook | Buku catatan | *Notebook* | Dokumen interaktif kode + narasi (Colab, Jupyter). |
 | Overhype | Berlebih-lebihan | *Overhype* | Klaim model lebih bagus dari kenyataan; kita hindari. |
 | Seed | Benih | *Seed* | Nilai awal generator acak; kunci reproduksibilitas. |
-| ENSO | — | *El Niño–Southern Oscillation* | Mode variabilitas iklim Pasifik yang memengaruhi hujan Indonesia. |
-| MJO | — | *Madden–Julian Oscillation* | Osilasi intramusiman tropis (30–60 hari) [10]. |
-| Rob | — | *Rob* | Banjir pesisir akibat pasang tinggi (penting di Semarang, Pontianak). |
+| ENSO | - | *El Niño-Southern Oscillation* | Mode variabilitas iklim Pasifik yang memengaruhi hujan Indonesia. |
+| MJO | - | *Madden-Julian Oscillation* | Osilasi intramusiman tropis (30-60 hari) [10]. |
+| Rob | - | *Rob* | Banjir pesisir akibat pasang tinggi (penting di Semarang, Pontianak). |
 
 ## 1.13 Koneksi ke Bab Berikutnya dan Kata Kunci SEO
 
@@ -643,7 +643,7 @@ bermanfaat sebelum masuk ke model sekuensial.
 Anda bisa langsung ke Bab 3 untuk klasifikasi dan Bab 5 untuk metrik domain.
 
 **Jika Anda ingin konteks data dulu:** Bab 6 (data BMKG/ERA5/pasang surut) menjelaskan
-sumber, lisensi, dan kualitas, bekal penting untuk Bab 8–9.
+sumber, lisensi, dan kualitas, bekal penting untuk Bab 8-9.
 
 **Kata kunci SEO** untuk bab ini (untuk pencarian internal blog):
 
@@ -678,24 +678,24 @@ sumber, lisensi, dan kualitas, bekal penting untuk Bab 8–9.
 3. T. M. Mitchell, *Machine Learning*. New York, NY, USA: McGraw-Hill, 1997.
    ISBN: 978-0070428072.
 4. Y. LeCun, Y. Bengio, and G. Hinton, "Deep learning," *Nature*, vol. 521, no. 7553,
-   pp. 436–444, May 2015, doi: 10.1038/nature14539.
+   pp. 436-444, May 2015, doi: 10.1038/nature14539.
 5. F. Rosenblatt, "The perceptron: A probabilistic model for information storage and
-   organization in the brain," *Psychological Review*, vol. 65, no. 6, pp. 386–408, 1958,
+   organization in the brain," *Psychological Review*, vol. 65, no. 6, pp. 386-408, 1958,
    doi: 10.1037/h0042519.
 6. M. Abadi et al., "TensorFlow: Large-scale machine learning on heterogeneous systems,"
    2016. [Online]. Available: https://arxiv.org/abs/1603.04467
 7. M. Reichstein et al., "Deep learning and process understanding for data-driven Earth
-   system science," *Nature*, vol. 566, no. 7743, pp. 195–204, Feb. 2019,
+   system science," *Nature*, vol. 566, no. 7743, pp. 195-204, Feb. 2019,
    doi: 10.1038/s41586-019-0912-1.
 8. D. E. Rumelhart, G. E. Hinton, and R. J. Williams, "Learning representations by
-   back-propagating errors," *Nature*, vol. 323, no. 6088, pp. 533–536, Oct. 1986,
+   back-propagating errors," *Nature*, vol. 323, no. 6088, pp. 533-536, Oct. 1986,
    doi: 10.1038/323533a0.
 9. A. Krizhevsky, I. Sutskever, and G. E. Hinton, "ImageNet classification with deep
    convolutional neural networks," in *Proc. Adv. Neural Inf. Process. Syst. (NeurIPS)*,
-   vol. 25, Dec. 2012, pp. 1097–1105.
+   vol. 25, Dec. 2012, pp. 1097-1105.
 10. M. C. Wheeler and H. H. Hendon, "An all-season real-time multivariate MJO index:
     Development of an index for monitoring and prediction," *Monthly Weather Review*,
-    vol. 132, no. 8, pp. 1917–1932, Aug. 2004, doi: 10.1175/1520-0493(2004)132<1917:AARMMI>2.0.CO;2.
+    vol. 132, no. 8, pp. 1917-1932, Aug. 2004, doi: 10.1175/1520-0493(2004)132<1917:AARMMI>2.0.CO;2.
 11. S. Lestari, A. King, C. Vincent, D. Karoly, and A. Protat, "Seasonal dependence of
     rainfall extremes in and around Jakarta, Indonesia," *Weather and Climate Extremes*,
     vol. 24, p. 100202, Jun. 2019, doi: 10.1016/j.wace.2019.100202.

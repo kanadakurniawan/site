@@ -1,6 +1,6 @@
 ---
 title: "Deret Waktu dan Model Sekuensial: RNN, LSTM, GRU"
-description: "Bab 7 — menyusun deret waktu menjadi data machine learning (windowing & horizon), membangun baseline (persistence, mean, AR), memahami RNN dan keterbatasannya, lalu LSTM dan GRU (intuisi gate), arsitektur praktis univariate/multivariate, serta strategi prediksi multi-langkah."
+description: "Bab 7 - menyusun deret waktu menjadi data machine learning (windowing & horizon), membangun baseline (persistence, mean, AR), memahami RNN dan keterbatasannya, lalu LSTM dan GRU (intuisi gate), arsitektur praktis univariate/multivariate, serta strategi prediksi multi-langkah."
 pubDatetime: 2026-09-01
 tags: ["Deep Learning", "Meteorologi", "time series", "LSTM", "GRU", "RNN", "forecasting", "windowing", "baseline", "sequence model"]
 draft: true
@@ -9,11 +9,15 @@ bookId: "pengantar-deep-learning-untuk-meteorologi"
 ---
 
 
-# Bab 7 — Deret Waktu dan Model Sekuensial: RNN, LSTM, GRU
+# Bab 7 - Deret Waktu dan Model Sekuensial: RNN, LSTM, GRU
 
 > **Prasyarat:** Bab 2 (regresi, baseline, split waktu), Bab 5 (metrik, walk-forward),
 > Bab 6 (data meteorologi, fitur). Bab ini menyiapkan model sekuensial untuk studi kasus
-> Bab 8–9.
+> Bab 8-9.
+
+> **Catatan:** Materi bab ini adalah **materi pengenalan**, bukan hasil riset baru. Seluruh isi
+> merupakan ringkasan ulang literatur *machine learning*, dengan contoh-contoh yang dekat dengan
+> dunia meteorologi Indonesia.
 
 ## Tujuan Pembelajaran
 
@@ -28,20 +32,20 @@ Setelah menyelesaikan bab ini, Anda diharapkan mampu:
 
 ## 7.1 Mengapa Deret Waktu Istimewa
 
-Bab 2–5 memperlakukan data sebagai deretan contoh yang saling bebas. Data **deret waktu**
+Bab 2-5 memperlakukan data sebagai deretan contoh yang saling bebas. Data **deret waktu**
 berbeda dalam dua hal mendasar:
 
 1. **Urutan bermakna.** Nilai `y(t)` bergantung pada riwayat sebelumnya: `y(t-1)`,
    `y(t-2)`, dst. Membaca bagan hujan hari ini tanpa melihat hari kemarin kehilangan
    informasi penting.
 2. **Korelasi temporal.** Data cuaca cenderung mulus dan *autocorrelated*: hari ini mirip
-   kemarin. Ini kabar baik untuk model (ada pola), tetapi juga perangkap — *split* acak
+   kemarin. Ini kabar baik untuk model (ada pola), tetapi juga perangkap - *split* acak
    (Bab 2, 5) dan *leakage* harus dihindari ketat.
 
 Sifat khusus lain di meteorologi: deretnya **tidak stasioner** (musim, pola monsun),
 menyimpan siklus (pasang surut, siklus harian), dan kadang mengandung *regime* (misal
 transisi musim hujan→kering). Model yang baik untuk bab ini harus bisa menangkap
-ketiganya — dari data, bukan dari asumsi. Kerangka umum representasi dan pelatihan model
+ketiganya - dari data, bukan dari asumsi. Kerangka umum representasi dan pelatihan model
 deret waktu dapat dirujuk pada literatur dasar [1].
 
 ### Ukur *autokorelasi* dengan mudah
@@ -67,7 +71,7 @@ masa lalu sebagai masukan, satu (atau beberapa) langkah ke depan sebagai target.
 
 Bayangkan deret harian `y(1), y(2), …, y(N)`. Untuk *window* `w=3` dan *horizon* `h=1`:
 
-**Tabel 7.1** — Contoh windoving deret ke contoh-*window* (w=3, h=1).
+**Tabel 7.1**: Contoh windoving deret ke contoh-*window* (w=3, h=1).
 
 | Contoh | Masukan `[t-3, t-2, t-1]` | Target `[t]` |
 |---|---|---|
@@ -84,19 +88,19 @@ Ambil deret `[10, 12, 14, 13, 11, 9, 10]`, `w=3`, `h=1`. Contoh yang terbentuk:
 - `[14, 13, 11] → 9`
 - `[13, 11, 9] → 10`
 
-Total contoh = `N − w − h + 1 = 7 − 3 − 1 + 1 = 4`. Perhatikan: contoh pertama hanya
-berguna setelah 3 hari pertama berlalu — setuju dengan naluri: butuh riwayat untuk
+Total contoh = `N - w - h + 1 = 7 - 3 - 1 + 1 = 4`. Perhatikan: contoh pertama hanya
+berguna setelah 3 hari pertama berlalu - setuju dengan naluri: butuh riwayat untuk
 memprediksi.
 
 ### Bagaimana overlap antar window memengaruhi keacakan
 
 Window yang "menggeser satu langkah" (seperti contoh di atas) membuat contoh-contoh
 berdekatan saling tumpang-tindih dan **sangat mirip** (hampir deterministik). Ini wajar
-untuk data cuaca, tetapi berimplikasi: jangan pernah membagi window secara acak —
+untuk data cuaca, tetapi berimplikasi: jangan pernah membagi window secara acak -
 *standard* memakai *split* berdasarkan waktu (Bab 2/6) agar train tidak "menyimpan"
 salinan test.
 
-Konversi ini — *windowing* — identik yang sudah dipakai di Bab 2 (§2.5), hanya kini
+Konversi ini - *windowing* - identik yang sudah dipakai di Bab 2 (§2.5), hanya kini
 masukannya berupa **urutan panjang `w`**, bukan dua fitur terpisah. Bentuk tensor masukan
 untuk model sekuensial adalah 3D:
 
@@ -106,7 +110,7 @@ Persamaan (7.1): dimensi pertama adalah jumlah sampel per *batch* (otomatis di K
 dimensi kedua adalah panjang *window* `w`, dimensi ketiga jumlah fitur `f`. Untuk
 univariate `f=1`; untuk multivariate `f>1` (misal hujan + suhu + kelembapan).
 
-**Kode 7.1 — Membuat *window* dari deret dengan TensorFlow.**
+**Kode 7.1 - Membuat *window* dari deret dengan TensorFlow.**
 
 ```python
 import numpy as np
@@ -127,19 +131,19 @@ print(X.shape, y.shape)   # (93, 7, 1) dan (93, 1)
 
 Pilih `w` (berapa hari riwayat) dengan naluri domain + eksperimen: untuk pasang surut,
 beberapa siklus (misal `w=72` jam×3 = 216 jam) membantu menangkap periodisitas; untuk
-hujan, 7–30 hari lazim menangkap musim pendek.
+hujan, 7-30 hari lazim menangkap musim pendek.
 
 ### Berapa panjang *window* yang baik?
 
 Tidak ada jawaban universal, tetapi tiga pertimbangan membantu:
 
-1. **Siklus alami data** — jika data punya siklus 24 jam, sertakan minimal satu siklus
+1. **Siklus alami data** - jika data punya siklus 24 jam, sertakan minimal satu siklus
    (`w` ≥ 24); untuk pasang surut semi-diurnal, `w` setidaknya mencakup satu siklus
    (≈ 24 jam) agar model bisa "melihat" pola naik-turun.
-2. **Harga komputasi & data** — `w` besar berarti tensor lebih besar dan jumlah contoh
-   (`N − w − h + 1`) lebih sedikit. Untuk stasiun dengan ribuan hari, `w` ratusan jam
+2. **Harga komputasi & data** - `w` besar berarti tensor lebih besar dan jumlah contoh
+   (`N - w - h + 1`) lebih sedikit. Untuk stasiun dengan ribuan hari, `w` ratusan jam
    masih wajar.
-3. **Eksperimen** — uji `w ∈ {3, 7, 14, 30}` di *walk-forward* dan pilih yang MAE-nya
+3. **Eksperimen** - uji `w ∈ {3, 7, 14, 30}` di *walk-forward* dan pilih yang MAE-nya
    terbaik pada validasi, bukan pada *test*.
 
 Contoh: dua opsi window untuk data jam-an pasang surut:
@@ -149,13 +153,13 @@ Contoh: dua opsi window untuk data jam-an pasang surut:
 | Pendek | 6 | setengah hari | cepat, tapi tak lihat siklus penuh |
 | Standar | 24 | satu siklus penuh | titik awal yang baik |
 
-**Tabel 7.2** — Pilihan panjang window untuk deret jam-an.
+**Tabel 7.2**: Pilihan panjang window untuk deret jam-an.
 
 ### Satu langkah vs beberapa langkah ke depan (*horizon*)
 
 - **Satu langkah (`h=1`)**: target besok. Paling mudah; banyak model unggul di sini.
 - **Beberapa langkah (`h>1`)**: target besok+seterusnya, atau *lead time* tertentu (Bab 9
-  sering butuh prediksi 1–7 hari). Lebih sulit karena galat menumpuk; §7.6 membahas
+  sering butuh prediksi 1-7 hari). Lebih sulit karena galat menumpuk; §7.6 membahas
   strateginya.
 
 Jangan mencampur: model yang hebat untuk `h=1` belum tentu baik untuk `h=3`. Evaluasi
@@ -163,7 +167,7 @@ sesuai *horizon* yang sebenarnya dibutuhkan operasional.
 
 ## 7.3 *Baseline* Dulu: Persistence, Mean, dan AR
 
-Sebelum membangun LSTM — ingat aturan Bab 1: **ukuran *baseline* dulu**. Tiga *baseline*
+Sebelum membangun LSTM - ingat aturan Bab 1: **ukuran *baseline* dulu**. Tiga *baseline*
 wajib untuk deret waktu meteorologi:
 
 - ***Persistence***: prediksi `y(t+h) = y(t)` (nilai terakhir). Sangat kuat untuk data
@@ -174,7 +178,7 @@ wajib untuk deret waktu meteorologi:
   *autokorelasi* tanpa arsitektur rumit; sering cukup baik untuk masalah sederhana.
   Pembahasan lengkap *forecasting* klasik ada di literatur analisis deret waktu [2].
 
-**Tabel 7.3** — *Baseline* deret waktu untuk dibandingkan.
+**Tabel 7.3**: *Baseline* deret waktu untuk dibandingkan.
 
 | *Baseline* | Ide | Kuat ketika | Lemah ketika |
 |---|---|---|---|
@@ -182,7 +186,7 @@ wajib untuk deret waktu meteorologi:
 | **Mean/klimatologi** | rata-rata sesua bulan/musim | Musim dominan, korelasi pendek | Variabilitas antar tahun besar |
 | **AR(p)** | regresi `p` lag | *Autokorelasi* `p` langkah | Pola non-linear / panjang |
 
-**Kode 7.2 — Menghitung kedua *baseline* pertama.**
+**Kode 7.2 - Menghitung kedua *baseline* pertama.**
 
 ```python
 # persistence
@@ -192,9 +196,9 @@ pred_persist = X_test[-1, :, 0]  # nilai terakhir tiap window (t-1)
 pred_klimat = np.full(len(y_test), float(np.mean(y_train)))
 ```
 
-Tujuannya bukan agar *baseline* menang — melainkan agar **angka pembanding jujur** ada.
+Tujuannya bukan agar *baseline* menang - melainkan agar **angka pembanding jujur** ada.
 Jika LSTM tidak mengalahkan *persistence* pada pasang surut, sesuatu salah (atau masalah
-memang tidak butuh LSTM). Ini juga yang membuat evaluasi Bab 8–9 dapat dipercaya.
+memang tidak butuh LSTM). Ini juga yang membuat evaluasi Bab 8-9 dapat dipercaya.
 
 ## 7.4 RNN: Memahami Jaringan Berulang
 
@@ -205,15 +209,15 @@ langkah sebelumnya `h(t-1)`:
 $$ h_t = \tanh(W_x x_t + W_h h_{t-1} + b) \tag{7.2} $$
 
 Persamaan (7.2): `h_t` adalah "ingatan ringkas" sampai langkah `t`; `W` adalah matriks
-bobot (dibagikan di semua langkah waktu — parameter sedikit, komputasi efisien). RNN
+bobot (dibagikan di semua langkah waktu - parameter sedikit, komputasi efisien). RNN
 diperkenalkan oleh Elman (1990) [3].
 
 **Keterbatasan utama RNN: *vanishing gradient* (Bab 4).** Untuk deret panjang (ratusan
-langkah), mengalikan gradien berulang membuat informasi awal "terlupakan" — RNN praktis
+langkah), mengalikan gradien berulang membuat informasi awal "terlupakan" - RNN praktis
 hanya mengingat beberapa langkah terakhir. Untuk pasang surut dengan siklus 12, 24 jam
 atau lebih, ini jadi masalah: model sulit "menyimpan" pola yang jauh di masa lalu.
 
-![Gambar 7.1 — Ilustrasi RNN: satu sel yang melewati waktu, membawa state tersembunyi h](ch-07-time-series-lstm-gru/figures/fig-7-1-rnn-unrolled.png)
+![Gambar 7.1 - Ilustrasi RNN: satu sel yang melewati waktu, membawa state tersembunyi h](ch-07-time-series-lstm-gru/figures/fig-7-1-rnn-unrolled.png)
 
 Gambar 7.1 memperlihatkan sel yang sama "dibuka" (unrolled) sepanjang waktu, membawa
 state `h_t`. Semakin panjang deret, semakin rawan *vanishing gradient*.
@@ -225,7 +229,7 @@ Ambil deret suhu `[30, 31, 30, 29, 28, 27, 26]`. RNN membaca tiap hari dan memut
 
 - `h_1` menangkap "mulai panas" (30);
 - `h_2` menangkap "masih panas" (31);
-- setelah beberapa hari dingin, `h_7` BISA "lupa" bahwa awalnya panas — itulah kelemahan
+- setelah beberapa hari dingin, `h_7` BISA "lupa" bahwa awalnya panas - itulah kelemahan
   RNN.
 
 LSTM (Bagian 7.5) memperbaiki ini dengan mempertahankan memori jangka panjang dan
@@ -234,7 +238,7 @@ memutuskan sendiri kapan melupakan.
 ## 7.5 LSTM: Memori dengan Pintu (*Gates*)
 
 **LSTM** (long short-term memory) menjawab keterbatasan RNN dengan menambahkan **pintu**
-(gates) yang mengatur update memori secara selektif — diperkenalkan oleh Hochreiter &
+(gates) yang mengatur update memori secara selektif - diperkenalkan oleh Hochreiter &
 Schmidhuber (1997) [4]. Intuisi populer: bayangkan "kotak memori" yang bisa diisi,
 dipertahankan, atau dikosongkan, dengan tiga pintu:
 
@@ -243,15 +247,15 @@ dipertahankan, atau dikosongkan, dengan tiga pintu:
 3. **Pintu keluaran** (`o_t`): seberapa banyak memori yang *dipancarkan* ke output.
 
 Tiga pintu inilah yang membuat LSTM mampu mengingat pola jauh (misal siklus pasang surut
-yang lalu) sambil melupakan yang tidak relevan — tanpa meledakkan gradien.
+yang lalu) sambil melupakan yang tidak relevan - tanpa meledakkan gradien.
 
 $$ f_t = \sigma(W_f x_t + U_f h_{t-1} + b_f) \tag{7.3} $$
 $$ i_t = \sigma(W_i x_t + U_i h_{t-1} + b_i) \tag{7.4} $$
 $$ o_t = \sigma(W_o x_t + U_o h_{t-1} + b_o) \tag{7.5} $$
 
-Persamaan (7.3)–(7.5): tiap pintu memakai sigmoid (nilai 0–1) sehingga "terbuka atau
+Persamaan (7.3)-(7.5): tiap pintu memakai sigmoid (nilai 0-1) sehingga "terbuka atau
 tertutup" secara mulus, dan dihubungkan dengan `tanh` untuk penulis memori kandidat.
-Anda tidak perlu menghafal rumus — yang penting: **LSTM = RNN + memori berpintu**, dan ini
+Anda tidak perlu menghafal rumus - yang penting: **LSTM = RNN + memori berpintu**, dan ini
 yang membuatnya bekerja di deret panjang yang deret cuaca punya.
 
 ### Analogi pintu dengan proses keputusan peramal
@@ -265,18 +269,18 @@ Bayangkan seorang peramal yang memakai catatan lama:
 - **Pintu keluaran**: "dari memori yang saya pegang, berapa yang saya pakai untuk
   membuat prakiraan hari ini?" → dipancarkan.
 
-LSTM mempelajari kapan membuka/menutup tiap pintu **dari data** selama pelatihan — bukan
+LSTM mempelajari kapan membuka/menutup tiap pintu **dari data** selama pelatihan - bukan
 diprogram manual. Inilah mengapa ia bisa menyesuaikan diri dengan pola musim yang
 berbeda-beda di tiap wilayah.
 
 ## 7.6 GRU: Pilihan Ringkas
 
 **GRU** (gated recurrent unit) menyederhanakan LSTM: hanya **dua pintu** (*update* dan
-*reset*) dan tanpa "sel memori" terpisah — diperkenalkan oleh Cho et al. (2014) [5].
+*reset*) dan tanpa "sel memori" terpisah - diperkenalkan oleh Cho et al. (2014) [5].
 Hasilnya: parameter lebih sedikit (lebih cepat, lebih hemat memori), performa serupa untuk
 banyak masalah.
 
-**Tabel 7.4** — Perbandingan LSTM vs GRU.
+**Tabel 7.4**: Perbandingan LSTM vs GRU.
 
 | Aspek | LSTM | GRU |
 |---|---|---|
@@ -286,8 +290,8 @@ banyak masalah.
 | Performa umum | Unggul di deret sangat panjang | Sebanding, sering lebih cepat |
 | Kapan pilih | Data panjang & butuh memori lama | Trade-off kecepatan & kesederhanaan |
 
-Tidak ada "selalu menang"; di Bab 8–9 kedua-duanya diuji dan dibandingkan dengan
-*baseline*. Untuk buku ini, **GRU adalah titik awal yang baik** — sedikit parameter,
+Tidak ada "selalu menang"; di Bab 8-9 kedua-duanya diuji dan dibandingkan dengan
+*baseline*. Untuk buku ini, **GRU adalah titik awal yang baik** - sedikit parameter,
 cepat dicoba, hasilnya sering cukup.
 
 ### Ketika LSTM lebih dipilih
@@ -295,7 +299,7 @@ cepat dicoba, hasilnya sering cukup.
 Ada beberapa situasi di mana LSTM sering unggul:
 
 - Deret yang **sangat panjang** (puluhan ribu langkah) dengan ketergantungan yang benar
-  jauh ke belakang — sel memori terpisah membuat informasi lebih "awet".
+  jauh ke belakang - sel memori terpisah membuat informasi lebih "awet".
 - Tugas yang butuh membedakan dua memori yang kontradiktif dalam satu waktu (misal
   mengingat pola pasang surut dua siklus lalu, sambil melupakan satu siklus tertentu).
 - Saat parameter ekstra tidak jadi masalah (GPU cukup).
@@ -308,7 +312,7 @@ bergantian; pembaca diajak menguji keduanya di *walk-forward*.
 
 ### Univariate LSTM
 
-**Kode 7.3 — Model LSTM univariate untuk prediksi h=1.**
+**Kode 7.3 - Model LSTM univariate untuk prediksi h=1.**
 
 ```python
 import tensorflow as tf
@@ -328,7 +332,7 @@ hanya output terakhir (untuk prediksi satu langkah).
 Saat `f > 1` (misal hujan, suhu, kelembapan), ubah jumlah fitur di `input_shape`; target
 tetap satu (hujan):
 
-**Kode 7.4 — Model LSTM multivariate (3 fitur, prediksi hujan besok).**
+**Kode 7.4 - Model LSTM multivariate (3 fitur, prediksi hujan besok).**
 
 ```python
 model = tf.keras.Sequential([
@@ -347,27 +351,27 @@ Untuk `h>1`, tiga strategi:
 - **Direct**: latih **satu model per horizon** (`model_h1`, `model_h2`, …). Tiap model
   memprediksi horizon-nya sendiri; mencegah akumulasi galat, tetapi biaya latih lebih
   besar.
-- **Seq2seq** (sequence-to-sequence): encoder-decoder — encoder meringkas window, decoder
+- **Seq2seq** (sequence-to-sequence): encoder-decoder - encoder meringkas window, decoder
   menghasilkan seluruh jajaran prediksi. Paling ekspresif; dibahas singkat karena butuh
   arsitektur lebih rumit (Sutskever et al., 2014 [6]).
 
-Untuk Bab 8–9, *direct* (model per lead time) adalah titik awal yang jujur dan mudah
+Untuk Bab 8-9, *direct* (model per lead time) adalah titik awal yang jujur dan mudah
 dievaluasi.
 
 ### Contoh memilih strategi multi-langkah
 
-Jika target operasional adalah prediksi hujan 1–7 hari ke depan, bandingkan di
+Jika target operasional adalah prediksi hujan 1-7 hari ke depan, bandingkan di
 *walk-forward*:
 
 | Strategi | Kelebihan | Kekurangan | Kapan dipakai |
 |---|---|---|---|
-| **Recursive** | 1 model saja | galat menumpuk cepat | lead time pendek (1–3 hari) |
+| **Recursive** | 1 model saja | galat menumpuk cepat | lead time pendek (1-3 hari) |
 | **Direct** | tiap horizon independen | perlu banyak model | lead time bervariasi & panjang |
 | **Seq2seq** | satu model, semua horizon | lebih rumit, data banyak | pola antar horizon kompleks |
 
-**Tabel 7.5** — Perbandingan strategi prediksi multi-langkah.
+**Tabel 7.5**: Perbandingan strategi prediksi multi-langkah.
 
-Untuk pasang surut (periodik, deterministic), *direct* h=1–7 sering memberi hasil
+Untuk pasang surut (periodik, deterministic), *direct* h=1-7 sering memberi hasil
 terbaik-ke-biaya terbaik; untuk hujan (berisik), *direct* juga pilihan yang jujur.
 
 ## 7.8 Evaluasi dan Membaca Prediksi
@@ -382,7 +386,7 @@ Evaluasi mengikuti aturan Bab 5: *walk-forward*, metrik sesuai tujuan, bandingka
 - **Scatter aktual vs prediksi** → selain kurva, titik di dekat garis `y=x` berarti
   akurat; pencilan ke arah ekstrem menunjukkan kelemahan pada kejadian besar.
 
-**Kode 7.5 — Plot forecast vs aktual sederhana.**
+**Kode 7.5 - Plot forecast vs aktual sederhana.**
 
 ```python
 import matplotlib.pyplot as plt
@@ -396,7 +400,7 @@ plt.legend(); plt.tight_layout(); plt.show()
 
 Dua angka tambahan membantu menilai seberapa "fantastis" LSTM itu:
 
-- **Perbedaan MAE(LSTM) − MAE(persistence)**: jika negatif dan bermakna, LSTM menang.
+- **Perbedaan MAE(LSTM) - MAE(persistence)**: jika negatif dan bermakna, LSTM menang.
   Jika hampir nol atau positif, LSTM tidak memberi nilai lebih.
 - **Uji cepat**: bandingkan MAE model dengan MAE *mean/klimatologi* pada periode yang
   sama; model yang kalah dari klimatologi layak dibuang.
@@ -410,7 +414,7 @@ Untuk melaporkan perbaikan relatif terhadap *baseline*, gunakan kesamaan *skill 
 $$ \text{SS} = 1 - \frac{\text{MAE}_{\text{model}}}{\text{MAE}_{\text{baseline}}} \tag{7.6} $$
 
 Persamaan (7.6): `SS > 0` artinya model lebih baik daripada *baseline*; `SS = 0` setara;
-`SS < 0` lebih buruk. Skill score sangat mudah diapresiasi — nilai 0.30 berarti model
+`SS < 0` lebih buruk. Skill score sangat mudah diapresiasi - nilai 0.30 berarti model
 menurunkan galat 30% dibanding *baseline*, tanpa perlu membandingkan satuan. Baik
 *persistence* maupun *mean/klimatologi* bisa jadi *baseline*, dan keduanya dilaporkan
 agar pembaca tahu seberapa besar keunggulan LSTM (atau tidak ada keunggulan sama sekali).
@@ -419,35 +423,35 @@ agar pembaca tahu seberapa besar keunggulan LSTM (atau tidak ada keunggulan sama
 
 Dua plot tambahan yang jarang dilaporkan tapi sering menentukan perbaikan:
 
-1. **Error per bulan/musim** — jika model buruk hanya di musim hujan puncak, fitur
+1. **Error per bulan/musim** - jika model buruk hanya di musim hujan puncak, fitur
    regional (Bab 6) atau transformasi target (log1p) bisa membantu.
-2. **Error per jendela peristiwa** — misal error membesar saat transisi musim; coba
+2. **Error per jendela peristiwa** - misal error membesar saat transisi musim; coba
    tambah fitur musiman atau indeks iklim.
 
-Analisis error inilah yang membedakan model "jadi" dengan model yang siap produksi — dan
-akan sangat dimanfaatkan di Bab 8–9.
+Analisis error inilah yang membedakan model "jadi" dengan model yang siap produksi - dan
+akan sangat dimanfaatkan di Bab 8-9.
 
 ## 7.9 Catatan Pelatihan Model Sekuensial
 
 Seluruh contoh di bab ini berjalan di atas TensorFlow [7]. Beberapa hal praktis yang
 sering membedakan konvergensi LSTM/GRU:
 
-1. **Normalisasi** (Bab 6) wajib — LSTM sangat sensitif skala.
+1. **Normalisasi** (Bab 6) wajib - LSTM sangat sensitif skala.
 2. **Mulai window kecil**; naikkan hanya jika perlu (window besar = data lebih sedikit dan
    biaya lebih besar).
-3. **Tanpa *shuffle*** saat training model sekuensial — Keras tidak mengacak *window*
+3. **Tanpa *shuffle*** saat training model sekuensial - Keras tidak mengacak *window*
    secara acak bila data diurutkan benar; pastikan setiap *batch* tidak mencampur masa
    depan.
 4. **Stateful LSTM** (mempertahankan state antar *batch*) jarang diperlukan di buku ini;
    pakai versi biasa.
 5. **Regularisasi** (Bab 5): tambah `Dropout`/`recurrent_dropout` bila overfit; kurangi
    bila underfit.
-6. **Pertimbangkan GRU dulu** untuk eksperimen pertama — lebih cepat, parameter lebih
+6. **Pertimbangkan GRU dulu** untuk eksperimen pertama - lebih cepat, parameter lebih
    sedikit (Tabel 7.4).
 
 ### Menumpuk lapisan LSTM/GRU (stacked)
 
-Jika satu lapisan kurang, tumpuk dua lapisan — lapisan pertama memakai
+Jika satu lapisan kurang, tumpuk dua lapisan - lapisan pertama memakai
 `return_sequences=True` agar mengembalikan urutan ke lapisan berikutnya:
 
 ```python
@@ -460,11 +464,11 @@ model = tf.keras.Sequential([
 
 Aturan jempol: **mulai dengan satu lapisan**, naikkan menjadi dua hanya jika kurva
 validasi menunjukkan *underfit*. Menumpuk terlalu cepat membuat model gemuk tanpa manfaat
-— overfit mengintai (Bab 5).
+- overfit mengintai (Bab 5).
 
-### Memprediksi beberapa horizon dengan *direct*: pola kerja Bab 8–9
+### Memprediksi beberapa horizon dengan *direct*: pola kerja Bab 8-9
 
-Karena Bab 8–9 memakai *direct* (model per horizon), berikut pola yang akan diulang:
+Karena Bab 8-9 memakai *direct* (model per horizon), berikut pola yang akan diulang:
 
 ```python
 def latih_per_horizon(X, y_h, h):
@@ -484,12 +488,12 @@ for h in range(1, 8):
 ```
 
 Setiap `models[h]` adalah prediktor untuk *lead time* `h` hari; evaluasi per `h` dengan
-MAE/RMSE lalu plot (Bab 7.8). Ini template yang langsung dipakai di Bab 8–9.
+MAE/RMSE lalu plot (Bab 7.8). Ini template yang langsung dipakai di Bab 8-9.
 
 ### Kapan arsitektur "tidak perlu dinaikkan"?
 
 Jika *baseline* persistence sudah memberi MAE sangat rendah (misal pasang surut), LSTM
-mungkin hanya menambah sedikit. Itu bukan kegagalan LSTM — itu keputusan bisnis: biaya
+mungkin hanya menambah sedikit. Itu bukan kegagalan LSTM - itu keputusan bisnis: biaya
 komputasi & pemeliharaan vs perbaikan kecil. Bab 10 membahas keputusan ini di konteks
 produksi.
 
@@ -503,22 +507,22 @@ memakai data nyata). Langkah yang mengikuti seluruh bab ini:
 2. **Baseline**: persistence (kuat untuk pasang surut) vs LSTM/GRU.
 3. **Model**: mulai GRU 1 lapisan `units=32`, `input_shape=(w,1)`.
 4. **Evaluasi**: *walk-forward* per bulan; MAE/RMSE per `h`; plot prediksi vs aktual.
-5. **Kesimpulan jujur**: seberapa jauh LSTM mengalahkan persistence — dan apakah
+5. **Kesimpulan jujur**: seberapa jauh LSTM mengalahkan persistence - dan apakah
    menutupinya layak untuk kebutuhan ops.
 
-Menjalankan kerangka ini di Bab 8 membuat studi kasus tidak terasa baru — hanya
+Menjalankan kerangka ini di Bab 8 membuat studi kasus tidak terasa baru - hanya
 mengganti data sintetik dengan data nyata Kapuas.
 
-## 7.11 Menghubungkan ke Bab 8–9
+## 7.11 Menghubungkan ke Bab 8-9
 
 Dua keterampilan yang dibawa ke studi kasus berikutnya:
 
-1. **Pipeline yang reusable** — fungsi `buat_window`, model template, evaluasi MAE/RMSE
+1. **Pipeline yang reusable** - fungsi `buat_window`, model template, evaluasi MAE/RMSE
    per horizon; simpulkan dalam satu modul agar mudah dipakai ulang (Bab 6 mengajarkan
    menyimpan data; bab ini menambahkan *template* model).
-2. **Kerangka berpikir baseline-dulu** — setiap klaim "LSTM hebat" harus selalu menyertakan
+2. **Kerangka berpikir baseline-dulu** - setiap klaim "LSTM hebat" harus selalu menyertakan
    angka *persistence* & skill score (Persamaan 7.6). Disiplin inilah yang membuat laporan
-   Bab 8–9 bisa dipercaya.
+   Bab 8-9 bisa dipercaya.
 
 ## 7.12 FAQ
 
@@ -534,7 +538,7 @@ informatif (Bab 6), *window* lebih baik, atau model/granularitas yang sesuai.
 lumrah; LSTM sedikit lebih lama. Kalau terlalu lambat, kecilkan `units`, `w`, atau pakai
 subset data saat eksperimen.
 
-**Bisakah LSTM dipakai untuk data bulanan/jam-an?** Bisa — selama disusun sebagai
+**Bisakah LSTM dipakai untuk data bulanan/jam-an?** Bisa - selama disusun sebagai
 *sequence* dengan frekuensi konsisten. Bedanya hanya skala waktu di `w` dan `h`.
 
 **Apakah saya perlu menstandarisasi window?** Ya, lazimnya normalisasi (Bab 6) diterapkan
@@ -542,15 +546,15 @@ sebelum windowing agar skala fitur seragam; pastikan μ/σ dihitung pada data la
 diterapkan pada validasi/*test*.
 
 **Apakah dropout LSTM berbeda dengan MLP?** Keras mendukung `recurrent_dropout` khusus
-state berulang. Gunakan yang kecil (0–0.2) untuk *recurrent*; dropout biasa biasa untuk
+state berulang. Gunakan yang kecil (0-0.2) untuk *recurrent*; dropout biasa biasa untuk
 layer antar output. Jangan berlebihan di LSTM karena bisa menghambat belajar.
 
-**Bisakah saya menambah fitur yang bukan deret waktu (misal indeks bulan)?** Ya — fitur
+**Bisakah saya menambah fitur yang bukan deret waktu (misal indeks bulan)?** Ya - fitur
 eksternal ditambahkan sebagai dimensi fitur per langkah waktu (multivariate); atau
-diselipkan lewat lapisan setelah LSTM (concatenate). Detail di Bab 8–9.
+diselipkan lewat lapisan setelah LSTM (concatenate). Detail di Bab 8-9.
 
 **Kenapa model memprediksi "rata-rata" saat data berisik?** Karena meminimalkan loss
-kuadrat mendorong prediksi menuju median/rata-rata kondisi — perilaku wajar. Untuk
+kuadrat mendorong prediksi menuju median/rata-rata kondisi - perilaku wajar. Untuk
 menggerakkan ke ekstrem, gunakan transformasi target (Bab 6) atau metrik sesuai tujuan.
 
 **Apakah perlu `window` yang mengandung target masa depan?** Tidak! Itu *leakage*:
@@ -558,7 +562,7 @@ window hanya berisi data sampai `t`, target mulai `t+1`. Pastikan pergeseran ben
 
 **Kapan berhenti mencoba arsitektur dan fokus ke data?** Sering kali jawabannya di data:
 tambah fitur (Bab 6), perbaiki QC, atau ubah *horizon* sesuai kebutuhan. Jika kurva
-validasi macet di banyak konfigurasi, kembali ke *baseline* dan data — bukan menambah
+validasi macet di banyak konfigurasi, kembali ke *baseline* dan data - bukan menambah
 tumpukan lapisan.
 
 ## 7.13 Latihan
@@ -575,23 +579,23 @@ tumpukan lapisan.
 5. Bangun dataset *window* dari data Bab 6; bandingkan LSTM vs GRU vs persistence pada
    data uji (MAE).
 6. Uji `w` ∈ `{3, 7, 14, 30}`; buat tabel MAE tiap window.
-7. Bandingkan univariate vs multivariate (tambah suhu/kelembapan sebagai fitur) — apakah
+7. Bandingkan univariate vs multivariate (tambah suhu/kelembapan sebagai fitur) - apakah
    fitur tambahan membantu?
 8. Terapkan strategi *direct* untuk `h=1..7`; plot MAE per horizon dan bandingkan dengan
    *recursive*.
-9. (Proyek mini) Simpan hasil terbaik sebagai "template model Bab 8–9": function
+9. (Proyek mini) Simpan hasil terbaik sebagai "template model Bab 8-9": function
    `build_lstm(w, f, units)` + function evaluasi MAE/RMSE per horizon.
 
 ## Ringkasan
 
 - Deret waktu = urutan bermakna + *autokorelasi*; hindari *leakage* (split waktu).
 - *Windowing* (w,h) mengubah deret jadi contoh ML; input shape 3D `(batch, waktu, fitur)`.
-- Panjang window mengikuti siklus alami & biaya; diuji pada validasi (Tabel 7.1–7.2).
-- *Baseline* wajib: persistence, mean/klimatologi, AR(p) — DL harus mengalahkannya
+- Panjang window mengikuti siklus alami & biaya; diuji pada validasi (Tabel 7.1-7.2).
+- *Baseline* wajib: persistence, mean/klimatologi, AR(p) - DL harus mengalahkannya
   (Tabel 7.3).
 - RNN menangkap urutan tetapi mati *vanishing gradient* di deret panjang (Gambar 7.1).
 - LSTM menambahkan tiga pintu memori (lupa/masukan/keluaran) → tahan deret panjang
-  (Persamaan 7.3–7.5).
+  (Persamaan 7.3-7.5).
 - GRU dua pintu, lebih ringkas, titik awal yang baik; pilih sesuai kebutuhan (Tabel 7.4).
 - Horizons: one-step mudah; multi-step pakai direct (per horizon) atau recursive
   (Tabel 7.5).
@@ -606,14 +610,14 @@ tumpukan lapisan.
 2. R. J. Hyndman and G. Athanasopoulos, *Forecasting: Principles and Practice*, 3rd ed.
    Melbourne, Australia: OTexts, 2021. [Online]. Available: https://otexts.com/fpp3/
 3. J. L. Elman, "Finding structure in time," *Cognitive Science*, vol. 14, no. 2,
-   pp. 179–211, 1990, doi: 10.1207/s15516709cog1402_1.
+   pp. 179-211, 1990, doi: 10.1207/s15516709cog1402_1.
 4. S. Hochreiter and J. Schmidhuber, "Long short-term memory," *Neural Computation*,
-   vol. 9, no. 8, pp. 1735–1780, 1997, doi: 10.1162/neco.1997.9.8.1735.
+   vol. 9, no. 8, pp. 1735-1780, 1997, doi: 10.1162/neco.1997.9.8.1735.
 5. K. Cho et al., "Learning phrase representations using RNN encoder-decoder for
    statistical machine translation," 2014. [Online]. Available:
    https://arxiv.org/abs/1406.1078
 6. I. Sutskever, O. Vinyals, and Q. V. Le, "Sequence to sequence learning with neural
    networks," in *Advances in Neural Information Processing Systems (NeurIPS)*, 2014,
-   pp. 3104–3112. [Online]. Available: https://arxiv.org/abs/1409.3215
+   pp. 3104-3112. [Online]. Available: https://arxiv.org/abs/1409.3215
 7. M. Abadi et al., "TensorFlow: Large-scale machine learning on heterogeneous systems,"
    2016. [Online]. Available: https://arxiv.org/abs/1603.04467

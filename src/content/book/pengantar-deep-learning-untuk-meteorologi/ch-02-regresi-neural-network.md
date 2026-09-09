@@ -122,9 +122,14 @@ Bedanya hanya di jalur penemuan parameter:
 - Statistika klasik: `w` dan `b` dihitung dengan rumus kuadrat terkecil (closed-form).
 - *Neural network*: `w` dan `b` ditemukan lewat proses berulang (*gradient descent*, Bab 4).
 
-Hasil akhirnya sama. Karena itu, satu neuron linear sebaiknya dianggap sebagai
-**baseline** — bukan "neural network yang mengesankan". Prinsip di Bab 1 tetap berlaku:
-mulai dari model paling sederhana, ukur kinerjanya, lalu tingkatkan jika perlu.
+Hasil akhirnya sama — dalam kondisi dasar: fungsi *loss* MSE, tanpa regularisasi, dan
+pelatihan yang konvergen ke minimum global (regresi linear konveks, sehingga GD mencapai
+solusi OLS). Jika Anda ganti loss ke MAE, menambahkan regularisasi L1/L2, atau menghentikan
+pelatihan lebih awal (*early stopping*), hasilnya akan berbeda dari solusi closed-form.
+Catatan ini penting: "sama" berlaku hanya untuk kasus dasar di Kode 2.2–2.3. Karena itu,
+satu neuron linear sebaiknya dianggap sebagai **baseline** — bukan "neural network yang
+mengesankan". Prinsip di Bab 1 tetap berlaku: mulai dari model paling sederhana, ukur
+kinerjanya, lalu tingkatkan jika perlu.
 
 Mengapa kita tetap mempelajari regresi linear di buku *deep learning*? Tiga alasan:
 
@@ -144,7 +149,7 @@ tingkatkan" yang akan menemani sepanjang buku.
 Data meteorologi jarang linear sempurna. Hubungan antara variabel seperti kelembapan,
 suhu, dan curah hujan tidak bisa diwakili hanya oleh garis lurus: hujan tidak meningkat
 terus-menerus seiring kelembapan; ada ambang, jenuh, dan interaksi. Contoh sederhana:
-hubungan suhu dan lju penguapan mungkin kurva, bukan garis.
+hubungan suhu dan laju penguapan mungkin kurva, bukan garis.
 
 Masalahnya: jika kita menyusun beberapa neuron **linear** berlapis, seluruh jaringan tetap
 linear — karena jumlah fungsi linear adalah fungsi linear. Komposisi `linear(linear(x))`
@@ -158,8 +163,10 @@ $$ \text{ReLU}(x) = \max(0, x) \tag{2.4} $$
 
 ReLU mengeluarkan nilai masukan jika positif, dan nol jika negatif (persamaan (2.4)).
 Sederhana, murah dihitung (satu perbandingan), dan menjadi komponen dasar banyak jaringan
-modern [2]. ReLU juga menghindari beberapa masalah gradien yang dimiliki sigmoid/tanh
-(Bab 4 membahas topik ini lebih dalam).
+modern [2]. Referensi ini merujuk pada AlexNet (2012), jaringan yang mempopulerkan ReLU
+dalam kompetisi ImageNet; relevansinya di sini adalah **peran ReLU dalam sejarah arsitektur
+modern**, bukan karena bab ini memprediksi gambar. ReLU juga menghindari beberapa masalah
+gradien yang dimiliki sigmoid/tanh (Bab 4 membahas topik ini lebih dalam).
 
 ### Dari neuron ke MLP
 
@@ -198,8 +205,9 @@ di Bab 4).
 ### Berapa banyak lapisan? Intuisi bukan rumus
 
 Aturan praktis soal "berapa dalam": mulai cukup kecil, tambah kompleksitas hanya bila
-perlu dan data cukup. Untuk regresi deret waktu stasiun (ratusan ribu hingga jutaan data
-harian), 1–3 lapisan `Dense` sudah sering cukup. Model yang terlalu besar akan *overfit*
+perlu dan data cukup. Untuk regresi deret waktu stasiun dengan data jam-jaman
+(ratusan ribu hingga jutaan baris; data harian 100 tahun hanya ~36.500 baris),
+1–3 lapisan `Dense` sudah sering cukup. Model yang terlalu besar akan *overfit*
 (Bab 5) — menghafal data latih dan gagal di data baru.
 
 ### ReLU dan variannya (sekilas)
@@ -234,7 +242,7 @@ nilai-nilai sebelumnya. Data nyata pasang surut akan dibahas penuh di Bab 8; di 
 mengenalkan alurnya saja:
 
 ```
-input: [tinggi(t-1), tinggi(t-2)]  →  Dense+ReLU  →  output: tinggi(t)
+input: [tinggi(t-2), tinggi(t-1)]  →  Dense+ReLU  →  output: tinggi(t)
 ```
 
 ### Langkah 1 — Bentuk data (windowing)
@@ -242,13 +250,14 @@ input: [tinggi(t-1), tinggi(t-2)]  →  Dense+ReLU  →  output: tinggi(t)
 Data deret waktu `tinggi(t)` (jam demi jam) diubah menjadi kumpulan pasangan fitur-target
 dengan *window* dua langkah. Setiap baris contoh:
 
-| contoh | fitur `[x1, x2]` (t-1, t-2) | target `y` (t) |
+| contoh | fitur `[x1, x2]` = `[t-2, t-1]` | target `y` (t) |
 |---|---|---|
-| 1 | `[1.02, 0.95]` | `0.98` |
-| 2 | `[0.98, 1.02]` | `1.05` |
-| 3 | `[1.05, 0.98]` | `1.12` |
+| 1 | `[0.95, 1.02]` | `0.98` |
+| 2 | `[1.02, 0.98]` | `1.05` |
+| 3 | `[0.98, 1.05]` | `1.12` |
 
 **Tabel 2.2** — Contoh windowing dua langkah pada deret tinggi pasang surut (nilai ilustratif).
+Urutan fitur di tabel cocok dengan Kode 2.2: kolom pertama `[t-2]`, kolom kedua `[t-1]`.
 
 Cara membangun windowing ini dijelaskan di Bab 7 secara mendalam; di Bab 2 kita cukup
 memakai bentuk tabel di atas sebagai ilustrasi konsep.
@@ -331,7 +340,11 @@ Kadang MAE jaringan lebih kecil dari *persistence* tetapi *tipis* (misalnya 0.02
 Apakah itu berarti DL "menang"? Di Bab 5–9 kita akan membahas pertanyaan ini lebih serius:
 perbedaan kecil mungkin tidak signifikan secara operasional, dan biaya memelihara model
 harus diperhitungkan. Memiliki patokan operasional (misalnya toleransi tinggi pasang
-±0.10 m) membantu menilai.
+±0.10 m) membantu menilai. Untuk menjawab "menang atau kebetulan?" secara statistik,
+exis uji seperti **Diebold-Mariano** yang memuji apakah perbedaan loss antara dua model
+signifikan, bukan hanya noise dari satu sampel uji. Di bab ini kita tidak lanjut mendalam;
+poinnya: angka MAE tidak cukup untuk klaim "menang" — baik konteks operasional, baik uji
+statistik, baik konsistensi antar-periode (Bab 5) yang diperlukan.
 
 ### Kapan model "cukup baik"?
 
@@ -407,8 +420,12 @@ cenderung menghindari galat besar, kadang mengorbankan presisi pada galat kecil.
 MAE tidak mengkuadratkan, sehingga semua galat diberi bobot sama. Untuk data dengan
 pencilan (misal satu hari hujan ekstrem `150 mm` di tengah ratusan hari `0–20 mm`), model
 MSE bisa "terganggu" oleh satu nilai besar itu dan memiringkan semuanya; model MAE lebih
-tahan. Namun MAE memiliki gradien konstan, yang membuat optimasi sedikit berbeda — detail
-ini dibahas di Bab 4.
+tahan. Namun MAE memiliki gradien konstan (biasanya ±1) untuk hampir semua nilai error,
+yang membuat *optimasi* sedikit berbeda: karena gradiennya tidak mengecil saat model
+mendekati minimum, konvergensi bisa menjadi lambat atau mengoscila di sekitar solusi.
+Contrast dengan MSE, yang gradiennya bervariasi dengan error (gradien kecil saat error
+kecil), sehingga konvergensi lebih halus di sekitar minimum. Detail optimasi ini dibahas
+di Bab 4.
 
 ### Metrik versus loss
 
@@ -475,7 +492,8 @@ supaya tidak curang: memakai test berkali-kali untuk menyetel model sama saja de
 
 **Soal konsep**
 
-1. Jelaskan perbedaan bobot dan bias pada neuron, dengan contoh variabel meteorologi.2. Mengapa MLP perlu fungsi aktivasi non-linear? Apa yang terjadi jika semua lapisan linear?
+1. Jelaskan perbedaan bobot dan bias pada neuron, dengan contoh variabel meteorologi.
+2. Mengapa MLP perlu fungsi aktivasi non-linear? Apa yang terjadi jika semua lapisan linear?
 3. Apa keunggulan ReLU dibanding perceptron langkah (step) untuk pelatihan?
 4. Data curah hujan memiliki banyak nol dan beberapa nilai sangat besar. Loss mana yang
    Anda pilih, MAE atau MSE, dan mengapa?
@@ -486,10 +504,14 @@ supaya tidak curang: memakai test berkali-kali untuk menyetel model sama saja de
    Kapan model mulai *overfit* (train jauh lebih baik daripada val)?
 6. Tambahkan fitur ketiga `tinggi(t-3)`. Apakah MAE membaik? Apa alasan Anda?
 7. Ganti `loss="mse"` dengan `loss="mae"`. Bandingkan akhir MAE test. Diskusikan perbedaan.
-8. Buat *baseline* kedua: rata-rata klimatologis (nilai tengah keseluruhan train) sebagai
+8. Buat *baseline* kedua: rata-rata klimatologis (nilai **rata-rata** keseluruhan train) sebagai
    prediksi tetap untuk seluruh test. Bandingkan dengan *persistence* dan jaringan.
 9. **Proyek mini:** ambil data suhu harian stasiun lokal (misal dari BMKG — Bab 6),
    lakukan windowing 2 langkah, dan bandingkan MLP 2 lapisan vs *persistence*. Laporkan MAE.
+10. **(Opsional, statistik)** Jika punya library `statsmodels` atau `sklearn`, ulangi perbandingan
+    MAE model vs *persistence* di beberapa blok waktu dan run sekema uji **Diebold-Mariano**
+    untuk menyaji apakah selisih signifikan. Bila tidak tersedia library, cukup catat MAE
+    per blok dan diskutikan konsistensi.
 
 Jawaban latihan tidak harus "menang": yang penting adalah Anda terbiasa membandingkan
 model dengan *baseline* dan membaca angka MAE secara kritis — itulah sikap praktisi.

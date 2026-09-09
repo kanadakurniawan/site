@@ -84,7 +84,7 @@ semakin abstrak [1].
 
 ![Gambar 1.1: Keterkaitan artificial intelligence, machine learning, dan deep learning](ch-01-pengantar-deep-learning-meteorologi/figures/fig-1-1-hierarki-ai-by-chatgpt.png)
 
-**Gambar 1.1**: Keterkaitan artificial intelligence, machine learning, dan deep learning.
+**Gambar 1.1**: Keterkaitan *artificial intelligence*, *machine learning*, dan *deep learning*.
 
 Sebagaimana dilihat pada Gambar 1.1, *artificial intelligence* adalah payung terluas,
 *machine learning* adalah cabangnya yang belajar dari data, dan *deep learning* adalah
@@ -94,12 +94,7 @@ mengklasifikasikan data, tetapi belajar pola dari data lalu **menghasilkan konte
 (teks, gambar) yang mengikuti pola itu. Definisi dan keterbatasannya dibahas lebih lanjut
 di Bab 10.
 
-Perbedaan praktisnya: model *machine learning* klasik (seperti regresi linear, pohon
-keputusan, atau SVM) umumnya butuh fitur, variabel masukan yang dipilih manual oleh
-manusia. *Deep learning* berbeda: model itu sendiri belajar representasi yang berguna
-langsung dari data mentah, jadi manusia tidak perlu selalu memilih fitur dulu, asalkan
-data cukup banyak. Bab 2 akan membahas komponen dasar jaringan ini: **neuron, perceptron,
-dan fungsi aktivasi**.
+Secara praktis, perbedaan utamanya terletak pada cara model memproses pola data. Model *machine learning* konvensional seperti regresi linear, *decision tree*, atau SVM bekerja menggunakan fungsi atau logika pemisahan data yang spesifik. Pendekatan ini efektif untuk pola dasar, tetapi sering kesulitan menghadapi dinamika atmosfer yang kompleks. Sebaliknya, *deep learning* dirancang untuk mengenali hubungan data yang rumit menggunakan struktur jaringan saraf. Komponen dasar jaringan ini meliputi *neuron*, *perceptron*, dan fungsi aktivasi, yang akan dibahas lebih rinci pada Bab 2.
 
 Kapan Anda memakai yang mana? Aturan praktisnya:
 
@@ -136,10 +131,10 @@ memadai (bisa pakai cloud gratis), dan kemauan belajar.
 
 ### Sejarah singkat (agar konteksnya jelas)
 
-- 1958, **Perceptron** oleh Frank Rosenblatt: cikal bakal jaringan saraf, namun masih
+- 1958, *Perceptron* oleh Frank Rosenblatt: cikal bakal jaringan saraf, namun masih
   **satu lapis** (bukan *deep learning* seperti yang kita kenal sekarang) [5].
-- 1986, **Backpropagation** dipopulerkan: cara melatih jaringan bertingkat banyak.
-- 2012, **AlexNet** memenangkan kompetisi ImageNet dengan CNN; titik balik modern.
+- 1986, *Backpropagation* dipopulerkan: cara melatih jaringan bertingkat banyak [8].
+- 2012, **AlexNet** memenangkan kompetisi ImageNet dengan CNN; titik balik modern [9].
 - 2015, Ulasan "Deep learning" di *Nature* menempatkan DL sebagai teknik inti AI [4].
 - 2019, Ulasan Reichstein et al. menegaskan bahwa DL tidak hanya berpeluang besar untuk
   prediksi, tetapi juga membantu pemahaman proses dalam sistem kebumian [7].
@@ -206,8 +201,8 @@ seluruh buku:
 
 - **Gunakan model statistik klasik dulu sebagai pembanding (*baseline*).** Regresi linear,
   ARIMA (model statistik untuk deret waktu), atau *persistence* ("keadaan besok = keadaan
-  hari ini") sering kali lebih dari cukup untuk data pendek atau pola sederhana. Deep
-   learning hanya layak jika **mengalahkan *baseline*** dengan data yang cukup Prinsip ini
+  hari ini") sering kali lebih dari cukup untuk data pendek atau pola sederhana. *Deep
+   learning* hanya layak jika **mengalahkan *baseline*** dengan data yang cukup Prinsip ini
   menjadi tulang punggung Bab 7–9. Jika model sederhana sudah melebihi kebutuhan, tidak
   ada alasan memperkenalkan kompleksitas.
 - **Perhatikan ukuran data.** Jaringan saraf besar membutuhkan banyak data untuk belajar.
@@ -248,7 +243,7 @@ mereka menentukan kapan *deep learning* benar-benar dibutuhkan dan kapan model s
 sudah cukup.
 
 **1. Variabilitas tinggi dan rezim ganda.** Curah hujan di Indonesia dipengaruhi
-monsun Australia–Asia, *Madden–Julian Oscillation* (MJO) [8], *El Niño–Southern
+monsun Australia–Asia, *Madden–Julian Oscillation* (MJO) [10], *El Niño–Southern
 Oscillation* (ENSO), dan siklus diurnal laut–darat. Pola yang sama bisa muncul dengan
 amplitudo sangat berbeda antara musim kemarau dan musim hujan. Model yang belajar dari
 satu rezim saja akan gagal saat rezim berganti. Bab 6 membahas bagaimana membagi dan
@@ -257,7 +252,7 @@ menyeimbangkan data sehingga model tidak "lupa" pada satu musim.
 **2. Ekor kanan (*right tail*) yang berat pada curah hujan.** Distribusi hujan harian
 di sebagian besar wilayah Indonesia memiliki banyak hari tanpa hujan (nol) dan sedikit
 hari dengan hujan ekstrem (>50 mm/hari), dengan ekor distribusi yang lebih berat
-daripada distribusi Gaussian [9]. Ini membuat metrik rata-rata seperti RMSE tidak
+daripada distribusi Gaussian [11]. Ini membuat metrik rata-rata seperti RMSE tidak
 cukup; Bab 5 memperkenalkan metrik kejadian (CSI, FAR, POD) untuk menilai performa
 pada hari ekstrem.
 
@@ -276,7 +271,7 @@ pola periodik yang bisa dipelajari, dengan komponen residual yang menantang.
 
 **5. Keterbatasan data latih untuk kejadian ekstrem.** Hujan ekstrem (peringatan dini
 BMKG) dan pasang surut rob adalah **ekor distribusi**, persis bagian yang paling ingin
-kita prediksi dengan baik, tetapi paling jarang ada datanya [7], [9]. Bab 3, 5, dan 9
+kita prediksi dengan baik, tetapi paling jarang ada datanya [7], [11]. Bab 3, 5, dan 9
 membahas cara menghadapi *class imbalance* dan verifikasi operasional untuk kejadian
 langka.
 
@@ -290,8 +285,8 @@ Implikasi untuk *deep learning*:
   (Bab 10).
 - **Pemilihan fitur tetap penting.** Walau DL dapat belajar representasi, fitur
   meteorologi yang baik (lag, musiman, indeks ENSO) membuat model jauh lebih efisien.
-- **Cross-validation harus menghormati waktu.** Bab 5 memperkenalkan walk-forward
-  validation, k-fold acak tidak berlaku untuk deret waktu.
+- ***Cross-validation* harus menghormati waktu.** Bab 5 memperkenalkan *walk-forward
+  validation*, k-fold acak tidak berlaku untuk deret waktu.
 
 ## 1.5 Alur Kerja Proyek Machine Learning
 
@@ -454,14 +449,14 @@ muncul.
 
 Sebelum kita bicara tentang model yang *sophisticated*, mari kita lihat dua *baseline*
 yang akan menjadi "lawan tanding" *deep learning* di sepanjang buku. Keduanya dipakai
-luas dalam verifikasi prakiraan cuaca sebagai rujukan keterampilan model [10]:
+luas dalam verifikasi prakiraan cuaca sebagai rujukan keterampilan model [12]:
 
 - ***Persistence*** (prakiraan-beku): $\hat{y}_{t+1} = y_t$. Prakiraan besok sama
   dengan pengamatan terakhir yang kita punya. Secara intuitif: "asumsinya tidak
   berubah". Untuk data yang berubah pelan (pasang surut, suhu harian), *persistence*
   sering kali sudah cukup baik; untuk data yang berfluktuasi cepat, *persistence* kalah.
   Istilah *persistence* dipakai di seluruh literatur verifikasi prakiraan internasional
-  (WMO WWRP/WGNE, [10]).
+  (WMO WWRP/WGNE, [12]).
 - **Rata-rata klimatologis**: $\hat{y}_{t+1} = \bar{y}_{\text{bulan}, \text{stasiun}}$,
   prakiraan besok = rata-rata historis untuk hari yang sama di bulan dan lokasi
   tersebut. Cocok untuk pola musiman yang kuat; gagal saat rezim menyimpang dari
@@ -590,7 +585,7 @@ TensorFlow sangat membantu. Buku ini berbeda karena dua hal:
 
 Di samping buku ini, berikut ekosistem yang bermanfaat:
 
-- **TensorFlow/Keras**, framework utama yang dipakai seluruh buku [6].
+- **TensorFlow/Keras**, *framework* utama yang dipakai seluruh buku [6].
 - **PyTorch**, alternatif populer di riset; konsep yang Anda pelajari di sini mudah
   dipindahkan.
 - **Pandas & xarray**, untuk penanganan data tabular dan data NetCDF (Bab 6).
@@ -629,7 +624,7 @@ Daftar istilah singkat yang muncul di bab ini. Glosarium lengkap buku ada di
 | Overhype | Berlebih-lebihan | *Overhype* | Klaim model lebih bagus dari kenyataan; kita hindari. |
 | Seed | Benih | *Seed* | Nilai awal generator acak; kunci reproduksibilitas. |
 | ENSO | — | *El Niño–Southern Oscillation* | Mode variabilitas iklim Pasifik yang memengaruhi hujan Indonesia. |
-| MJO | — | *Madden–Julian Oscillation* | Osilasi intramusiman tropis (30–60 hari) [8]. |
+| MJO | — | *Madden–Julian Oscillation* | Osilasi intramusiman tropis (30–60 hari) [10]. |
 | Rob | — | *Rob* | Banjir pesisir akibat pasang tinggi (penting di Semarang, Pontianak). |
 
 ## 1.13 Koneksi ke Bab Berikutnya dan Kata Kunci SEO
@@ -692,13 +687,19 @@ sumber, lisensi, dan kualitas, bekal penting untuk Bab 8–9.
 7. M. Reichstein et al., "Deep learning and process understanding for data-driven Earth
    system science," *Nature*, vol. 566, no. 7743, pp. 195–204, Feb. 2019,
    doi: 10.1038/s41586-019-0912-1.
-8. M. C. Wheeler and H. H. Hendon, "An all-season real-time multivariate MJO index:
-   Development of an index for monitoring and prediction," *Monthly Weather Review*,
-   vol. 132, no. 8, pp. 1917–1932, Aug. 2004, doi: 10.1175/1520-0493(2004)132<1917:AARMMI>2.0.CO;2.
-9. S. Lestari, A. King, C. Vincent, D. Karoly, and A. Protat, "Seasonal dependence of
-   rainfall extremes in and around Jakarta, Indonesia," *Weather and Climate Extremes*,
-   vol. 24, p. 100202, Jun. 2019, doi: 10.1016/j.wace.2019.100202.
-10. I. T. Jolliffe and D. B. Stephenson, eds., *Forecast Verification: A Practitioner's
+8. D. E. Rumelhart, G. E. Hinton, and R. J. Williams, "Learning representations by
+   back-propagating errors," *Nature*, vol. 323, no. 6088, pp. 533–536, Oct. 1986,
+   doi: 10.1038/323533a0.
+9. A. Krizhevsky, I. Sutskever, and G. E. Hinton, "ImageNet classification with deep
+   convolutional neural networks," in *Proc. Adv. Neural Inf. Process. Syst. (NeurIPS)*,
+   vol. 25, Dec. 2012, pp. 1097–1105.
+10. M. C. Wheeler and H. H. Hendon, "An all-season real-time multivariate MJO index:
+    Development of an index for monitoring and prediction," *Monthly Weather Review*,
+    vol. 132, no. 8, pp. 1917–1932, Aug. 2004, doi: 10.1175/1520-0493(2004)132<1917:AARMMI>2.0.CO;2.
+11. S. Lestari, A. King, C. Vincent, D. Karoly, and A. Protat, "Seasonal dependence of
+    rainfall extremes in and around Jakarta, Indonesia," *Weather and Climate Extremes*,
+    vol. 24, p. 100202, Jun. 2019, doi: 10.1016/j.wace.2019.100202.
+12. I. T. Jolliffe and D. B. Stephenson, eds., *Forecast Verification: A Practitioner's
     Guide in Atmospheric Science*, 2nd ed. Chichester, UK: Wiley, 2011,
     doi: 10.1002/9781119960003.
 

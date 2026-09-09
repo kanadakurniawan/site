@@ -5,6 +5,12 @@
   .app-prose {
     @apply prose;
 
+    /* KaTeX display equation blok: assure warna ikut tema (fix: prose body
+       color tetap slate gelap di dark mode sehingga rumus ga kelihatan). */
+    .katex-display {
+      @apply text-foreground;
+    }
+
     h1,
     h2,
     h3,

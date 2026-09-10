@@ -1,10 +1,9 @@
 ---
 title: "Google Colab vs Komputer Sendiri: Mana yang Cukup untuk Eksperimen Deep Learning?"
 description: "Perbandingan jujur Google Colab (gratis/berbayar) vs laptop vs workstation untuk eksperimen deep learning, dari setup, GPU, RAM, storage, sampai kapan Anda butuh upgrade. Ditulis dari pengalaman praktisi, bukan brosur."
-pubDate: 2026-09-07
+pubDatetime: 2026-09-05
 tags: ["Deep Learning", "tools", "google colab", "gpu", "praktisi"]
 draft: false
-pubDatetime: "2026-09-05T00:00:00.000Z"
 ---
 
 > Catatan pengalaman pribadi, bukan endorsement vendor. Pilihan tergantung model, data, dan anggaran Anda. Saya pakai semua opsi di bawah untuk hal berbeda.

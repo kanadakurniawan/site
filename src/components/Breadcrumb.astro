@@ -1,8 +1,11 @@
 ---
+import { getCollection } from "astro:content";
+import { basename } from "node:path";
 import { getRelativeLocaleUrl } from "astro:i18n";
 import { stripBase, stripLocale } from "@/utils/withBase";
 import { useTranslations } from "@/i18n";
 import config from "@/config";
+import { getBookMeta } from "@/utils/getBookMeta";
 
 const locale = Astro.currentLocale ?? config.site.lang;
 const t = useTranslations(locale);
@@ -36,67 +39,111 @@ const navLabels: Record<string, string> = {
   buku: "Buku",
 };
 
-// if breadcrumb is Home > Posts > [page] <etc>
-// replace Posts with localized "Posts (page number)"
-if (breadcrumbList[0] === "posts") {
-  breadcrumbList.splice(
-    0,
-    2,
-    `${t.nav.posts} (${t.pagination.page.toLowerCase()} ${breadcrumbList[1] || 1})`
+type Crumb = { label: string; href?: string };
+
+const chapterSlug = (filePath: string | undefined, id: string) =>
+  filePath ? basename(filePath, ".md").replace(/\.mdx$/, "") : id.split("/").pop()!;
+
+const isBookPath = breadcrumbList[0] === "buku";
+
+let trail: Crumb[] = [
+  { label: t.nav.home, href: getRelativeLocaleUrl(locale, "") },
+];
+
+if (isBookPath && breadcrumbList.length >= 2) {
+  const bookId = breadcrumbList[1];
+  const meta = getBookMeta(bookId);
+  const bookTitle = meta?.title ?? decodeSegment(bookId);
+
+  trail.push(
+    { label: "Buku", href: getRelativeLocaleUrl(locale, "buku") },
+    { label: bookTitle, href: getRelativeLocaleUrl(locale, `buku/${bookId}`) }
   );
+
+  if (breadcrumbList.length >= 3) {
+    const slug = breadcrumbList[2];
+    const chapters = await getCollection(
+      "book",
+      ({ data }) => !data.draft && data.bookId === bookId
+    );
+    const ch = chapters.find(
+      (c) => chapterSlug(c.filePath, c.id) === slug
+    );
+    trail.push({
+      label: ch
+        ? `Bab ${ch.data.chapter}: ${ch.data.title}`
+        : decodeSegment(slug),
+    });
+  }
+} else {
+  // Special book single-segment (/buku)
+  if (breadcrumbList[0] === "buku") {
+    trail.push({ label: "Buku" });
+  } else {
+    // if breadcrumb is Home > Posts > [page] <etc>
+    // replace Posts with localized "Posts (page number)"
+    if (breadcrumbList[0] === "posts") {
+      breadcrumbList.splice(
+        0,
+        2,
+        `${t.nav.posts} (${t.pagination.page.toLowerCase()} ${breadcrumbList[1] || 1})`
+      );
+    }
+
+    // if breadcrumb is Home / Tags / [tag] / [page] <etc>
+    if (breadcrumbList[0] === "tags" && !isNaN(Number(breadcrumbList[2]))) {
+      breadcrumbList.splice(
+        1,
+        3,
+        `${decodeSegment(breadcrumbList[1])} ${
+          Number(breadcrumbList[2]) === 1
+            ? ""
+            : `(${t.pagination.page.toLowerCase()} ${breadcrumbList[2]})`
+        }`
+      );
+    }
+
+    breadcrumbList.forEach((segment, index) => {
+      const crumb: Crumb = {
+        label: navLabels[segment] ?? decodeSegment(segment),
+      };
+      if (index + 1 < breadcrumbList.length) {
+        crumb.href = getRelativeLocaleUrl(locale, segment);
+      }
+      trail.push(crumb);
+    });
+  }
 }
 
-// if breadcrumb is Home > Tags > [tag] > [page] <etc>
-// replace [tag] > [page] with localized [tag] (page number)
-if (breadcrumbList[0] === "tags" && !isNaN(Number(breadcrumbList[2]))) {
-  breadcrumbList.splice(
-    1,
-    3,
-    `${decodeSegment(breadcrumbList[1])} ${
-      Number(breadcrumbList[2]) === 1
-        ? ""
-        : `(${t.pagination.page.toLowerCase()} ${breadcrumbList[2]})`
-    }`
-  );
-}
+const lastIndex = trail.length - 1;
 ---
 
 <nav class="app-layout mt-8 mb-1" aria-label="breadcrumb">
   <ul
     class="flex flex-wrap items-center gap-x-1 font-light [&>li:not(:last-child)>a]:hover:opacity-100"
   >
-    <li class="flex items-center gap-x-1">
-      <a href={getRelativeLocaleUrl(locale, "")} class="opacity-80">
-        {t.nav.home}
-      </a>
-      <span aria-hidden="true" class="opacity-80">&raquo;</span>
-    </li>
     {
-      breadcrumbList.map((breadcrumb, index) =>
-        index + 1 === breadcrumbList.length ? (
+      trail.map((crumb, index) => (
+        index === lastIndex ? (
           <li>
             <span
-              class:list={["capitalize opacity-75", { lowercase: index > 0 }]}
+              class:list={["opacity-75", { lowercase: index > 0 }]}
               aria-current="page"
             >
-              {/* make the last part lowercase in Home > Tags > some-tag */}
-              {navLabels[breadcrumb] ?? decodeSegment(breadcrumb)}
+              {crumb.label}
             </span>
           </li>
         ) : (
           <li class="flex items-center gap-x-1">
-            <a
-              href={getRelativeLocaleUrl(locale, breadcrumb)}
-              class="capitalize opacity-70"
-            >
-              {navLabels[breadcrumb] ?? decodeSegment(breadcrumb)}
+            <a href={crumb.href} class="capitalize opacity-70">
+              {crumb.label}
             </a>
             <span aria-hidden="true" class="opacity-70">
               &raquo;
             </span>
           </li>
         )
-      )
+      ))
     }
   </ul>
 </nav>

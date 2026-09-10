@@ -25,11 +25,8 @@ export default defineConfig({
   site: config.site.url,
   redirects: {
     "/publications": "/publikasi",
-    "/publications/": "/publikasi",
     "/publications/paper": "/paper",
-    "/publications/paper/": "/paper",
     "/publications/buku": "/buku",
-    "/publications/buku/": "/buku",
   },
   integrations: [
     mdx(),

@@ -70,182 +70,214 @@ const isActive = (path: string) => {
     </button>
     <nav
       id="nav-menu"
-      class="fixed inset-0 z-50 hidden place-items-center bg-background/95 backdrop-blur-sm data-[open=true]:grid"
+      class="fixed inset-0 z-50 grid place-items-center bg-background/95 backdrop-blur transition-opacity duration-300 data-[open=false]:invisible data-[open=false]:pointer-events-none data-[open=false]:opacity-0 data-[open=true]:visible data-[open=true]:opacity-100"
       data-open="false"
+      aria-hidden="true"
     >
-      <ul
-        id="menu-items"
-        class="m-0 w-full list-none place-items-center gap-2 p-0 text-center [&>li>a]:block [&>li>a]:px-4 [&>li>a]:py-2.5 [&>li>a]:text-2xl [&>li>a]:font-semibold [&>li>a]:no-underline [&_a]:hover:text-accent"
-      >
-        <li>
-          <a
-            href={getRelativeLocaleUrl(locale, "posts")}
-            class:list={{ "active-nav": isActive("/posts") }}
-          >
-            {t.nav.posts}
-          </a>
-        </li>
-        <li>
-          <a
-            href={getRelativeLocaleUrl(locale, "tags")}
-            class:list={{ "active-nav": isActive("/tags") }}
-          >
-            {t.nav.tags}
-          </a>
-        </li>
-        <li class="group/pubs relative flex flex-col items-center">
-          <span class="inline-flex items-center justify-center">
+      <div class="max-h-full w-full overflow-y-auto px-6 py-10 sm:px-10">
+        <ul
+          id="menu-items"
+          class="mx-auto flex w-full max-w-md list-none flex-col gap-1.5 p-0 sm:max-w-lg"
+        >
+          <li class="menu-item" style="--d: 35ms">
             <a
-              href={getRelativeLocaleUrl(locale, "publikasi")}
-              class:list={[
-                "inline-flex items-center justify-center px-4 py-2.5 text-2xl font-semibold no-underline hover:text-accent",
-                { "active-nav": isActive("/publikasi") },
-              ]}
+              href={getRelativeLocaleUrl(locale, "posts")}
+              class:list={["menu-link", { "active-nav": isActive("/posts") }]}
             >
-              Publikasi
+              {t.nav.posts}
             </a>
-            <button
-              id="pubs-toggle"
-              type="button"
-              class="focus-outline inline-flex items-center justify-center px-1 py-2.5 text-2xl font-semibold no-underline hover:text-accent"
-              aria-expanded="false"
-              aria-controls="pubs-submenu"
-              aria-label="Toggle publikasi submenu"
-            >
-              <svg
-                class="pubs-chevron size-5 transition-transform duration-200"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M6 9l6 6 6-6" />
-              </svg>
-            </button>
-          </span>
-          <ul
-            id="pubs-submenu"
-            class="m-0 hidden flex-col items-center gap-1 p-0 no-underline group-hover/pubs:flex"
-          >
-            <li>
-              <a
-                href={getRelativeLocaleUrl(locale, "paper")}
-                class:list={["no-underline", { "active-nav": isActive("/paper") }]}
-              >
-                Paper
-              </a>
-            </li>
-            <li>
-              <a
-                href={getRelativeLocaleUrl(locale, "buku")}
-                class:list={["no-underline", { "active-nav": isActive("/buku") }]}
-              >
-                Buku
-              </a>
-            </li>
-          </ul>
-        </li>
-        <li class="group/apps relative flex flex-col items-center">
-          <span class="inline-flex items-center justify-center">
+          </li>
+          <li class="menu-item" style="--d: 70ms">
             <a
-              href={getRelativeLocaleUrl(locale, "apps")}
-              class:list={[
-                "inline-flex items-center justify-center px-4 py-2.5 text-2xl font-semibold no-underline hover:text-accent",
-                { "active-nav": isActive("/apps") },
-              ]}
+              href={getRelativeLocaleUrl(locale, "tags")}
+              class:list={["menu-link", { "active-nav": isActive("/tags") }]}
             >
-              {t.nav.apps}
+              {t.nav.tags}
             </a>
-            <button
-              id="apps-toggle"
-              type="button"
-              class="focus-outline inline-flex items-center justify-center px-1 py-2.5 text-2xl font-semibold no-underline hover:text-accent"
-              aria-expanded="false"
-              aria-controls="apps-submenu"
-              aria-label="Toggle apps submenu"
-            >
-              <svg
-                class="apps-chevron size-5 transition-transform duration-200"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M6 9l6 6 6-6" />
-              </svg>
-            </button>
-          </span>
-          <ul
-            id="apps-submenu"
-            class="m-0 mt-1 hidden flex-col items-center gap-1 p-0 no-underline group-hover/apps:flex"
-          >
-            <li>
+          </li>
+
+          <li class="menu-item" style="--d: 105ms">
+            <div class="flex w-full items-center justify-center gap-0.5">
               <a
-                href="https://model.kanadakurniawan.com"
-                rel="noopener"
-                target="_blank"
-                class="no-underline"
+                href={getRelativeLocaleUrl(locale, "publikasi")}
+                class:list={[
+                  "menu-link",
+                  { "active-nav": isActive("/publikasi") },
+                ]}
               >
-                Model
+                Publikasi
               </a>
-            </li>
-          </ul>
-        </li>
-        <li>
-          <a
-            href={getRelativeLocaleUrl(locale, "about")}
-            class:list={{ "active-nav": isActive("/about") }}
-          >
-            {t.nav.about}
-          </a>
-        </li>
-        {
-          features.showArchives && (
-            <li>
-              <a
-                href={getRelativeLocaleUrl(locale, "archives")}
-                class:list={{ "active-nav": isActive("/archives") }}
-              >
-                {t.nav.archives}
-              </a>
-            </li>
-          )
-        }
-        {
-          features.search !== false && (
-            <li>
-              <a
-                href={getRelativeLocaleUrl(locale, "search")}
-                class:list={{ "active-nav": isActive("/search") }}
-              >
-                {t.nav.search}
-              </a>
-            </li>
-          )
-        }
-        {
-          features.lightAndDarkMode && (
-            <li class="mt-4 flex items-center justify-center">
               <button
-                id="theme-btn"
-                class="focus-outline hover:[&>svg]:stroke-accent relative size-12 p-4"
-                title={t.a11y.toggleTheme}
-                aria-label="auto"
-                aria-live="polite"
+                id="pubs-toggle"
+                type="button"
+                class="focus-outline flex size-11 shrink-0 items-center justify-center rounded-full text-foreground transition-colors hover:text-accent"
+                aria-expanded="false"
+                aria-controls="pubs-submenu"
+                aria-label="Toggle publikasi submenu"
               >
-                <IconMoon class="absolute top-[50%] left-[50%] translate-[-50%] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
-                <IconSunHigh class="absolute top-[50%] left-[50%] translate-[-50%] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
+                <svg
+                  class="pubs-chevron size-5 transition-transform duration-300"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
               </button>
-            </li>
-          )
-        }
-      </ul>
+            </div>
+            <div
+              id="pubs-submenu"
+              class="dropdown"
+              data-submenu
+              data-open="false"
+              aria-hidden="true"
+            >
+              <div class="dropdown-inner">
+                <ul class="flex list-none flex-col gap-1 pt-1 pb-1">
+                  <li>
+                    <a
+                      href={getRelativeLocaleUrl(locale, "paper")}
+                      class:list={[
+                        "submenu-link",
+                        { "active-nav": isActive("/paper") },
+                      ]}
+                    >
+                      Paper
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href={getRelativeLocaleUrl(locale, "buku")}
+                      class:list={[
+                        "submenu-link",
+                        { "active-nav": isActive("/buku") },
+                      ]}
+                    >
+                      Buku
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </li>
+
+          <li class="menu-item" style="--d: 140ms">
+            <div class="flex w-full items-center justify-center gap-0.5">
+              <a
+                href={getRelativeLocaleUrl(locale, "apps")}
+                class:list={[
+                  "menu-link",
+                  { "active-nav": isActive("/apps") },
+                ]}
+              >
+                {t.nav.apps}
+              </a>
+              <button
+                id="apps-toggle"
+                type="button"
+                class="focus-outline flex size-11 shrink-0 items-center justify-center rounded-full text-foreground transition-colors hover:text-accent"
+                aria-expanded="false"
+                aria-controls="apps-submenu"
+                aria-label="Toggle apps submenu"
+              >
+                <svg
+                  class="apps-chevron size-5 transition-transform duration-300"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </button>
+            </div>
+            <div
+              id="apps-submenu"
+              class="dropdown"
+              data-submenu
+              data-open="false"
+              aria-hidden="true"
+            >
+              <div class="dropdown-inner">
+                <ul class="flex list-none flex-col gap-1 pt-1 pb-1">
+                  <li>
+                    <a
+                      href="https://model.kanadakurniawan.com"
+                      rel="noopener"
+                      target="_blank"
+                      class="submenu-link"
+                    >
+                      Model
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </li>
+
+          <li class="menu-item" style="--d: 175ms">
+            <a
+              href={getRelativeLocaleUrl(locale, "about")}
+              class:list={["menu-link", { "active-nav": isActive("/about") }]}
+            >
+              {t.nav.about}
+            </a>
+          </li>
+          {
+            features.showArchives && (
+              <li class="menu-item" style="--d: 210ms">
+                <a
+                  href={getRelativeLocaleUrl(locale, "archives")}
+                  class:list={[
+                    "menu-link",
+                    { "active-nav": isActive("/archives") },
+                  ]}
+                >
+                  {t.nav.archives}
+                </a>
+              </li>
+            )
+          }
+          {
+            features.search !== false && (
+              <li class="menu-item" style="--d: 245ms">
+                <a
+                  href={getRelativeLocaleUrl(locale, "search")}
+                  class:list={[
+                    "menu-link",
+                    { "active-nav": isActive("/search") },
+                  ]}
+                >
+                  {t.nav.search}
+                </a>
+              </li>
+            )
+          }
+          {
+            features.lightAndDarkMode && (
+              <li class="menu-item mt-5 flex justify-center" style="--d: 280ms">
+                <button
+                  id="theme-btn"
+                  class="focus-outline relative flex size-14 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-accent hover:text-accent"
+                  title={t.a11y.toggleTheme}
+                  aria-label="auto"
+                  aria-live="polite"
+                >
+                  <IconMoon class="absolute top-1/2 left-1/2 size-6 -translate-x-1/2 -translate-y-1/2 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
+                  <IconSunHigh class="absolute top-1/2 left-1/2 size-6 -translate-x-1/2 -translate-y-1/2 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
+                </button>
+              </li>
+            )
+          }
+        </ul>
+      </div>
     </nav>
   </div>
 </header>
@@ -264,64 +296,69 @@ const isActive = (path: string) => {
 
     const setOpen = (open: boolean) => {
       navMenu.dataset.open = String(open);
+      navMenu.setAttribute("aria-hidden", String(!open));
       menuBtn.setAttribute("aria-expanded", String(open));
       menuBtn.setAttribute("aria-label", open ? closeLabel : openLabel);
       menuIcon.classList.toggle("hidden", open);
       closeIcon.classList.toggle("hidden", !open);
       document.body.style.overflow = open ? "hidden" : "";
+
+      // Tutup semua submenu saat menu di-close (naik/di klik link).
+      if (!open) {
+        navMenu
+          .querySelectorAll<HTMLElement>("[data-submenu]")
+          .forEach((el) => {
+            el.dataset.open = "false";
+            el.setAttribute("aria-hidden", "true");
+          });
+        navMenu
+          .querySelectorAll<HTMLButtonElement>("#pubs-toggle, #apps-toggle")
+          .forEach((btn) => btn.setAttribute("aria-expanded", "false"));
+      }
     };
 
     menuBtn.addEventListener("click", () => {
       setOpen(navMenu.dataset.open !== "true");
     });
 
+    // Klik link mana pun → tutup menu.
     navMenu.querySelectorAll("a").forEach((link) =>
       link.addEventListener("click", () => setOpen(false))
     );
+
+    // Klik area kosong overlay → tutup menu (bukan di link/button).
+    navMenu.addEventListener("click", (e) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest("a") && !target.closest("button")) setOpen(false);
+    });
+
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") setOpen(false);
     });
   }
 
-  function toggleAppsSubmenu() {
-    const appsToggle = document.querySelector<HTMLButtonElement>("#apps-toggle");
-    const submenu = document.querySelector<HTMLElement>("#apps-submenu");
-    const chevron = document.querySelector<SVGElement>(".apps-chevron");
+  function bindSubmenu(id: string) {
+    const toggle = document.querySelector<HTMLButtonElement>(`#${id}-toggle`);
+    const submenu = document.querySelector<HTMLElement>(`#${id}-submenu`);
+    const chevron = document.querySelector<SVGElement>(`.${id}-chevron`);
 
-    if (!appsToggle || !submenu || !chevron) return;
+    if (!toggle || !submenu || !chevron) return;
 
-    appsToggle.addEventListener("click", (e) => {
+    toggle.addEventListener("click", (e) => {
       e.stopPropagation();
       e.preventDefault();
-      const open = appsToggle.getAttribute("aria-expanded") === "true";
-      appsToggle.setAttribute("aria-expanded", open ? "false" : "true");
-      submenu.classList.toggle("hidden", open);
-      submenu.classList.toggle("flex", !open);
-      chevron.style.transform = open ? "rotate(0deg)" : "rotate(180deg)";
-    });
-  }
-
-  function togglePubsSubmenu() {
-    const pubsToggle = document.querySelector<HTMLButtonElement>("#pubs-toggle");
-    const submenu = document.querySelector<HTMLElement>("#pubs-submenu");
-    const chevron = document.querySelector<SVGElement>(".pubs-chevron");
-
-    if (!pubsToggle || !submenu || !chevron) return;
-
-    pubsToggle.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const open = pubsToggle.getAttribute("aria-expanded") === "true";
-      pubsToggle.setAttribute("aria-expanded", open ? "false" : "true");
-      submenu.classList.toggle("hidden", open);
-      submenu.classList.toggle("flex", !open);
-      chevron.style.transform = open ? "rotate(0deg)" : "rotate(180deg)";
+      const open = submenu.dataset.open === "true";
+      submenu.dataset.open = String(!open);
+      submenu.setAttribute("aria-hidden", String(open));
+      toggle.setAttribute("aria-expanded", String(!open));
+      chevron.style.transform = open ? "" : "rotate(180deg)";
     });
   }
 
   function handleSkipToContent() {
     const skipLink = document.getElementById("skip-to-content");
     if (!skipLink) return;
-    skipLink.addEventListener("click", e => {
+    skipLink.addEventListener("click", (e) => {
       if (
         e.defaultPrevented ||
         e.metaKey ||
@@ -350,12 +387,93 @@ const isActive = (path: string) => {
   toggleNav();
   document.addEventListener("astro:after-swap", toggleNav);
 
-  toggleAppsSubmenu();
-  document.addEventListener("astro:after-swap", toggleAppsSubmenu);
+  bindSubmenu("pubs");
+  document.addEventListener("astro:after-swap", () => bindSubmenu("pubs"));
 
-  togglePubsSubmenu();
-  document.addEventListener("astro:after-swap", togglePubsSubmenu);
+  bindSubmenu("apps");
+  document.addEventListener("astro:after-swap", () => bindSubmenu("apps"));
 
   handleSkipToContent();
   document.addEventListener("astro:after-swap", handleSkipToContent);
 </script>
+
+<style>
+  #nav-menu {
+    transition: opacity 0.3s ease, visibility 0.3s;
+  }
+
+  /* Stagger masuk menu: tiap item muncul bergantian saat dibuka */
+  .menu-item {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+    transition-delay: 0ms;
+  }
+  #nav-menu[data-open="true"] .menu-item {
+    opacity: 1;
+    transform: none;
+    transition-delay: var(--d, 0ms);
+  }
+
+  .menu-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0.85rem 1.25rem;
+    border-radius: 9999px;
+    font-size: 1.5rem;
+    line-height: 1.25;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--color-foreground);
+    text-align: center;
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease,
+      transform 0.2s ease;
+  }
+  .menu-link:hover,
+  .menu-link.active-nav {
+    color: var(--color-accent);
+    background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  }
+  .menu-link:hover {
+    transform: translateY(-1px);
+  }
+
+  .submenu-link {
+    display: block;
+    width: 100%;
+    padding: 0.55rem 1.25rem;
+    border-radius: 9999px;
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: var(--color-muted-foreground);
+    text-decoration: none;
+    transition: color 0.2s ease, background-color 0.2s ease;
+  }
+  .submenu-link:hover,
+  .submenu-link.active-nav {
+    color: var(--color-accent);
+    background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  }
+
+  /* Submenu: gunakan grid 0fr -> 1fr agar tinggi ter- animasi */
+  .dropdown {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    visibility: hidden;
+    transition: grid-template-rows 0.4s ease, opacity 0.3s ease,
+      visibility 0s 0.4s;
+  }
+  .dropdown-inner {
+    overflow: hidden;
+  }
+  .dropdown[data-open="true"] {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    visibility: visible;
+    transition: grid-template-rows 0.4s ease, opacity 0.3s ease;
+  }
+</style>

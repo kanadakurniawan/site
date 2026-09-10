@@ -67,7 +67,7 @@ const t = useTranslations(locale);
       if (import.meta.env.DEV) {
         pageFindSearch.innerHTML = `
             <div class="bg-muted/75 rounded p-4 space-y-4 mb-4">
-              <p><strong>DEV mode Warning! </strong>You need to build the project at least once to see the search results during development.</p>
+              <p><strong>Peringatan mode pengembangan! </strong>Jalankan build minimal satu kali untuk melihat hasil pencarian pada saat pengembangan.</p>
               <code class="block bg-black text-white px-2 py-1 rounded">pnpm run build</code>
             </div>
           `;
@@ -79,6 +79,18 @@ const t = useTranslations(locale);
         bundlePath,
         showImages: false,
         showSubResults: true,
+        translations: {
+          placeholder: "Cari",
+          clear_search: "Bersihkan",
+          load_more: "Muat hasil lainnya",
+          search_label: "Cari di situs ini",
+          filters_label: "Filter",
+          zero_results: "Tidak ada halaman yang memuat [SEARCH_TERM]",
+          many_results: "[SEARCH_TERM] ditemukan di [COUNT] halaman",
+          one_result: "[SEARCH_TERM] ditemukan di [COUNT] halaman",
+          alt_search: "Tidak ada hasil untuk [SEARCH_TERM]. Coba kata lain.",
+          no_results: "Tidak ada hasil yang ditemukan",
+        },
         processTerm: function (term: string) {
           params.set("q", term); // Update the `q` parameter in the URL
           history.replaceState(history.state, "", "?" + params.toString()); // Push the new URL without reloading

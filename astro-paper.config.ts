@@ -9,7 +9,7 @@ export default defineAstroPaperConfig({
     author: "Kanada Kurniawan",
     profile: "https://kanadakurniawan.com",
     ogImage: "kanadakurniawan.jpg",
-    lang: "en",
+    lang: "id",
     timezone: "Asia/Pontianak",
     dir: "ltr",
     // Facebook App ID (required to silence fb:app_id warning in the FB

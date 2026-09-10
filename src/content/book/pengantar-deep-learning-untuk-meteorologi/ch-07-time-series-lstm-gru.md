@@ -1,9 +1,9 @@
 ---
 title: "Deret Waktu dan Model Sekuensial: RNN, LSTM, GRU"
 description: "Bab 7 - menyusun deret waktu menjadi data machine learning (windowing & horizon), membangun baseline (persistence, mean, AR), memahami RNN dan keterbatasannya, lalu LSTM dan GRU (intuisi gate), arsitektur praktis univariate/multivariate, serta strategi prediksi multi-langkah."
-pubDatetime: 2026-09-01
+pubDatetime: 2026-09-10
 tags: ["Deep Learning", "Meteorologi", "time series", "LSTM", "GRU", "RNN", "forecasting", "windowing", "baseline", "sequence model"]
-draft: true
+draft: false
 chapter: 7
 bookId: "pengantar-deep-learning-untuk-meteorologi"
 ---

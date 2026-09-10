@@ -34,7 +34,8 @@ Setelah menyelesaikan bab ini, Anda diharapkan mampu:
 
 Setiap model memiliki dua jenis kesalahan struktural. Kerangka ini juga yang dipakai
 literatur verifikasi operasional - misalnya bagaimana WMO meninjau keandalan metrik
-perkiraan [1], dan pembahasan mendalam evaluasi model bisa dilihat di [2]:
+perkiraan [1]; rujukan standar verifikasi perkiraan adalah Jolliffe & Stephenson [2],
+dan untuk deep learning umum (termasuk aspek bias-variance) lihat Goodfellow et al. [3]:
 
 - **Bias tinggi** - model terlalu sederhana, tidak menangkap pola data (underfit).
   Misal: memakai garis lurus untuk data yang jelas tidak linear.
@@ -114,6 +115,12 @@ callbacks = [
 ]
 ```
 
+Nilai `patience=15` di Kode 5.1 hanyalah titik mulai. Nilai optimal bergantung pada
+seberapa berisik (noisy) kurva validasi Anda: pada data cuaca/hujan yang fluktuasinya
+kuat, patience yang terlalu kecil bisa menghentikan pelatihan karena fluktuasi, bukan
+konvergensi sejati - sebaliknya, pada dataset besar dengan loss halus, patience besar
+hanya membuang waktu. Mulai dengan 10-20, amati kurva, lalu sesuaikan.
+
 ### 2. Regularisasi L2 (weight decay)
 
 Menambahkan penalti ke loss sebanding dengan kuadrat besarnya bobot:
@@ -128,6 +135,12 @@ kecil, sehingga tidak terlalu bergantung pada satu fitur. Di Keras:
 ```python
 tf.keras.layers.Dense(8, activation="relu", kernel_regularizer=tf.keras.regularizers.l2(1e-4))
 ```
+
+**Catatan untuk pelanjut:** istilah "L2" dan "weight decay" baru menjadi benar-benar
+identik pada SGD vanila. Pada optimizer adaptif seperti Adam, menambahkan penalti L2 ke
+dalam loss tidak sama dengan *decoupled weight decay* (penalti terpisah pada parameter
+`weight_decay`, dikenal sebagai AdamW) - versi terpisah ini sering lebih stabil [4].
+Nuansa ini tidak diperlukan untuk latihan bab ini; cukup pakai `kernel_regularizer`.
 
 ### 3. Dropout
 
@@ -173,7 +186,7 @@ melihat learning curve - bisa memperburuk underfit.
   lebih tahan terhadap noise pada fitur tertentu (Persamaan 5.1).
 - **Dropout** membuat jaringan belajar dengan "ansambel efektif" dari banyak sub-jaringan
   (neuron acak dimatikan), sehingga tidak ada neuron yang menjadi titik tunggal kegagalan;
-  konsep ini diperkenalkan oleh Srivastava et al. (2014) [3].
+  konsep ini diperkenalkan oleh Srivastava et al. (2014) [5].
 - **Early stopping** membatasi *berapa lama* model boleh belajar, mencegah model
   "menghafal" cukup dalam untuk menangkap noise.
 
@@ -193,7 +206,8 @@ ber-noise.
 - **L2 lambda**: mulai dari `1e-4`-`1e-3`. Terlalu kecil → tidak berefek; terlalu besar →
   model "terlalu tumpul" (underfit). Lihat kurva.
 - **Dropout rate**: mulai `0.2-0.5` untuk lapisan tersembunyi. Terlalu tinggi → model
-  sulit belajar di data kecil.
+  sulit belajar di data kecil; pada data sangat kecil (di bawah ribuan sampel), mulai
+  lebih rendah (mis. `0.1-0.2`).
 - Aturan: ubah **satu demi satu**, pantau val - seperti tuning hyperparameter di Bab 4.
 
 ### Perbandingan kode lengkap (Kode 5.2 & 5.3 dipakai bersama)
@@ -210,17 +224,24 @@ yang benar untuk meteorologi** bergantung pada fenomena dan tujuan.
 
 ### Untuk regresi (besaran kontinu)
 
-- **MAE** - galat rata-rata, mudah dipahami (satuan sama). Tahan pencilan.
+- **MAE** - galat rata-rata, mudah dipahami (satuan sama). Lebih tahan terhadap pencilan
+  daripada RMSE (tidak mengkuadratkan galat) - tetapi bukan kebal: satu galat ekstrem 100
+  memberi kontribusi 100, sama seperti 100 galat yang bernilai 1.
 - **RMSE** - akar MSE; menghukum galat besar lebih. Selalu ≥ MAE; selisihnya menunjukkan
   bobot galat ekstrem.
-- **R²** - proporsi varians yang dijelaskan; bisa negatif jika model lebih buruk dari
-  rata-rata (kurang informatif di luar range training).
+- **R²** - proporsi varians yang dijelaskan (`1 − SSE/SST`); bisa negatif jika model lebih
+  buruk daripada sekadar memprediksi rata-rata target. R² negatif pada data uji adalah
+  tanda bahaya (model gagal total), bukan hanya "kurang informatif"; di luar range training
+  R² umumnya turun tajam karena model belum pernah lihat skala tersebut.
 - **Willmott index (d)** - antara 0-1; lebih "ramah" pada data berskala (sering dipakai
-  hidrologi/meteo).
+  hidrologi/meteo). Versi original merujuk Willmott (1981) [6]; ada versi modifikasi
+  (Willmott et al., 2012) [7] yang rumusnya sedikit berbeda - catat versi mana yang
+  dipakai saat mengimplementasikan.
 - **KGE** (Kling-Gupta efficiency) - menggabungkan korelasi, bias, dan variabilitas;
-  populer di hidrologi; dirinci oleh Gupta et al. (2009) [4].
+  populer di hidrologi; dirinci oleh Gupta et al. (2009) [8].
 
-Sebagai referensi dasar evaluasi & praktik model pada umumnya, lihat pula [2].
+Sebagai referensi dasar evaluasi & praktik model pada umumnya, lihat pula [3]; untuk
+verifikasi perkiraan yang lebih mendalam, lihat Jolliffe & Stephenson [2].
 
 **Tabel 5.2**: Panduan memilih metrik regresi.
 
@@ -240,11 +261,14 @@ Sebagai referensi dasar evaluasi & praktik model pada umumnya, lihat pula [2].
 - **Willmott d**: "seberapa dekat prediksi ke aktual dalam skala 0-1 yang 'ramah'
   terhadap pencilan" - sering digunakan pada laporan hidrologi Indonesia.
 - **KGE**: "seberapa baik model menangkap korelasi, tanpa bias, dan variabilitas
-  sekaligus?" (terurai oleh Gupta et al., 2009 [4]).
+  sekaligus?" (terurai oleh Gupta et al., 2009 [8]).
 
 KGE dirumuskan lewat tiga komponen: korelasi (`r`), bias rasio, dan rasio variabilitas;
-nilai `1` = sempurna, `0` = setara rata-rata, negatif = buruk. Konteks ini membuat
-rekomendasi pemilihan di Tabel 5.2 menjadi masuk akal.
+nilai `1` = sempurna. Untuk model yang selalu memprediksi rata-rata klimatologi,
+korelasi = 0 dan rasio variabilitas = 0, sehingga KGE = `1 − √2 ≈ −0.41` - bukan 0 seperti
+yang kadang keliru disebut. Nilai di bawah baseline itu berarti lebih buruk daripada
+memakai rata-rata. Konteks ini membuat rekomendasi pemilihan di Tabel 5.2 menjadi masuk
+akal.
 
 ### Contoh ukuran cepat untuk memahami skala metrik
 
@@ -252,7 +276,9 @@ Untuk data uji dengan `y = [10, 20, 30]` dan prediksi `ŷ = [12, 19, 29]`:
 
 - MAE = `(2+1+1)/3 = 1.33`
 - RMSE ≈ `√((4+1+1)/3) ≈ 1.41`
-- R² = `1 − (6/200) ≈ 0.97` (sangat baik secara pola)
+- R² = `1 − (6/200) ≈ 0.97` (contoh ini hanya untuk memahami skala; dengan 3 data saja,
+  angka R² sangat tidak stabil dan tidak mencerminkan performa nyata - selalu uji pada data
+  yang cukup banyak, §5.7)
 - Willmott d ≈ `0.99`
 - (KGE perlu varian pred/obs; dihitung di notebook)
 
@@ -281,6 +307,15 @@ Bab 3 sudah mengenalkan precision/recall/F1. Di operasional, kuartet klasik pera
 | (Bias score) | (TP+FP)/(TP+FN) | Model terlalu sering/malas prediksi? | ~1 |
 
 Pedoman resmi: WMO *Guidelines on the Verification of Operational Forecasts* [1].
+
+**Bias score (terlalu sering atau terlalu jarang memprediksi?)**: Bias score =
+`(TP+FP)/(TP+FN)` menjawab: "berapa jumlah kejadian yang diumumkan dibandingkan yang benar
+terjadi?" Nilai > 1 berarti model *over-forecast* - terlalu sering mengumumkan kejadian,
+kemungkinan banyak peringatan kosong; nilai < 1 berarti *under-forecast* - terlalu jarang,
+kemungkinan banyak kejadian terlewat. Perlu diingat: bias score hanya menghitung
+kecenderungan **jumlah**, bukan ketepatan posisi kejadian (waktu/wilayah) - dua model
+dengan bias score sama bisa jauh berbeda kualitasnya. Karena itu ia selalu dibaca
+bersama POD/FAR/CSI, bukan berdiri sendiri.
 
 **Mengapa ini penting?** Data kejadian langka (hujan deras, gelombang tinggi, badai)
 membuat akurasi menyesatkan (Bab 3). CSI/POD/FAR memberi gambaran yang jujur tentang
@@ -313,21 +348,29 @@ Solusinya: **walk-forward validation** (juga disebut *forward chaining* atau *ex
 window*), yang mensimulasikan penggunaan operasional:
 
 1. Mulai dengan windows latih di awal deret.
-2. Prediksi window berikutnya (utk validasi).
+2. Prediksi window berikutnya (untuk validasi).
 3. Geser batas latih maju; ulangi.
 
-**Tabel 5.5**: Skema walk-forward (ilustrasi 5 fold).
+**Tabel 5.5**: Skema walk-forward (ilustrasi 5 fold; horizon = 20 langkah).
 
-| Fold | Train | Validate | (20 langkah) |
-|---|---|---|---|
-| 1 | t1-t100 | t101-t120 | |
-| 2 | t1-t120 | t121-t140 | |
-| 3 | t1-t140 | t141-t160 | |
-| 4 | t1-t160 | t161-t180 | |
-| 5 | t1-t180 | t181-t200 | |
+| Fold | Train | Validate |
+|---|---|---|
+| 1 | t1-t100 | t101-t120 |
+| 2 | t1-t120 | t121-t140 |
+| 3 | t1-t140 | t141-t160 |
+| 4 | t1-t160 | t161-t180 |
+| 5 | t1-t180 | t181-t200 |
 
 Pada Tabel 5.5, latih selalu **hanya masa lalu**; validasi selalu **di depan** batas latih.
 Ini mereplikasi kondisi nyata: saat model dipakai, ia hanya tahu data hingga hari ini.
+
+Tabel 5.5 memakai **expanding window**: latih selalu dimulai dari awal deret (t1), hanya
+batas akhirnya yang bergeser. Alternatifnya: **sliding window**, di mana latih *juga*
+bergeser (mis. t1-t100, t21-t120, dst). Expanding window memakai semua data sejarah -
+cocok untuk deret dengan tren jangka panjang, tetapi mulai berat saat deret sangat
+panjang; sliding window lebih cocok ketika perilaku lama tidak lagi relevan karena
+distribusi berubah seiring waktu. Pilih sesuai karakter data Anda, dan sebutkan pilihan
+itu saat melaporkan hasil.
 
 **Kode 5.3 - Contoh walk-forward sederhana (pseudo; lengkap di notebook).**
 
@@ -346,6 +389,13 @@ print("Rata-rata MAE walk-forward:", round(sum(results)/len(results), 4))
 
 Penting: **latih model baru di tiap fold** - jika Anda melatih sekali & memprediksi semua
 fold, informasi masa depan bocor.
+
+Catatan: Kode 5.3 (dan contoh di notebook) menggambarkan variant **sliding window** — batas
+*kiri* latih (`start`) juga bergeser tiap fold. Variant ini valid untuk data tanpa tren
+jangka panjang; untuk deret dengan tren kuat, versi **expanding window** (latih selalu
+mulai dari awal deret, hanya batas kanan bergeser, seperti Tabel 5.5) lebih cocok. Kode
+hampir sama — cukup mantenir `start = 0` dan hanya berubah `i_end`, misalnya:
+`for i_end in range(100, len(X) - horizon, 20): Xtr_fold, ytr_fold = X[:i_end], y[:i_end]`.
 
 ### Kenapa bukan "k-fold acak" untuk data iklim?
 
@@ -388,7 +438,7 @@ Untuk menutup Bab 5, rangkum evaluasi yang jujur dalam urutan:
 2. **Baseline** (bab 1-2): ukur model sederhana (persistence, klimatologi, linear) dulu.
 3. **Latih & pantau** (bab 4): learning curve; early stopping saat val berhenti membaik.
 4. **Diagnosa** (bab 5): overfit? → regularisasi; underfit? → kapasitas/fitur.
-5. **Evaluasi** (bab 5): regresi → MAE/RMSE/R²/KGE (e Willmott); kejadian → CSI/POD/FAR + threshold.
+5. **Evaluasi** (bab 5): regresi → MAE/RMSE/R²/KGE (dan Willmott); kejadian → CSI/POD/FAR + threshold.
 6. **Validasi temporal** (bab 5): walk-forward untuk mengukur generalisasi seiring waktu.
 7. **Lapor** (bab 10): angka + satuan + threshold + keterbatasan, banding dengan baseline.
 
@@ -406,6 +456,13 @@ Cara diagnostik sederhana yang sering mengungkap masalah:
   sangat tinggi?
 - **Distribusi residu** - residu yang condong kuat (skew) menandakan model bias
   sistematis (misal selalu memprediksi terlalu rendah pada hujan besar).
+
+Cara membacanya: residu yang berayun mengikuti musim (mis. selalu positif di musim hujan,
+selalu negatif di musim kemarau) mengisyaratkan model gagal menangkap pola musiman -
+tambahkan fitur musiman (bulan, hari dalam tahun) atau interaksi. Residu yang membesar
+saat kelembapan sangat tinggi mengisyaratkan hubungan non-linear - coba transformasi
+target atau fitur interaksi. Pola sistematis yang masih terlihat di residu = sinyal bahwa
+ada struktur yang belum dipelajari model.
 
 Analisis residu hampir selalu menghasilkan ide perbaikan: fitur baru, transformasi target
 (mis. `log(y+1)` untuk hujan), atau threshold yang lebih sesuai. Inilah "analisis
@@ -502,7 +559,7 @@ bermakna daripada banyak angka yang membingungkan.
    curve sebelum/sesudah.
 8. Terapkan walk-forward (fold) pada data pasang surut Bab 2 dan bandingkan MAE rata-rata
    dengan split tunggal.
-9. (Proyek mini) Tulis fungsi evaluasi reusabel: input (y_true, y_pred) → output
+9. (Proyek mini) Tulis fungsi evaluasi reusable: input (y_true, y_pred) → output
    MAE/RMSE/R²/KGE atau POD/FAR/CSI. Simpan untuk Bab 8-9.
 
 ## Ringkasan
@@ -525,11 +582,19 @@ bermakna daripada banyak angka yang membingungkan.
 
 1. World Meteorological Organization, "WMO guidelines on the verification of operational
    forecasts," WMO, Geneva, Switzerland, 2018.
-2. I. Goodfellow, Y. Bengio, and A. Courville, *Deep Learning*. Cambridge, MA, USA:
+2. I. T. Jolliffe and D. B. Stephenson, *Forecast Verification: A Practitioner's Guide in
+   Atmospheric Science*, 2nd ed. Chichester, UK: Wiley, 2011, doi: 10.1002/9781119960003.
+3. I. Goodfellow, Y. Bengio, and A. Courville, *Deep Learning*. Cambridge, MA, USA:
    MIT Press, 2016.
-3. N. Srivastava, G. Hinton, A. Krizhevsky, I. Sutskever, and R. Salakhutdinov, "Dropout:
+4. I. Loshchilov and F. Hutter, "Decoupled weight decay regularization," in *Proc. Int.
+   Conf. on Learning Representations (ICLR)*, 2019. arXiv:1711.05101.
+5. N. Srivastava, G. Hinton, A. Krizhevsky, I. Sutskever, and R. Salakhutdinov, "Dropout:
    A simple way to prevent neural networks from overfitting," *J. Mach. Learn. Res.*,
    vol. 15, no. 1, pp. 1929-1958, 2014.
-4. H. V. Gupta, H. Kling, K. K. Yilmaz, and G. F. Martinez, "Decomposition of the mean
+6. C. J. Willmott, "On the validation of models," *Phys. Geogr.*, vol. 2, no. 2,
+   pp. 184-194, 1981.
+7. C. J. Willmott, S. M. Robeson, and K. Matsuura, "A refined index of model performance,"
+   *Int. J. Climatol.*, vol. 32, no. 6, pp. 573-580, 2012.
+8. H. V. Gupta, H. Kling, K. K. Yilmaz, and G. F. Martinez, "Decomposition of the mean
    squared error and NSE performance criteria: Implications for improving hydrological
    modelling," *J. Hydrol.*, vol. 377, no. 1-2, pp. 80-91, 2009, doi: 10.1016/j.jhydrol.2009.08.003.

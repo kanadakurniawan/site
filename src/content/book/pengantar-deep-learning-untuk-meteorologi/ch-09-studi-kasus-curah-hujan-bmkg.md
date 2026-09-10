@@ -1,9 +1,9 @@
 ---
 title: "Studi Kasus: Prediksi Curah Hujan Stasiun BMKG"
 description: "Bab 9 - proyek end-to-end prediksi curah hujan stasiun BMKG: dua lintasan (regresi jumlah hujan dan klasifikasi kategori intensitas), fitur observasi + ERA5 + ENSO/MJO, verifikasi operasional CSI/POD/FAR, trade-off threshold, interpretasi awal (SHAP), dan tabel verifikasi per kategori."
-pubDatetime: 2026-09-01
+pubDatetime: 2026-09-10
 tags: ["Deep Learning", "Meteorologi", "curah hujan", "BMKG", "prediksi hujan", "CSI", "FAR", "POD", "LSTM", "SHAP", "walk-forward", "studi kasus"]
-draft: true
+draft: false
 chapter: 9
 bookId: "pengantar-deep-learning-untuk-meteorologi"
 ---

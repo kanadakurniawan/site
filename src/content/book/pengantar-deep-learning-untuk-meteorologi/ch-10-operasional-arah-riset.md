@@ -1,9 +1,9 @@
 ---
 title: "Dari Riset ke Praktik: Operasional, Interpretasi, dan Arah ke Depan"
 description: "Bab 10 - menjembatani model ke operasional: monitoring drift dan retraining, ketidakpastian (interval/quantile, ensembel), interpretasi (SHAP) dan tautan ke pengetahuan atmosfer, keterbatasan serta etika (anti-overhype), dan peta arah riset lanjut (CNN, nowcasting, downscaling, generative)."
-pubDatetime: 2026-09-01
+pubDatetime: 2026-09-10
 tags: ["Deep Learning", "Meteorologi", "operasional", "drift", "retraining", "ketidakpastian", "SHAP", "etika", "nowcasting", "downscaling", "generative", "CNN"]
-draft: true
+draft: false
 chapter: 10
 bookId: "pengantar-deep-learning-untuk-meteorologi"
 ---

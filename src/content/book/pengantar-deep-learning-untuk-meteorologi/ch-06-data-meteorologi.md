@@ -1,9 +1,9 @@
 ---
 title: "Data Meteorologi: Sumber, Kualitas dan Persiapan"
 description: "Bab 6 - sumber data meteorologi Indonesia (stasiun BMKG, reanalysis ERA5, pasang surut, satelit), format berkas (CSV/NetCDF/GRIB), penanganan nilai hilang dan pencilan, eksplorasi, feature engineering, serta normalisasi dan split berbasis waktu yang bebas kebocoran."
-pubDatetime: 2026-09-01
+pubDatetime: 2026-09-10
 tags: ["Deep Learning", "Meteorologi", "Data", "data meteorologi", "ERA5", "BMKG", "netcdf", "grib", "xarray", "imputasi", "feature engineering", "data leakage"]
-draft: true
+draft: false
 chapter: 6
 bookId: "pengantar-deep-learning-untuk-meteorologi"
 ---

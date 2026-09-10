@@ -1,9 +1,9 @@
 ---
 title: "Studi Kasus: Prediksi Pasang Surut di Perairan Indonesia (Contoh Cilacap)"
 description: "Bab 8 - proyek end-to-end pertama: prediksi pasang surut di perairan Indonesia dengan studi kasus Cilacap (GLOSS #291). Latar belakang banjir rob pesisir, data nyata (IOC/UHSLC/PSMSL), pipeline Bab 7 (baseline vs MLP vs LSTM/GRU), walk-forward, dan evaluasi MAE/RMSE terhadap toleransi tinggi pasang."
-pubDatetime: 2026-09-01
+pubDatetime: 2026-09-10
 tags: ["Deep Learning", "Meteorologi", "Oseanografi", "pasang surut", "LSTM", "banjir rob", "IOC", "UHSLC", "PSMSL", "cilacap", "walk-forward", "studi kasus"]
-draft: true
+draft: false
 chapter: 8
 bookId: "pengantar-deep-learning-untuk-meteorologi"
 ---

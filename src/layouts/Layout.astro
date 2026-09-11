@@ -5,7 +5,7 @@ import { getRelativeLocaleUrl } from "astro:i18n";
 import { resolveDefaultOgImagePath } from "@/utils/resolveDefaultOgImagePath";
 import { getAssetPath } from "@/utils/withBase";
 import config from "@/config";
-import ScrollToTop from "@/components/ScrollToTop.astro";
+import BackToTop from "@/components/BackToTop.astro";
 import "@/styles/global.css";
 import "katex/dist/katex.min.css";
 
@@ -72,11 +72,15 @@ function truncateText(str: string, maxLen: number): string {
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={site.title} />
-    {/* Optional FB App ID — silences the "fb:app_id missing" warning in the
-        Facebook Sharing Debugger and enables page insights. */}
-    {site.facebookAppId && (
-      <meta property="fb:app_id" content={site.facebookAppId} />
-    )}
+    {
+      /* Optional FB App ID — silences the "fb:app_id missing" warning in the
+        Facebook Sharing Debugger and enables page insights. */
+    }
+    {
+      site.facebookAppId && (
+        <meta property="fb:app_id" content={site.facebookAppId} />
+      )
+    }
     <meta property="og:title" content={title} />
     <meta property="og:description" content={truncateText(description, 300)} />
     <meta property="og:url" content={canonicalURL} />
@@ -89,7 +93,10 @@ function truncateText(str: string, maxLen: number): string {
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content={canonicalURL} />
     <meta property="twitter:title" content={title} />
-    <meta property="twitter:description" content={truncateText(description, 200)} />
+    <meta
+      property="twitter:description"
+      content={truncateText(description, 200)}
+    />
     <meta property="twitter:image" content={socialImageURL} />
     <meta property="twitter:image:alt" content={title} />
 
@@ -141,7 +148,7 @@ function truncateText(str: string, maxLen: number): string {
     class="bg-background font-app text-foreground selection:bg-accent/75 selection:text-accent-foreground flex min-h-svh flex-col"
   >
     <slot />
-    <ScrollToTop />
+    <BackToTop />
     <script>
       import "@/scripts/theme";
     </script>

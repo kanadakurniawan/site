@@ -1,0 +1,132 @@
+---
+import IconArrowLeft from "@/assets/icons/IconArrowLeft.svg";
+import IconArrowNarrowUp from "@/assets/icons/IconArrowNarrowUp.svg";
+import { useTranslations } from "@/i18n";
+
+const t = useTranslations(Astro.currentLocale);
+---
+
+{/* Pembatas progress membaca di tepi atas setiap halaman */}
+<div
+  id="btt-progress-container"
+  class="bg-background pointer-events-none fixed top-0 z-10 h-1 w-full"
+>
+  <div id="btt-progress-bar" class="bg-accent h-1 w-0"></div>
+</div>
+
+{/* Tombol kembali ke atas dengan progress ring (mobile) / pill (desktop) */}
+<div
+  id="btt-btn-container"
+  class:list={[
+    "fixed inset-e-4 bottom-8 z-50",
+    "md:inset-e-6 md:bottom-6",
+    "translate-y-14 opacity-0 transition duration-500",
+  ]}
+>
+  <button
+    data-button="back-to-top"
+    type="button"
+    class:list={[
+      "group bg-background relative px-2 py-1",
+      "size-14 rounded-full shadow-xl",
+      "md:h-8 md:w-fit md:rounded-md md:shadow-none md:focus-visible:rounded-none",
+      "md:bg-background/35 md:bg-clip-padding md:backdrop-blur-lg",
+    ]}
+  >
+    <span
+      id="btt-progress-indicator"
+      class="absolute inset-0 -z-10 block size-14 scale-110 rounded-full bg-transparent md:hidden md:h-8 md:rounded-md"
+    ></span>
+    <IconArrowLeft class="inline-block rotate-90 md:hidden" />
+    <span class="group-hover:text-accent sr-only text-sm md:not-sr-only">
+      <IconArrowNarrowUp class="inline-block size-4" />
+      {t.post.backToTop}
+    </span>
+  </button>
+</div>
+
+<script>
+  (() => {
+    const BUTTON_SELECTOR = "[data-button='back-to-top']";
+
+    let progressBar = null;
+    let progressRing = null;
+    let btnContainer = null;
+
+    let lastVisible = null;
+
+    function update() {
+      if (!progressBar) return;
+      const rootElement = document.documentElement;
+      const scrollTotal = rootElement.scrollHeight - rootElement.clientHeight;
+      const scrollTop = rootElement.scrollTop;
+      const scrollPercent =
+        scrollTotal > 0 ? Math.floor((scrollTop / scrollTotal) * 100) : 0;
+
+      progressBar.style.width = `${scrollPercent}%`;
+      if (progressRing) {
+        progressRing.style.setProperty(
+          "background-image",
+          `conic-gradient(var(--accent), var(--accent) ${scrollPercent}%, transparent ${scrollPercent}%)`
+        );
+      }
+
+      const isVisible =
+        scrollTotal <= 0 ? false : scrollTop / scrollTotal > 0.3;
+
+      if (btnContainer && isVisible !== lastVisible) {
+        btnContainer.classList.toggle("opacity-100", isVisible);
+        btnContainer.classList.toggle("translate-y-0", isVisible);
+        btnContainer.classList.toggle("opacity-0", !isVisible);
+        btnContainer.classList.toggle("translate-y-14", !isVisible);
+        lastVisible = isVisible;
+      }
+    }
+
+    // Badan halaman diganti pada navigasi antar halaman (ClientRouter),
+    // sedangkan document tetap ada. Perbarui referensi elemen setiap
+    // kali halaman baru selesai dimuat.
+    function refreshElements() {
+      progressBar = document.getElementById("btt-progress-bar");
+      progressRing = document.getElementById("btt-progress-indicator");
+      btnContainer = document.getElementById("btt-btn-container");
+      update();
+    }
+
+    // Listener dipasang sekali untuk seluruh sesi, tidak bergantung pada
+    // berapa kali module ini dieksekusi oleh ClientRouter.
+    if (!window.__bttInit) {
+      window.__bttInit = true;
+
+      let ticking = false;
+      document.addEventListener(
+        "scroll",
+        () => {
+          if (!ticking) {
+            ticking = true;
+            window.requestAnimationFrame(() => {
+              ticking = false;
+              update();
+            });
+          }
+        },
+        { passive: true }
+      );
+
+      // Delegated click: bekerja pada tombol di halaman mana pun tanpa
+      // perlu mengikat event listener ulang setelah navigasi.
+      document.addEventListener("click", event => {
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        if (!target.closest(BUTTON_SELECTOR)) return;
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+      });
+
+      document.addEventListener("astro:page-load", refreshElements);
+    }
+
+    // Keadaan awal.
+    refreshElements();
+  })();
+</script>

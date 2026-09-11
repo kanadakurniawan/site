@@ -2,7 +2,7 @@
 title: "Studi Kasus: Prediksi Curah Hujan Stasiun BMKG"
 description: "Bab 9 - proyek end-to-end prediksi curah hujan stasiun BMKG: dua lintasan (regresi jumlah hujan dan klasifikasi kategori intensitas), fitur observasi + ERA5 + ENSO/MJO, verifikasi operasional CSI/POD/FAR, trade-off threshold, interpretasi awal (SHAP), dan tabel verifikasi per kategori."
 pubDatetime: 2026-09-10
-tags: ["Deep Learning", "Meteorologi", "curah hujan", "BMKG", "prediksi hujan", "CSI", "FAR", "POD", "LSTM", "SHAP", "walk-forward", "studi kasus"]
+tags: ["Deep Learning", "Meteorologi", "curah hujan", "BMKG", "prediksi hujan", "CSI", "FAR", "POD", "GRU", "SHAP", "walk-forward", "studi kasus"]
 draft: false
 chapter: 9
 bookId: "pengantar-deep-learning-untuk-meteorologi"
@@ -32,10 +32,10 @@ Setelah menyelesaikan bab ini, Anda diharapkan mampu:
 
 ## 9.1 Konteks Pelayanan dan Kejujuran Framing
 
-Prediksi curah hujan adalah **layanan inti** BMKG: dari peringatan dini hujan lebat,
-banjir, hingga informasi untuk pertanian, transportasi, dan kebencanaan [1]. Karena
-dampaknya langsung menyentuh masyarakat, **kehati-hatian** dan **kejujuran** dalam klaim
-menjadi keharusan - bukan sekadar etika, tetapi juga pelindung kredibilitas institusi.
+BMKG menyedia data stasiun cuaca dan layanan informasi cuaca melalui platform Data
+Online [1]. Dampak prediksi curah hujan langsung menyentuh masyarakat, sehingga
+**kehati-hatian** dan **kejujuran** dalam klaim menjadi keharusan - bukan sekadar etika,
+tetapi juga pelindung kredibilitas institusi.
 
 Tiga hal yang harus ditegaskan sejak awal (sejalan dengan Risk Management umbrella):
 
@@ -46,7 +46,7 @@ Tiga hal yang harus ditegaskan sejak awal (sejalan dengan Risk Management umbrel
    harus realistis. Skill score (Bab 7 Persamaan 7.6) terhadap *baseline* adalah cara
    jujur untuk melaporkan.
 3. **Data yang dipakai harus disebutkan.** Sumber stasiun, rentang, lisensi, dan versi
-   dicatat (Bab 6 §6.9) agar hasil dapat diperiksa klas.
+   dicatat (Bab 6 §6.9) agar hasil dapat diperiksa ulang.
 
 Seperti Bab 8, framing "alat bantu yang dapat dijelaskan" lebih tepat daripada
 "menggantikan peramal". Nilai utama studi kasus: menunjukkan alur dan metrik yang benar,
@@ -61,18 +61,37 @@ Untuk model hujan, strategi data (Bab 6) berbentuk:
 - **Fitur stasiun**: hujan kemarin (lag), suhu, kelembapan, angin (bila tersedia).
 - **Fitur regional (ERA5)** [2][3]: suhu, angin, kelembapan, `total precipitation` pada
   grid terdekat - memberi konteks atmosfer yang tidak tercatat stasiun.
-- **Indeks iklim**: ENSO (Nino3.4/MEI) dan MJO (RMM1, RMM2) [4][5] - berpengaruh pada
-  hujan Indonesia.
+- **Indeks iklim**: ENSO (Nino3.4 anomali SST dari NOAA PSL [6]; MEI [5] sebagai
+  alternatif - tidak dipakai bersamaan untuk menghindari redundansi) dan MJO
+  (RMM1, RMM2 [4]) - berpengaruh pada hujan Indonesia.
 
 **Tabel 9.1**: Ringkasan fitur yang dibangun untuk satu stasiun.
 
 | Kelompok | Contoh fitur | Sumber |
 |---|---|---|
 | Deret tunda | `hujan_t1`, `hujan_t2`, `hujan_t3`, `hujan_t7` | Stasiun BMKG |
-| Observasi lokal | suhu, kelembapan (lag 0-1) | Stasiun BMKG / ERA5 |
-| Regional grid | `era5_tp`, `era5_u10`, `era5_v10`, `era5_t2m` | ERA5 [2][3] |
+| Observasi lokal | `suhu_t1`, `kelembapan_t1` (lag 1) | Stasiun BMKG / ERA5 |
+| Regional grid | `era5_tp_t1`, `era5_u10_t1`, `era5_v10_t1`, `era5_t2m_t1` (lag ≥ 1 hari) | ERA5 [2][3] |
 | Musiman | `mus_sin`, `mus_cos` | dihitung |
-| Indeks iklim | `rmm1`, `rmm2`, `nino34` | NOAA/BMKG [4][5] |
+| Indeks iklim | `rmm1`, `rmm2`, `nino34` | BoM/NOAA PSL [4][6] |
+
+Catatan ERA5: ERA5 adalah *reanalysis*, bukan forecast operasional. Semua fitur ERA5
+di-lag minimal 1 hari terhadap target (Tabel 9.1), karena data ERA5 hari D belum
+tersedia saat prediksi D+1 harus dibuat. ERA5 final punya latency beberapa bulan,
+sedangkan ERA5T (near-real-time) sekitar 5 hari; studi kasus ini bersifat *historis*,
+tidak klaim sistem operasional real-time. Lag ini justru mencegah *leakage*: fitur
+ERA5 hari D hanya dipakai untuk prediksi hujan D+1.
+
+Satuan ERA5: `total_precipitation` (tp) dalam meter, akumulasi per jam. Konversi ke mm
+(`tp * 1000`), lalu agregasi harian sesuai definisi "hari" stasiun:
+
+```python
+df["era5_tp_mm"] = df["era5_tp"] * 1000.0        # meter -> mm
+df["era5_tp_harian"] = df["era5_tp_mm"].resample("24h", offset="7h").sum()
+```
+
+Lisensi data: BMKG sesuai syarat penggunaan data BMKG; ERA5 di bawah Copernicus
+Climate Data Store license; NOAA/BoM dengan attribution sesuai sumber (Bab 6 §6.9).
 
 Semua fitur dinormalisasi dengan statistik dari bagian latih saja (Bab 6 §6.7); target
 regresi di-transform `log1p` bila dipakai (Bab 6 §6.7).
@@ -82,13 +101,13 @@ regresi di-transform `log1p` bila dipakai (Bab 6 §6.7).
 Pola hujan Indonesia sangat bergantung pada geografi: wilayah barat (Sumatera,
 Kalimantan, Jawa) dipengaruhi kuat oleh monsun Asia-Australia dan MJO; wilayah timur
 (Papua, Maluku, Nusa Tenggara Timur) lebih dipengaruhi oleh monsun Australia dan
-variabilitas ENSO [4]. Untuk studi kasus yang lebih lengkap, bandingkan **dua stasiun
+variabilitas ENSO. Untuk studi kasus yang lebih lengkap, bandingkan **dua stasiun
 berbeda pola**:
 
 - **Stasiun barat** (misal Kalimantan atau Sumatera): hujan sepanjang tahun dengan
   puncak musiman; variabilitas hari-ke-hari tinggi.
 - **Stasiun timur** (misal Papua): musim kering lebih tegas saat monsun Australia;
-  dampak El Niño jauh terasa [5].
+  dampak El Niño jauh terasa.
 
 Dengan dua stasiun ini, pembaca bisa melihat bahwa:
 
@@ -104,7 +123,7 @@ meminta Anda mengganti dengan data nyata stasiun pilihan.
 ### Frekuensi dan resolusi data
 
 Data harian stasiun BMKG umumnya tersedia sebagai **kumulatif 24 jam** (misal 07.00-07.00
-WIB) - pastikan Anda konsisten dengan definisi "hari" pada target dan fitur. Bila data
+waktu lokal stasiun) - pastikan Anda konsisten dengan definisi "hari" pada target dan fitur. Bila data
 jam-an tersedia, Anda bisa agregasi ke harian (sum/resample) atau justru membangun
 prediksi sub-harian (di luar lingkup buku ini). Konsistensi definisi waktu mencegah
 *leakage* halus: jangan mencampur jam-an dan harian tanpa transformasi yang jelas.
@@ -117,23 +136,31 @@ kebutuhan operasionalnya keduanya ada.
 - **Lintasan regresi**: prediksi **jumlah mm** hujan besok. Metrik: MAE, RMSE (Bab 5);
   transformasi `log1p` membantu (Bab 6).
 - **Lintasan klasifikasi**: prediksi **kategori intensitas** hujan harian. Mengikuti
-  ambang umum intensitas BMKG [1]:
+  ambang umum intensitas hujan, ringkas menjadi 3 kelas (Tabel 9.2):
 
 **Tabel 9.2**: Kategori intensitas hujan harian (mm/24 jam) yang dipakai.
 
-| Kategori | Rentang (mm) | Label |
+| Kategori | Rentang (mm/24 jam) | Label |
 |---|---|---|
-| Ringan | < 20 | 0 |
-| Sedang | 20 - 50 | 1 |
-| Lebat | > 50 | 2 |
+| Tidak hujan / ringan | < 20 | 0 |
+| Sedang | 20 - <50 | 1 |
+| Lebat / sangat lebat | ≥ 50 | 2 |
+
+Catatan: Tabel 9.2 mengelompokkan ambang umum menjadi 3 kelas: kelas 0 mencampur tidak
+hujan (0 mm) dan hujan ringan (>0-<20 mm); kelas 2 mencampur lebat dan sangat lebat
+(≥50 mm). Jika kebutuhan operasional meminta lebih fin, skema yang lebih lengkap punya
+"tidak hujan" dan "sangat lebat" terpisah.
 
 Untuk klasifikasi biner "hujan lebat vs tidak" (untuk peringatan dini), gunakan ambang
-`> 50` sebagai kelas positif; evaluasi dengan metrik fenomena langka (Bab 5): **CSI,
-POD, FAR** dan trade-off threshold (Bab 3).
+`≥ 50` sebagai kelas positif (lebat atau sangat lebat); evaluasi dengan metrik fenomena
+langka (Bab 5): **CSI, POD, FAR** dan trade-off threshold (Bab 3).
 
 **Model yang dipakai:** GRU multivariate (Bab 7) sebagai pilihan utama; MLP + lag sebagai
 pembanding; LSTM bila perlu. Seluruh model dilatih dengan *window* `w` (misal 7-30 hari)
-tanpa *shuffle*.
+tanpa *shuffle* - urutan *window* dipertahankan agar tiap blok *walk-forward* tetap
+kronologis dan perbandingan antar blok adil. (Bab 7 §7.9 mencatat bahwa `shuffle=True`
+umumnya aman untuk model *stateless*; di sini kita memilih tanpa *shuffle* demi
+keseragaman antar blok.)
 
 ### Mengapa dua lintasan, bukan satu?
 
@@ -144,7 +171,7 @@ Regresi dan klasifikasi menjawab pertanyaan operasional yang berbeda:
 - **Klasifikasi** menjawab "hujan lebat atau tidak?" - berguna untuk peringatan dini
   dan keselamatan.
 
-Mereka juga **berperilaku berbeda**: regresi sering "mendatar" pada nilai tengah (keras
+Mereka juga **berperilaku berbeda**: regresi sering "mendatar" pada nilai tengah (sulit
 memprediksi angka besar), sedangkan klasifikasi memberi kebebasan threshold
 (POD/FAR tunable). Mengerjakan keduanya sekaligus menunjukkan bahwa satu masalah
 operasional bisa dipotong menjadi beberapa masalah machine learning yang berbeda -
@@ -152,7 +179,7 @@ keterampilan perancangan yang penting (Bab 1 §1.8 melatih ini).
 
 ### Menangani data tak seimbang pada klasifikasi hujan lebat
 
-Hujan lebat (>50 mm) hanya terjadi beberapa hari dalam setahun di sebagian besar stasiun.
+Hujan lebat (≥50 mm) hanya terjadi beberapa hari dalam setahun di sebagian besar stasiun.
 Strategi yang dipakai (Bab 3 §3.6):
 
 1. Metrik yang tepat (CSI/POD/FAR, bukan akurasi).
@@ -170,6 +197,10 @@ sudah di-resample.
 Inilah bagian yang membedakan bab ini dengan tutorial ML umum. Setelah probabilitas
 (dari sigmoid/softmax) didapat, kita tidak otomatis memakai threshold 0,5 - kita
 **menggesernya** sesuai prioritas operasional (Bab 3 §3.7).
+
+Catatan: threshold relevan untuk klasifikasi biner (sigmoid); untuk multi-kelas
+softmax, keputusan diambil dengan `argmax`, bukan threshold 0,5 - geser threshold
+hanya pada biner atau one-vs-rest.
 
 **Kode 9.1 - Verifikasi CSI/POD/FAR di banyak threshold.**
 
@@ -212,12 +243,14 @@ Pilih **precision-recall curve**:
 - Model ideal: kurva mendekati pojok kanan-atas (recall tinggi, precision tinggi).
 - Luas di bawah (AUPRC) lebih informatif daripada AUC untuk kelas langka.
 
-![Gambar 9.1 - Precision-recall curve untuk deteksi hujan lebat (ilustratif)](ch-09-studi-kasus-curah-hujan-bmkg/figures/fig-9-1-precision-recall.png)
+![Gambar 9.1 - Precision-recall curve](ch-09-studi-kasus-curah-hujan-bmkg/figures/fig-9-1-precision-recall.png)
+
+**Gambar 9.1**: Precision-recall curve untuk deteksi hujan lebat (ilustratif).
 
 Visualisasi pada Gambar 9.1 (dibuat di notebook) melengkapi Tabel 9.3 dan menjadi
-argument visual mengapa threshold tertentu dipilih.
+argumen visual mengapa threshold tertentu dipilih.
 
-Persamaan yang dipakai (dari Tabel 5.3 Bab 5, pedoman WMO [6]):
+Persamaan yang dipakai (dari Tabel 5.3 Bab 5, pedoman WMO [7]):
 
 $$
 \text{POD} = \frac{TP}{TP+FN}, \quad \text{FAR} = \frac{FP}{TP+FP}, \quad \text{CSI} = \frac{TP}{TP+FP+FN} \tag{9.1}
@@ -247,7 +280,8 @@ evakuasi yang mahal, FAR rendah lebih penting.
   berisik) - kalah dari klimatologi pada banyak musim.
 - ***Klimatologi***: rata-rata hujan untuk kalender yang sama. Baseline yang *kuat*
   untuk hujan harian.
-- ***ARIMA singkat***: autoregressive `p,q` kecil; memberi patokan linier [7].
+- ***ARIMA singkat***: autoregressive ARIMA(p,d,q) kecil (misal p,q ≤ 2, d ∈ {0,1});
+  memberi patokan linier [8].
 
 Pilihan ini mengingatkan Bab 7: deep learning harus **mengalahkan baseline yang paling
 kuat** (sering klimatologi untuk hujan), bukan sekadar "bekerja".
@@ -260,7 +294,7 @@ rata-rata per bulan). Dengan begitu baseline sudah menangkap musim. Contoh perhi
 sederhana:
 
 ```python
-# rata-rata harian per his hari (1..365) dari data latih, lalu ulangi ke test
+# rata-rata harian per hari ke-n (1..366) dari data latih, lalu ulangi ke test
 klim = df_train.groupby(df_train.index.dayofyear)["r_hujan"].mean()
 baseline = klim.reindex(df_test.index.dayofyear).values
 ```
@@ -274,6 +308,12 @@ Seperti Bab 8: bagi beberapa tahun menjadi blok tahunan; untuk tiap blok latih h
 data sebelumnya, evaluasi pada blok itu; laporkan rata-rata + rentang. Hujan punya
 variabilitas antar tahun besar (El Niño/La Niña), jadi rentang antar blok harus
 dilaporkan - satu angka rata-rata bisa menyesatkan.
+
+Catatan walk-forward: karena fitur punya lag/window, beri *purge/embargo* di batas
+train-test (drop beberapa hari pertama blok validasi) untuk menghindari *leakage*
+halus. Scaler, baseline, dan hyperparameter di-refit ulang untuk setiap blok latih -
+tidak sekali untuk seluruh data (Bab 5 §5.5, Bab 6 §6.7). Laporkan jumlah sampel dan
+jumlah kejadian langka per blok, bukan hanya metrik rata-rata.
 
 ### Menyusun "kalender eksperimen"
 
@@ -295,8 +335,10 @@ apa yang menyebabkan perbedaan POD/CSI, bukan hanya "model jadi lebih baik".
 ### Arsitektur jaringan
 
 Mengikuti Bab 7-8: GRU multivariate `w` hari dengan fitur per langkah waktu
-(`(batch, w, f)`); lapisan `Dense` terakhir; `loss=mse` (regresi) atau
-`binary_crossentropy`/`sparse_categorical_crossentropy` (klasifikasi). Untuk klasifikasi
+(`(batch, w, f)`); lapisan `Dense` terakhir - regresi: `Dense(1)` (aktivasi linear) +
+`loss=mse`; klasifikasi biner: `Dense(1, activation="sigmoid")` +
+`binary_crossentropy`; multi-kelas: `Dense(K, activation="softmax")` +
+`sparse_categorical_crossentropy`. Untuk klasifikasi
 hujan lebat yang jarang terjadi, tambah `class_weight` (Bab 3 §3.5) agar model tidak
 meniru mayoritas.
 
@@ -311,17 +353,24 @@ dan **SHAP** sederhana pada model yang sudah dilatih.
 
 ```python
 def permutation_importance(model, X, y, n_repeat=10, metric=mae):
+    # X: (n_samples, timesteps, n_features) untuk input 3D (GRU/LSTM)
+    n_feat = X.shape[2]
     base = metric(y, model.predict(X, verbose=0).ravel())
     imp = {}
-    for j in range(X.shape[1]):
+    for j in range(n_feat):
         scores = []
         for _ in range(n_repeat):
             Xp = X.copy()
-            np.random.shuffle(Xp[:, j])
+            perm = np.random.permutation(Xp.shape[0])
+            Xp[:, :, j] = Xp[perm, :, j]   # acak fitur j di semua timestep
             scores.append(metric(y, model.predict(Xp, verbose=0).ravel()))
         imp[j] = float(np.mean(scores) - base)
     return imp
 ```
+
+Catatan implementasi: kode 9.2 acak fitur di semua timestep (input 3D). Untuk MLP
+2D `(n, f)`, sesuaikan indeks menjadi `X.shape[1]` dan acak `Xp[:, j]`. Untuk
+klasifikasi, gunakan metrik langka (AUPRC, log-loss, atau CSI), bukan MAE.
 
 Prinsip: jika mengacak satu fitur membuat error naik banyak, fitur itu penting.
 Kewaspadaan: untuk fitur yang saling berkorelasi, permutation importance bisa
@@ -368,6 +417,10 @@ def tabel_kategori(y_true, y_pred):
                        pd.Series(y_pred, name="prediksi"))
 ```
 
+`pd.crosstab` memberi *counts* saja; untuk CSI/POD/FAR per kategori, hitung per
+kategori secara *one-vs-rest* (kelas k positif, semua lain negatif) - misal dengan
+ulangi fungsi `verifikasi` (Kode 9.1) untuk setiap k.
+
 Laporkan untuk masing-masing kategori (0, 1, 2) nilai CSI/POD/FAR secara terpisah -
 perilaku model pada hujan lebat (langka) sering jauh lebih buruk daripada pada hari
 kering, dan ini penting diketahui pengguna (Bab 5). Contoh kerja penuh (termasuk
@@ -377,16 +430,18 @@ threshold, probabilitas, dan crosstab) tersedia di notebook `ch-09-08_studi_kasu
 
 | Kategori | POD | FAR | CSI | Catatan |
 |---|---|---|---|---|
-| Ringan (< 20) | 0.90 | 0.15 | 0.78 | baik, kelas mayoritas |
-| Sedang (20-50) | 0.45 | 0.40 | 0.32 | perlu perbaikan |
-| Lebat (> 50) | 0.20 | 0.55 | 0.15 | sulit, kelas langka |
+| Tidak hujan / ringan (< 20) | 0.90 | 0.15 | 0.78 | baik, kelas mayoritas |
+| Sedang (20 - <50) | 0.45 | 0.40 | 0.32 | perlu perbaikan |
+| Lebat / sangat lebat (≥ 50) | 0.20 | 0.55 | 0.15 | sulit, kelas langka |
 
-![Gambar 9.2 - Verifikasi per kategori intensitas (ilustratif)](ch-09-studi-kasus-curah-hujan-bmkg/figures/fig-9-2-verifikasi-kategori.png)
+![Gambar 9.2 - Verifikasi per kategori intensitas](ch-09-studi-kasus-curah-hujan-bmkg/figures/fig-9-2-verifikasi-kategori.png)
+
+**Gambar 9.2**: Verifikasi per kategori intensitas (ilustratif).
 
 Tabel 9.5 dan Gambar 9.2 menyingkap hal menarik: model "bagus" pada hari kering (POD
 tinggi, FAR rendah) justru paling lemah pada kejadian yang paling penting (lebat). Ini
 hasil yang layak dilaporkan apa adanya, bukan disembunyikan. Seluruh eksperimen bab ini
-berjalan di atas TensorFlow [8].
+berjalan di atas TensorFlow [9].
 
 ### Apa yang harus dilaporkan (dan apa yang tidak)
 
@@ -433,20 +488,20 @@ Bab 10 untuk keputusan produksi.
 
 **Latihan praktik (notebook `ch-09-08_studi_kasus_curah_hujan_bmkg.ipynb`)**
 
-5. Gunakan data contoh harian satu stasiun; bangun fitur (Tabel 9.1). 
-6. Regresi: latih GRU dengan transformasi `log1p`; hitung MAE/RMSE; bandingkan dengan
+1. Gunakan data contoh harian satu stasiun; bangun fitur (Tabel 9.1). 
+2. Regresi: latih GRU dengan transformasi `log1p`; hitung MAE/RMSE; bandingkan dengan
    persistence & klimatologi pada *walk-forward* 3 blok.
-7. Klasifikasi biner lebat vs tidak: evaluasi threshold 0,2/0,5/0,8 (Tabel 9.3); tetapkan
+3. Klasifikasi biner lebat vs tidak: evaluasi threshold 0,2/0,5/0,8 (Tabel 9.3); tetapkan
    threshold berdasarkan skenario (peringatan dini vs evakuasi) dan jelaskan.
-8. Klasifikasi multi-kelas intensitas: buat crosstab (Kode 9.3) dan hitung CSI/POD/FAR
+4. Klasifikasi multi-kelas intensitas: buat crosstab (Kode 9.3) dan hitung CSI/POD/FAR
    per kategori (Tabel 9.5).
-9. Tambahkan indeks MJO/ENSO; bandingkan CSI lebat dengan dan tanpa fitur tersebut.
-10. (Proyek mini) Susun laporan satu halaman seperti Bab 8: konteks, data, metode,
-    tabel hasil, threshold terpilih, interpretasi & keterbatasan.
+5. Tambahkan indeks MJO/ENSO; bandingkan CSI lebat dengan dan tanpa fitur tersebut.
+6. (Proyek mini) Susun laporan satu halaman seperti Bab 8: konteks, data, metode,
+   tabel hasil, threshold terpilih, interpretasi & keterbatasan.
 
 ## Ringkasan
 
-- Prediksi hujan = layanan inti BMKG; kejujuran framing & metrik wajib.
+- Prediksi hujan berdampak langsung pada masyarakat; kejujuran framing & metrik wajib.
 - Data: stasiun BMKG (target + lag), ERA5 (regional), ENSO/MJO (indeks iklim); pola
   barat vs timur Indonesia berbeda dan perlu dilatih ulang per stasiun.
 - Dua lintasan: regresi (mm, `log1p`, MAE/RMSE) dan klasifikasi (kategori, CSI/POD/FAR);
@@ -478,9 +533,11 @@ Bab 10 untuk keputusan produksi.
 5. K. Wolter and M. S. Timlin, "Monitoring ENSO in COADS with a seasonally adjusted
    principal component index," in *Proc. 17th Climate Diagnostics Workshop*, 1993,
    pp. 52-57.
-6. World Meteorological Organization, "WMO guidelines on the verification of operational
-   forecasts," WMO, Geneva, Switzerland, 2018.
-7. R. J. Hyndman and G. Athanasopoulos, *Forecasting: Principles and Practice*, 3rd ed.
+6. NOAA Physical Sciences Laboratory, "Nino3.4 SST index," [Online]. Available:
+   https://psl.noaa.gov/data/timeseries/monthly/NINO34/ (Accessed: Sep. 2026).
+7. World Meteorological Organization, "WMO guidelines on the verification of operational
+   forecasts," WMO-No. 1214, Geneva, Switzerland, 2018.
+8. R. J. Hyndman and G. Athanasopoulos, *Forecasting: Principles and Practice*, 3rd ed.
    Melbourne, Australia: OTexts, 2021. [Online]. Available: https://otexts.com/fpp3/
-8. M. Abadi et al., "TensorFlow: Large-scale machine learning on heterogeneous systems,"
+9. M. Abadi et al., "TensorFlow: Large-scale machine learning on heterogeneous systems,"
    2016. [Online]. Available: https://arxiv.org/abs/1603.04467

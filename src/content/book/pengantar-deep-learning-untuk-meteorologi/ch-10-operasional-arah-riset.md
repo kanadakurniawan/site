@@ -47,7 +47,7 @@ Tiga pertanyaan yang harus dijawab sebelum sebuah model disebut "produksi":
 
 ### Contoh "praktik produksi paling sederhana" untuk buku ini
 
-Anda tidak perlu membangun kubernetes untuk mengikuti bab ini. Contoh paling sederhana
+Anda tidak perlu membangun Kubernetes untuk mengikuti bab ini. Contoh paling sederhana
 yang sudah memenuhi kebutuhan institusi kecil:
 
 - **Skrip batch** - satu script dijalankan tiap hari (mis. `cron` atau *scheduled
@@ -60,33 +60,38 @@ dipakai secara terkontrol, bukan hanya sekali di eksperimen.
 
 Buku ini tidak membahas infrastruktur secara mendalam (itu wilayah Bab engineering
 khusus), tetapi kerangka kerja di bawah ini memberi jalan yang jelas ke arah sana.
-Kerangka umum model deep learning dan siklus hidupnya dibahas lebih lanjut di literatur
-dasar [1].
+Kerangka umum model deep learning dibahas di literatur dasar [1]; untuk siklus hidup
+model operasional dan *technical debt* sistem ML, lihat [2].
 
 ## 10.2 Monitoring *Drift*
 
 Atmosfer **tidak stasioner**: distribusi cuaca bergeser seiring musim, tahunan, dan
 dekade (perubahan iklim). Karena itu model yang dilatih pada 2010-2020 bisa "usang" pada
 2025. Kerangka peramalan dan evaluasi berkala mengikuti prinsip pada literatur
-*forecasting* [2] dan pedoman verifikasi WMO [3]. Dua bentuk *drift* yang perlu
+*forecasting* [3] dan pedoman verifikasi WMO [4]. Dua bentuk *drift* yang perlu
 diketahui:
 
-- ***Data drift*** - distribusi *masukan* `X` berubah (misal sensor baru, pola musim
-  bergeser).
-- ***Concept drift*** - hubungan `X → y` berubah (misal hubungan suhu-hujan bergeser
-  karena perubahan iklim regional).
+- ***Data drift*** - distribusi *masukan* `X` berubah (misal stasiun pindah lokasi,
+  kalibrasi sensor berubah, atau pola musim bulanan bergeser).
+- ***Concept drift*** - hubungan `X → y` berubah (misal indeks MJO→hujan melemah karena
+  perubahan iklim regional; atau relasi suhu-hujan bergeser).
 
 **Cara mendeteksi secara praktis:**
 
-1. **Pantau metrik operasional** - hitung MAE/CSI secara *periodik* (mingguan/bulanan)
-   terhadap data terbaru yang sudah diverifikasi. Jika metrik menurun melebihi ambang,
-   picu peringatan.
+1. **Pantau metrik operasional** - untuk model *regresi* pakai metrik kontinu
+   (MAE/RMSE); untuk model *klasifikasi* pakai metrik kategorikal (CSI/POD/FAR). Hitung
+   secara *periodik* (mingguan/bulanan) terhadap data terbaru yang sudah diverifikasi.
+   Jika metrik menurun melebihi ambang, picu peringatan.
 2. **Bandingkan distribusi fitur** - misal histogram `X` bulan ini vs rata-rata
    historis; pergeseran besar menandakan *data drift*.
 3. **Grafik kendali sederhana** - gunakan rata-rata bergerak + batas 2σ untuk melacak
-   metrik; titik di luar batas = sinyal.
+   metrik; titik di luar batas = sinyal. Untuk data meteorologi yang autokorelasi dan
+   musiman, batas 2σ bisa memicu banyak *false alarm*; metode yang lebih tangguh
+   (EWMA/CUSUM, dekomposisi musiman) layak dipertimbangkan setelah tahap awal ini.
 
-![Gambar 10.1 - Contoh grafik kendali metrik operasional: MAE mingguan dengan batas kendali, titik keluar menandakan drift](ch-10-operasional-arah-riset/figures/fig-10-1-control-chart.png)
+![Gambar 10.1 - Grafik kendali metrik operasional](ch-10-operasional-arah-riset/figures/fig-10-1-control-chart.png)
+
+**Gambar 10.1**: Grafik kendali metrik operasional: MAE mingguan dengan batas kendali, titik keluar menandakan drift.
 
 ### Batas kendali: menetapkan ambang yang masuk akal
 
@@ -100,8 +105,9 @@ Ambang ±2σ pada grafik kendali (Gambar 10.1) hanyalah titik awal. Sesuaikan de
   sesuai seberapa cepat Anda bisa bereaksi.
 
 Aturan penting: **tetapkan ambang sebelum melihat data berjalan** (bukan setelah).
-Menetapkan ambang setelah melihat hasil sama dengan "membocorkan" evaluasi (Bab 5) -
-justru akan melewatkan degradation yang seharusnya terdeteksi.
+Ini semacam *pra-registrasi* ambang: menetapkan ambang setelah melihat hasil berarti
+menyemai *selection bias* / *overfitting* pada noise monitoring (ingat prinsip evaluasi
+jujur di Bab 5) - justru akan melewatkan degradation yang seharusnya terdeteksi.
 
 ### Contoh penerapan monitoring pada kasus Bab 9
 
@@ -116,7 +122,10 @@ Monitoring praktisnya:
   nilai apakah perlu kalibrasi/retrain.
 
 Memiliki jadwal dan penanggung jawab sedini mungkin - sebelum model "mulai produksi" -
-menghindari kejadian model diam-diam rusak (Bab 10.1 membahas "siapa yang menjawab?"). Seluruh contoh
+menghindari kejadian model diam-diam rusak (Bab 10.1 membahas "siapa yang menjawab?").
+Contoh produksi paling sederhana di sub-bab ini adalah titik awal minimal: institusi
+dengan kebutuhan lebih besar dapat menambah orkestrasi, versi, dan pengujian berjenjang
+seiring kebutuhan.
 
 
 ## 10.3 Retraining dan Kalibrasi Ulang
@@ -127,7 +136,7 @@ Ketika *drift* terdeteksi, pilihan tindakan (dari yang paling ringan):
    cepat dan murah.
 2. **Retraining berkala terjadwal** - misal tahunan/musiman; jadwalkan, jangan menunggu
    darurat.
-3. **Retraining berbasis sinyal** - pemicu saat metrik turun (bab 10.2); lebih responsif
+3. **Retraining berbasis sinyal** - pemicu saat metrik turun (Bab 10.2); lebih responsif
    tetapi perlu disiplin evaluasi.
 4. **Migrasi model baru** - jika data/fitur berubah besar, kembangkan model baru dengan
    proses studi kasus kembali.
@@ -145,13 +154,24 @@ buku ini pada data yang lebih baru.
 
 ### Contoh alur keputusan retraining
 
+Model **regresi** (mis. tinggi muka air, Bab 8):
+
 | Sinyal terdeteksi | Investigasi | Tindakan |
 |---|---|---|
-| MAE naik 10% dalam 1 bulan | cek distribusi X, cek data baru | kalibrasi threshold dulu |
+| MAE naik 10% dalam 1 bulan | cek distribusi X, cek data baru | kalibrasi output (interval/kuantil) dulu |
 | Fitur `rmm1` bergeser jauh | bandingkan dokumentasi | jadwalkan retrain + cek baseline |
-| Metrik turun drastis (>20%) | periksa data & sensus | model baru dengan studi kasus kembali |
+| Metrik turun drastis (>20%) | periksa data & sensor | model baru dengan studi kasus kembali |
 
-**Tabel 10.2**: Alur keputusan sederhana saat drift terdeteksi.
+Model **klasifikasi** (mis. hujan/level bahaya, Bab 9):
+
+| Sinyal terdeteksi | Investigasi | Tindakan |
+|---|---|---|
+| CSI turun 10% dalam 1 bulan | cek distribusi X, cek label baru | kalibrasi *threshold* (Bab 9) dulu |
+| Distribusi kelas bergeser | bandingkan dokumentasi | jadwalkan retrain + cek baseline |
+| POD/FAR berubah drastis | periksa data & sensor | model baru dengan studi kasus kembali |
+
+**Tabel 10.2**: Alur keputusan sederhana saat drift terdeteksi (dipisah untuk model
+regresi vs klasifikasi).
 
 Tabel 10.2 menekankan: **investigasi sebelum bertindak**. Tidak semua kenaikan metrik
 adalah masalah model; bisa jadi masalah data baru atau definisi yang berubah.
@@ -160,12 +180,12 @@ adalah masalah model; bisa jadi masalah data baru atau definisi yang berubah.
 
 Prediksi tunggal (satu angka MAE, satu angka mm) menyesatkan: operasional butuh tahu
 **seberapa yakin**. Beberapa pendekatan yang masuk akal untuk buku ini, termasuk gagasan
-ketidakpastian Bayesian pada jaringan saraf [4]:
+ketidakpastian Bayesian pada jaringan saraf [5]:
 
 ### Ensembel multi-seed
 
-Latih model yang sama dengan beberapa `seed` berbeda; prediksi = rata-rata, ketidakpastian
-= penyebaran (σ) antar anggota. Sederhana dan langsung:
+Latih model yang sama dengan beberapa `seed` berbeda; prediksi = rata-rata, sebaran (σ)
+antar anggota sebagai indikator kestabilan. Sederhana dan langsung:
 
 **Kode 10.1 - Ensembel multi-seed.**
 
@@ -183,8 +203,15 @@ bayangan = np.stack(preds)                 # (3, n_test)
 p_mean = bayangan.mean(axis=0)
 p_std = bayangan.std(axis=0)
 print("Prediksi rata-rata:", p_mean[:5])
-print("Ketidakpastian (±1σ):", p_std[:5])
+print("Sebaran antar-run (±1σ):", p_std[:5])
 ```
+
+> **Apa yang diukur σ ini?** Sebaran antar-*seed* terutama menangkap **variasi
+> inisialisasi/optimisasi**, bukan ketidakpastian prediktif penuh (aleatorik + epistemik).
+> Karena semua anggota berbagi data, arsitektur, dan hyperparameter yang sama, ukuran ini
+> bisa **mengecilkan** ketidakpastian sebenarnya. Perlakuan yang lebih bermakna (opsional,
+> di luar cakupan buku ini) mencakup MC-dropout, *deep ensembles* dengan variasi
+> arsitektur/hyperparameter, regresi kuantil (Kode 10.2), dan *conformal prediction*.
 
 Manfaat tambahan: ensembel juga **menstabilkan angka metrik** - MAE/CSI dari rata-rata
 ensembel sering lebih rendah variansnya daripada satu run acak. Ini menjadikan ensembel
@@ -193,38 +220,52 @@ dengan jumlah anggota - untuk 3-5 seed masih sangat wajar di Colab.
 
 ### Interval kuantil
 
-Lapisan akhir memprediksi 3 keluaran: median serta kuantil (misal 10% dan 90%) -
-dengan *loss* terpisah (e.g. *pinball loss* / quantile regression). Hasilnya: interval
-`[q10, q90]` yang memberi rentang "kisar 80%" prediksi. Ini jauh lebih informatif daripada
-satu angka.
+Lapisan akhir memprediksi beberapa kuantil sekaligus, misal median (50%) serta kuantil
+10% dan 90% - dengan *pinball loss* / quantile regression. Hasilnya: interval `[q10, q90]`
+yang memberi rentang "kisaran 80%" prediksi. Ini jauh lebih informatif daripada satu
+angka.
 
-**Kode 10.2 - Latih model regresi kuantil sederhana.**
+**Kode 10.2 - Latih model regresi kuantil sederhana (3 kuantil dengan satu *loss*).**
 
 ```python
-def loss_kuantil(q):
+import tensorflow as tf
+
+quantiles = [0.10, 0.50, 0.90]
+
+def loss_kuantil(qs):
     def _loss(y_true, y_pred):
-        err = y_true - y_pred
-        return tf.reduce_mean(tf.maximum(q * err, (q - 1) * err))
+        y_true = tf.reshape(y_true, (-1, 1))     # (batch, 1)
+        err = y_true - y_pred                    # (batch, n_kuantil)
+        qs_t = tf.constant(qs, dtype=tf.float32)         # (n_kuantil,)
+        return tf.reduce_mean(tf.maximum(qs_t * err, (qs_t - 1) * err))
     return _loss
 
-q10, q90 = 0.10, 0.90
 m = tf.keras.Sequential([
-    tf.keras.layers.Dense(32, activation="relu", input_shape=(Xtr.shape[1],)),
-    tf.keras.layers.Dense(2)])
-# kompilasi dua keluaran dengan dua loss kuantil
-m.compile(optimizer="adam", loss=[loss_kuantil(q10), loss_kuantil(q90)])
+    tf.keras.layers.Dense(32, activation="relu", input_shape=(X_train.shape[1],)),
+    tf.keras.layers.Dense(len(quantiles))])               # 3 unit: q10, q50, q90
+# satu output layer dengan satu custom loss untuk semua kuantil
+m.compile(optimizer="adam", loss=loss_kuantil(quantiles))
+m.fit(X_train, y_train, epochs=50, verbose=0)
+
+preds = m.predict(X_test, verbose=0)                      # (n_test, 3): q10, q50, q90
+q10, q50, q90 = preds[:, 0], preds[:, 1], preds[:, 2]
 ```
+
+Perhatikan: karena semua kuantil keluar dari satu *output layer* (`Dense(3)`), cukup satu
+*loss* kustom yang menerima `y_pred` berbentuk `(batch, n_kuantil)` dan menghitung
+*pinball loss* per kuantil - bukan daftar beberapa *loss* yang hanya berlaku untuk model
+dengan beberapa *output layer* terpisah. Baris `tf.reshape(y_true, (-1, 1))` membuat
+*loss* kebal terhadap bentuk `y_train`: baik `(n,)` maupun `(n, 1)`.
 
 Catatan penting: ketidakpastian dari model **belum tentu kalibrasi** - interval 80%
 bisa benar hanya 50% dari waktu bila model terlalu yakin. Kalibrasi (misal *conformal
-prediction*) adalah topik lanjut yang layak dikejar setelah buku ini (disebut pada
-Bab 10.9).
+prediction*) adalah topik lanjut yang layak dikejar setelah buku ini (lihat FAQ §10.9).
 
 ### Kapan melaporkan ketidakpastian?
 
 Tidak semua output harus selengkap itu; atur sesuai dampak:
 
-- **Peringatan dini / keputusan risiko** → wajib menyertakan interval & ensembel.
+- **Peringatan dini / keputusan risiko** → sangat dianjurkan menyertakan interval & ensembel.
 - **Informasi rutin** → satu angka + toleransi sudah cukup.
 - **Publikasi/replikasi** → minimal ensembel multi-seed agar ada ukuran kestabilan.
 
@@ -234,10 +275,12 @@ atau akui bahwa itu merupakan sebaran antar-seed (bukan jaminan statistika penuh
 ## 10.5 Interpretasi Lanjut dengan SHAP
 
 Bab 9 mulai dengan *permutation importance*. Bab ini melengkapinya dengan **SHAP**
-(Shapley additive explanations) [5] yang memberi:
+(SHapley Additive exPlanations, [6]) yang memberi:
 
-- **Importance global** - kontribusi rata-rata tiap fitur terhadap prediksi (lebih
-  stabil daripada permutation importance terhadap korelasi fitur).
+- **Importance global** - kontribusi rata-rata tiap fitur terhadap prediksi (memberi
+  gambaran lebih kaya daripada permutation importance; tetapi pada fitur yang
+  berkorelasi kuat, pembagian kredit SHAP juga bisa menyesatkan - bandingkan dengan
+  permutation importance dan pengetahuan fisis).
 - **Interpretasi lokal** - mengapa *satu* prediksi tertentu bernilai X (misal "hari ini
   diprediksi lebat").
 
@@ -253,7 +296,9 @@ shap.plots.beeswarm(nilai_shap)
 
 Interpretasi SHAP harus selalu ditautkan ke **pengetahuan atmosfer**:
 
-- Fitur yang "penting" tapi secara fisis tidak masuk akal → data/fitur bermasalah.
+- Fitur yang "penting" tapi secara fisis tidak masuk akal → perlu investigasi: cek
+  kebocoran data, fitur proksi, atau interaksi non-linear yang tak terduga (belum tentu
+  berarti data "rusak").
 - Fitur yang fisis masuk akal dan penting → menaikkan kepercayaan praktisi
   (misal `hujan_t1`, `rmm1` untuk hujan barat).
 - Interpretasi lokal membantu menjawab "kenapa peringatan dikeluarkan hari ini?" -
@@ -281,7 +326,8 @@ Ini penutup penting dan selaras dengan *Risk Management* umbrella. Tiga area:
 ### 1. Anti-overhype
 
 - Jangan mengklaim "menggantikan peramal BMKG"; klaim yang benar: "memberi probabilitas
-  tambahan yang diverifikasi dengan metrik tertentu".
+  terkalibrasi tambahan (untuk model klasifikasi) atau skor/interval yang diverifikasi
+  dengan metrik tertentu".
 - Sertakan *baseline* & metrik jujur (skill score, CSI) serta keterbatasan (Bab 8-9).
 - Hindari kata "akurasi 99%" tanpa konteks fenomena langka.
 
@@ -313,7 +359,7 @@ Ketika hasil dipublikasikan (artikel, media sosial), aturan praktis:
 Komunikasi yang hati-hati melindungi kredibilitas institusi sekaligus kepercayaan
 publik - bagian dari *risk management* yang dipakai sepanjang buku.
 
-**Tabel 10.3**: Etika pengguna yang dianjurkan.
+**Tabel 10.3**: Etika penggunaan yang dianjurkan.
 
 | Lakukan | Hindari |
 |---|---|
@@ -334,23 +380,26 @@ meteorologi + deep learning:
   ConvLSTM atau model *vision*; aplikasi langsung untuk peringatan sangat pendek.
 - **Downscaling** - meningkatkan resolusi *reanalysis*/model iklim ke skala lokal dengan
   saraf konvolusi; penting untuk proyeksi iklim di Indonesia.
-- **Benchmark** - *dataset* standar seperti WeatherBench [6] memudahkan membandingkan
-  metode secara adil.
+- **Benchmark** - *dataset* standar seperti WeatherBench [7] (prakiraan global jangka
+  menengah) memudahkan membandingkan metode secara adil. Catatan: untuk *nowcasting*
+  0-6 jam, gunakan *dataset* radar/satelit (mis. radar lokal, SEVIR, MeteoNet), karena
+  WeatherBench tidak dirancang untuk horizon itu.
 
 ### 2. Transfer learning & model pra-latih
 
-Pindahkan pengetahuan model yang dilatih pada tugas/domain besar (misal cuaca global /
-bahasa) untuk masalah lokal dengan data terbatas. Untuk meteorologi, *pretraining* lintas
-stasiun bisa menghemat data.
+Pindahkan pengetahuan model yang dilatih pada tugas/domain besar (misal model cuaca
+global, *reanalysis*, citra satelit, atau model pra-latih spatiotemporal) untuk masalah
+lokal dengan data terbatas. Untuk meteorologi, *pretraining* lintas stasiun bisa menghemat
+data.
 
 ### 3. *Generative model* untuk pengisian data & skenario
 
-- **Imputasi data hilang** dengan model generatif (di sisi data ini, Bab 6).
+- **Imputasi data hilang** dengan model generatif (di sisi data, lihat Bab 6).
 - **Skenario iklim** atau sintesis kondisi ekstrem untuk stress-test sistem.
 
 Pandangan luas tentang deep learning untuk sains kebumian (termasuk arah-arah di atas)
-dapat dibaca pada ulasan Reichstein et al. [7]. Seluruh contoh di bab ini dikembangkan
-dengan TensorFlow [8].
+dapat dibaca pada ulasan Reichstein et al. [8]. Seluruh contoh di bab ini dikembangkan
+dengan TensorFlow [9].
 
 Sumber belajar lanjut yang direkomendasikan (di luar buku ini):
 
@@ -378,7 +427,8 @@ Agar tidak sekadar "selesai dibaca", pakai jadwal sederhana:
 - **60 hari**: ulangi Bab 9 dengan dua stasiun (barat & timur); tambahkan indeks MJO
   nyata; selesaikan tabel verifikasi per kategori.
 - **90 hari**: pilih satu arah lanjut (Bab 10.7) - misal CNN untuk nowcasting - dan buat
-  prototipe kecil dengan data publik (WeatherBench [6] dll.).
+  prototipe kecil dengan data publik (untuk nowcasting: radar/satelit, mis. SEVIR atau
+  dataset radar; untuk prakiraan jangka menengah: WeatherBench [7]).
 
 Jadwal ini memastikan keterampilan tertanam lewat proyek, bukan sekadar dibaca - dan
 langkah-langkahnya persis cara penulis membangun buku ini.
@@ -405,10 +455,19 @@ interpretasi lokal.
 telah dipakai untuk *downscaling* (misal super-resolution), tetapi untuk skenario iklim
 masih riset aktif; perlakukan dengan kehati-hatian dan validasi fisik (Bab 10.6).
 
-**Bagaimana jika institusi saya tidak punya GPU?** Colab gratis sudah cukup untuk
-seluruh isi buku ini; model sekecil studi kasus tidak butuh GPU kuat. Bagi yang
-membutuhkan kapasitas lebih, pertimbangkan Colab Pro atau sumber daya institusi -
-tapi sesuaikan dengan kebutuhan, bukan gengsi.
+**Bagaimana jika institusi saya tidak punya GPU?** Untuk model sekecil studi kasus di
+buku ini, Colab gratis umumnya cukup dan tidak butuh GPU kuat; namun ketersediaan GPU
+di Colab gratis **tidak dijamin** (ada batas waktu dan kuota). Bagi yang membutuhkan
+kapasitas lebih, pertimbangkan Colab Pro atau sumber daya institusi - tapi sesuaikan
+dengan kebutuhan, bukan gengsi.
+
+**Apa itu *conformal prediction* yang disebut di §10.4?** Ini teknik kalibrasi yang
+mengubah skor/interval model menjadi jaminan cakupan dengan asumsi minimum
+(pertukaran data), sehingga interval yang dilaporkan bisa dipercaya secara statistika.
+Contoh ringkasnya: dari regresi kuantil (Kode 10.2) dihitung residual pada *calibration
+set*, lalu batas interval digeser sehingga cakupan empiris mendekati target (mis. 80%).
+Pembahasan penuh berada di luar buku ini; cukup ketahui bahwa interval "mentah" dari
+model belum tentu terkalibrasi (lihat §10.4).
 
 ## 10.10 Penutup: Dari Pembaca Menjadi Praktisi
 
@@ -421,7 +480,7 @@ rumus atau kode, melainkan **sikap praktisi**:
 - Jujur tentang keterbatasan - itu yang membangun kepercayaan.
 - Terus belajar dengan data nyata dan berbagi kepada komunitas.
 
-Buku ini adalah permulaan, bukan akhir. Jadikan studi kasus Kapuas dan BMKG sebagai
+Buku ini adalah permulaan, bukan akhir. Jadikan studi kasus Cilacap dan BMKG sebagai
 batu loncatan; jadikan setiap masalah lokal sebagai latihan berikutnya. Selama Anda
 memegang disiplin "ukur dulu, klaim kemudian", Anda sudah berada di jalur yang benar.
 
@@ -440,9 +499,9 @@ memegang disiplin "ukur dulu, klaim kemudian", Anda sudah berada di jalur yang b
 **Latihan praktik (notebook `ch-10-09_operasional_arah_riset.ipynb`)**
 
 6. Ambil salah satu model Bab 8/9; hitung grafik kendali sederhana MAE mingguan dan
-   tandai titik yang keluar batas (palsukan satu periode dengan error tinggi).
+   tandai titik yang keluar batas (simulasikan satu periode dengan error tinggi).
 7. Latih ensembel multi-seed (Kode 10.1); bandingkan MAE rata-rata vs MAE model tunggal;
-   laporkan std sebagai ketidakpastian.
+   laporkan sebaran antar-run (bukan klaim ketidakpastian statistika penuh).
 8. Terapkan regresi kuantil sederhana (Kode 10.2) dan hitung cakupan interval 80% pada
    data uji.
 9. Jalankan SHAP (Kode 10.3) pada model Bab 9; tampilkan 5 fitur teratas dan kaitkan
@@ -467,21 +526,25 @@ memegang disiplin "ukur dulu, klaim kemudian", Anda sudah berada di jalur yang b
 
 1. I. Goodfellow, Y. Bengio, and A. Courville, *Deep Learning*. Cambridge, MA, USA:
    MIT Press, 2016.
-2. R. J. Hyndman and G. Athanasopoulos, *Forecasting: Principles and Practice*, 3rd ed.
+2. D. Sculley et al., "Hidden technical debt in machine learning systems," in *Proc.
+   Adv. Neural Inf. Process. Syst. (NeurIPS)*, 2015, pp. 2503-2511.
+   [Online]. Available: https://papers.nips.cc/paper/5656-hidden-technical-debt-in-machine-learning-systems (Accessed: Sep. 2026)
+3. R. J. Hyndman and G. Athanasopoulos, *Forecasting: Principles and Practice*, 3rd ed.
    Melbourne, Australia: OTexts, 2021. [Online]. Available: https://otexts.com/fpp3/
-3. World Meteorological Organization, "WMO guidelines on the verification of operational
-   forecasts," WMO, Geneva, Switzerland, 2018.
-4. Y. Gal and Z. Ghahramani, "Dropout as a Bayesian approximation: representing model
+   (Accessed: Sep. 2026)
+4. World Meteorological Organization, "WMO guidelines on the verification of operational
+   forecasts," WMO-No. 1214, Geneva, Switzerland, 2018.
+5. Y. Gal and Z. Ghahramani, "Dropout as a Bayesian approximation: representing model
    uncertainty in deep learning," in *Proc. Int. Conf. Mach. Learn. (ICML)*, 2016.
-   [Online]. Available: https://arxiv.org/abs/1506.02142
-5. S. M. Lundberg and S.-I. Lee, "A unified approach to interpreting model predictions,"
+   [Online]. Available: https://arxiv.org/abs/1506.02142 (Accessed: Sep. 2026)
+6. S. M. Lundberg and S.-I. Lee, "A unified approach to interpreting model predictions,"
    in *Proc. Adv. Neural Inf. Process. Syst. (NeurIPS)*, 2017, pp. 4765-4774.
-   [Online]. Available: https://arxiv.org/abs/1705.07874
-6. S. Rasp et al., "WeatherBench: a benchmark data set for data-driven weather
+   [Online]. Available: https://arxiv.org/abs/1705.07874 (Accessed: Sep. 2026)
+7. S. Rasp et al., "WeatherBench: a benchmark data set for data-driven weather
    forecasting," *Journal of Advances in Modeling Earth Systems*, vol. 12, no. 10,
    2020, doi: 10.1029/2020MS002203.
-7. M. Reichstein et al., "Deep learning and process understanding for data-driven Earth
+8. M. Reichstein et al., "Deep learning and process understanding for data-driven Earth
    system science," *Nature*, vol. 566, no. 7743, pp. 195-204, Feb. 2019,
    doi: 10.1038/s41586-019-0912-1.
-8. M. Abadi et al., "TensorFlow: Large-scale machine learning on heterogeneous systems,"
-   2016. [Online]. Available: https://arxiv.org/abs/1603.04467
+9. M. Abadi et al., "TensorFlow: Large-scale machine learning on heterogeneous systems,"
+   2016. [Online]. Available: https://arxiv.org/abs/1603.04467 (Accessed: Sep. 2026)

@@ -36,7 +36,10 @@ Setelah menyelesaikan bab ini, Anda diharapkan mampu:
 
 Bab 2-5 membangun model; bab ini kembali ke fondasi: **data**. Di dunia meteorologi,
 ungkapan *garbage in, garbage out* terasa sangat nyata - model sehebat apa pun tidak
-berguna jika masukannya salah. Tiga kenyataan yang perlu dipahami sejak awal:
+berguna jika masukannya salah. Urutan ini sengaja: menunda bab data sampai setelah
+pembaca mengenal konsep *leakage*, split berbasis waktu, dan metrik evaluasi (Bab 2
+dan 5) membuat alasan mengapa data harus bersih menjadi konkret, bukan abstrak.
+Tiga kenyataan yang perlu dipahami sejak awal:
 
 1. **Data meteorologi tidaklah bersih.** Sensor rusak, nilai hilang, stasiun pindah
    lokasi, dan pencilan (ingat distribusi hujan yang berekor panjang di Bab 2 dan 5)
@@ -48,7 +51,35 @@ berguna jika masukannya salah. Tiga kenyataan yang perlu dipahami sejak awal:
    lembaga. Memahami aturan ini bagian dari etika riset (Kriteria Sitasi, bagian 3).
 
 Bab ini memberi peta sumber data + keterampilan teknis mengubahnya menjadi *dataset*
-yang siap dilatih - persis yang akan dipakai di Bab 7-9.
+yang siap dilatih - persis yang akan dipakai di Bab 7-9. Peta alurnya:
+
+```text
+[6.1-6.2]            [6.3]               [6.4]
+ Berkas mentah        Membaca dan         QC dan imputasi
+ CSV, NetCDF, GRIB    menyatukan          - pola gap
+ (BMKG, ERA5, pasut,  (Kode 6.1-6.3)      - outlier vs ekstrem sahih
+  GSMaP, CHIRPS)      -> tabel            (Kode 6.4)
+  (Tabel 6.1)           berindeks waktu   - konsistensi internal,
+        |                    |               temporal, spasial
+        v                    v                    v
+ [6.5 eksplorasi]      [6.6 feature]      [6.7 preprocessing]
+ distribusi, musim    lag, sinusoidal,   normalisasi (skala dari
+ korelasi silang      ENSO/MJO           data latih), transformasi
+ (Gambar 6.1, Kode    (Kode 6.6)         log1p, split kronologis
+ 6.5)
+                                                  |(Kode 6.7)
+                                                  |
+                                                  v
+                      dataset X/y siap + metadata (§6.9)
+                                                  |
+                                                  v
+                      Bab 7-9 memakai dataset ini
+```
+
+**Alur 6.1** - Pipeline data dari berkas mentah ke *dataset* siap dilatih (dipakai
+kembali di Bab 8-9). Setiap langkah punya "Kode 6.x" dan angka-aturan yang akan
+diacu nanti - jika suatu bagian terasa abstrak, loncat duluan ke "Studi mini" di §6.7
+yang merangkai semuanya sekaligus.
 
 ## 6.2 Sumber Data Meteorologi Indonesia
 
@@ -63,11 +94,12 @@ dipakai.
 | ERA5 / ERA5-Land (Copernicus) | *Reanalysis* suhu, hujan, angin, dll. | ±0.25° (~31 km) / ±0.1° (~9 km), per jam | Copernicus Climate Data Store [2] | Lisensi CC-BY untuk C3S; kutip Hersbach et al. [3] |
 | CMIP6 | Proyeksi iklim (skenario) | Lebih kasar, bulanan-harian | ESGF / Copernicus | Untuk konteks jangka panjang, Bab 10 |
 | PSMSL / IOC / BIG | Muka laut / pasang surut | Menit-jam, per stasiun | `psmsl.org` [4], `tides.big.go.id` [5] | Gratis; sertakan rujukan data & bottle/stasiun |
-| GSMaP / CHIRPS | Hujan satelit+kalibrasi | 0.1°-0.25°, 3 jam-harian | JAXA / CHC UCSB [6] | Kutip paper pembuat |
+| GSMaP (JAXA) | Hujan satelit+kalibrasi | 0.1°, 3 jam-harian | `sharaku.eorc.jaxa.jp` [11] | Kutip paper pembuat |
+| CHIRPS (CHC UCSB) | Hujan satelit+kalibrasi | ±0.05° (~5 km), harian | CHC UCSB [6] | Kutip paper pembuat |
 
 **Catatan penting:** stasiun BMKG [1] adalah sumber "kebenaran lokal" terbaik, tetapi
 tidak merata spasial dan kadang bergap. ERA5 [2][3] memberikan cakupan grid lengkap dan
-konsisten, tetapi merupakan *model* (taksiran) - bukan observasi murni. Praktik umum: tren
+konsisten, tetapi merupakan *model* (taksiran) - bukan observasi murni. Praktik umum:
 gabungkan observasi stasiun (untuk akurasi) dengan *reanalysis* (untuk fitur regional
 yang lengkap). Cara menggabungkan ini dibahas di §6.3-6.6.
 
@@ -83,7 +115,7 @@ tidak dimiliki stasiun.
 ### Kapan memakai data satelit hujan?
 
 Untuk wilayah yang minim stasiun (laut, pulau terpencil, Indonesia timur), pengamatan
-hujan berbasis satelit merupakan alternatif praktis. **GSMaP** (JAXA) dan **CHIRPS** [6]
+hujan berbasis satelit merupakan alternatif praktis. **GSMaP** (JAXA) [11] dan **CHIRPS** [6]
 menggabungkan sinyal satelit inframerah/pasif-mikro dengan kalibrasi stasiun, menghasilkan
 grid hujan yang cukup baik untuk kajian regional.
 
@@ -96,6 +128,32 @@ Catatan penggunaan di buku ini:
   lebih penting (target dari sumber yang sama menjaga makna evaluasi).
 
 Bab 6 memperlakukan satelit sebagai "sumber bonus", bukan pengganti stasiun.
+
+### Catatan praktis akses data
+
+Lima hal yang perlu diketahui sebelum mengunduh (berlaku untuk semua sumber di Tabel
+6.1):
+
+1. **ERA5 vs ERA5-Land**: Tabel 6.1 mencantumkan resolusi keduanya. Untuk studi skala
+   lokal (pertanian, hidrologi, wilayah kecil), **ERA5-Land (0.1°)** umumnya lebih cocok
+   daripada ERA5 (0.25°) - ERA5-Land adalah versi *downscaled* yang didorong ulang oleh
+   ERA5 dengan resolusi lebih halus.
+2. **Tidak semua data *real-time***: ERA5 versi akhir tersedia dengan **tunda sekitar
+   2-3 bulan** (versi sementara *near-real-time* **ERA5T** lebih cepat tetapi belum
+   divalidasi penuh). GSMaP juga punya beberapa rilis: versi *near-real-time*
+   (**GSMaP_NRT**, tunda sekitar 4 jam) dan versi *reanalysis* (**GSMaP_RI**, tunda jauh
+   lebih lama). Untuk pelatihan *offline* latensi ini tidak mengganggu, tetapi penting
+   saat data dipakai untuk aplikasi operasional *near-real-time*.
+3. **"0.25° ≈ 31 km" hanya berlaku di sekitar khatulistiwa**: di lintang tinggi, jarak
+   per derajat bujur menyusut. Karena Indonesia praktis berada di ekuator, angka 31 km
+   cukup akurat untuk buku ini - tetapi jangan menganggapnya universal.
+4. **BMKG tidak memiliki API publik**: akses umum manual via
+   `dataonline.bmkg.go.id`; sebagian data memerlukan permintaan resmi yang mungkin
+   berbayar, dan kualitas data **bervariasi antar stasiun** (bergap panjang, sensor
+   error, atau pindah lokasi). Selalu baca metadata stasiun dan dokumentasi sebelum
+   mengunduh (lihat §6.9).
+5. **Kutipkan sumber tepat**: cantumkan nama produk, versi, dan tanggal unduh sesuai
+   §6.9 - sebagian data (CDS, JAXA) mewajibkan kredit khusus untuk publikasi.
 
 ### Menggabungkan observasi dan *reanalysis* (praktik yang disarankan)
 
@@ -146,7 +204,10 @@ stasiun dalam CSV, `pandas.read_csv` dan parse tanggal ke `datetime` adalah lang
 pertama yang biasa.
 
 Untuk GRIB (prakiraan model operasional), dua jalur umum: xarray dengan *engine* `cfgrib`
-untuk eksplorasi cepat, atau `wgrib2` untuk ekstraksi presisi pada skala besar.
+untuk eksplorasi cepat, atau `wgrib2` untuk ekstraksi presisi pada skala besar. Catatan:
+engine `cfgrib` (beserta pustaka `eccodes` di belakangnya) perlu diinstal terpisah dari
+xarray - `pip install cfgrib` biasanya mencukupi di Colab, tetapi kegagalan instalasi
+pada beberapa sistem sering menjadi titik hambatan pertama pembaca.
 
 **Kode 6.2 - Membaca GRIB dengan xarray + engine cfgrib.**
 
@@ -171,11 +232,16 @@ Pola yang akan berulang di Bab 8-9: baca banyak berkas → resample ke frekuensi
 import xarray as xr
 import pandas as pd
 
-# ERA5 per jam -> resample harian lalu ke DataFrame
+# ERA5 per jam -> menjadi harian: hujan (akumulatif) pakai sum()
 ds = xr.open_dataset("era5_per_jam.nc")
 d_harian = ds["tp"].resample(time="D").sum()
 s = d_harian.sel(latitude=-0.01, longitude=109.34, method="nearest").to_pandas()
 ```
+
+Resample harus disesuaikan dengan sifat variabel: variabel **akumulatif** seperti hujan
+(`tp`) memakai `sum()`, sedangkan variabel **instan** seperti suhu/angin (`t2m`, `u10`,
+`v10`) memakai `mean()`. Salah memilih agregasi adalah sumber kesalahan data tersembunyi
+yang luput dari plot deret.
 
 Menggabungkan stasiun (target) dan *reanalysis* (fitur) lewat indeks tanggal adalah operasi
 `merge`/`join` yang harus diperiksa hasilnya agar tidak ada baris yang hilang diam-diam -
@@ -207,7 +273,7 @@ print("Nilai hilang:", df.isna().sum())
 # Interpolasi linear sederhana untuk gap pendek
 df["r_hujan"] = df["r_hujan"].interpolate(method="linear", limit=3)
 
-# Atau isi dengan nilai hari sebelumnya (backfill) untuk gap 1 hari
+# Atau isi dengan nilai hari sebelumnya (ffill = forward fill) untuk gap 1 hari
 df["suhu"] = df["suhu"].ffill()
 ```
 
@@ -215,6 +281,13 @@ Catatan: interpolasi linear (Kode 6.4) cocok untuk suhu (mulus) tetapi **kurang 
 untuk hujan (banyak nol, lonjakan). Untuk hujan, imputasi konservatif (misal isi 0 bila
 hari kering di sekitarnya, atau `NaN` tetap dibiarkan untuk model yang tahan) sering lebih
 jujur.
+
+Selain interpolasi, ada keluarga metode imputasi yang **belajar dari data lain**:
+regresi dengan stasiun tetangga (isi gap suhu memakai korelasi stasiun terdekat), imputer
+berbasis tetangga terdekat (KNN), atau *iterative imputation* (MICE). Ini relevan ketika
+gap panjang atau banyak variabel saling berkorelasi. Bab 8-9 menggunakan imputasi sederhana
+untuk menjaga alur tetap jelas; metode berbasis model (KNN/MICE) bisa menjadi langkah
+lanjutan saat data sudah lebih besar dan banyak variabel berkorelasi.
 
 ### Pencilan (*outlier*)
 
@@ -243,6 +316,20 @@ secara fisis dipertahankan sampai ada bukti salah. Menghapus ekstrem sahih agar 
 "tampak bagus" adalah bentuk kecurangan evaluasi - di dunia nyata ekstrem itu tetap
 terjadi dan harus diprediksi.
 
+Cek nilai fisik saja tidak cukup; QC yang baik juga memeriksa **konsistensi**:
+
+- **Internal**: nilai yang saling bertentangan dalam satu stasiun (mis. suhu minimum di
+  atas suhu maksimum hari yang sama, atau arah angin 'N' di samping 'S' yang mencerminkan
+  sensor rusak).
+- **Temporal**: lompatan tak wajar antar waktu yang berurutan (mis. lonjakan suhu 20°C
+  dalam satu jam tanpa front udara yang jelas) patut dicurigai.
+- **Spasial**: bandingkan dengan stasiun tetangga - satu nilai hujan 300 mm/hari sementara
+  lima stasiun sekitarnya kering mungkin salah; tetapi ingat perbedaan lokal tetap bisa
+  sahih (badai sel tunggal), jadi verifikasi sebelum membuang [12].
+
+Tujuan QC bukan membersihkan data sembarangan, tetapi **menandai nilai yang tidak bisa
+dipercaya** tanpa menghilangkan sinyal ekstrem yang sah.
+
 ## 6.5 Eksplorasi: Memahami Pola Sebelum Membangun Model
 
 Eksplorasi yang baik mencegah model yang salah arah. Empat hal yang hampir selalu
@@ -260,7 +347,9 @@ Hujan (Gambar 6.1) berbentuk *berat di nol* dengan ekor panjang ke kanan; suhu l
 mirip lonceng. Distribusi menentukan pilihan *loss* (Bab 2), trasformasi target, dan
 metrik yang jujur (Bab 5).
 
-![Gambar 6.1 - Distribusi curah hujan harian khas: banyak hari tanpa hujan dan ekor panjang ke kanan](ch-06-data-meteorologi/figures/fig-6-1-distribusi-hujan.png)
+![Gambar 6.1 - Distribusi curah hujan harian](ch-06-data-meteorologi/figures/fig-6-1-distribusi-hujan.png)
+
+**Gambar 6.1**: Distribusi curah hujan harian khas: banyak hari tanpa hujan dan ekor panjang ke kanan.
 
 ### 3. Korelasi silang
 
@@ -283,18 +372,27 @@ indikator musiman eksplisit.
 import pandas as pd
 from statsmodels.tsa.seasonal import seasonal_decompose
 
-# 1) dekomposisi (data bulanan agar bersih)
-bulanan = df["r_hujan"].resample("M").sum()
-hasil = seasonal_decompose(bulananan, model="additive")
+# 1) dekomposisi hujan bulanan (resample "ME" = akhir bulan)
+bulanan = df[["r_hujan", "suhu"]].resample("ME").agg({"r_hujan": "sum", "suhu": "mean"})
+hasil = seasonal_decompose(bulanan["r_hujan"], model="additive")
 hasil.plot()
 
-# 2) korelasi silang suhu(t-k) vs hujan(t) untuk memilih lag fitur
-from pandas.plotting import lag_plot
-lag_plot(bulananan, lag=3)
+# 2) korelasi silang suhu(t-k) vs hujan(t): cari lag terbaik
+korelasi = pd.Series(
+    {k: bulanan["suhu"].shift(k).corr(bulanan["r_hujan"]) for k in range(0, 150)},
+    name="korelasi",
+).sort_index()
+lag_terbaik = korelasi.abs().idxmax()
+print("Lag suhu dengan korelasi tertinggi:", lag_terbaik)
 ```
 
-Dekomposisi (Kode 6.5) menampilkan komponen musiman; korelasi silang membantu memilih
-deret tunda yang menjanjikan sebelum memasukkannya ke model.
+Dekomposisi (Kode 6.5) menampilkan komponen musiman; segmen kedua menghitung korelasi
+silang suhu tunda `t-k` terhadap hujan `t` untuk memilih deret tunda yang menjanjikan
+sebelum memasukkannya ke model (hubungan hujan-suhu di daerah tropis bersifat negatif:
+suhu turun saat hujan, sehingga korelasi maksimum akan berharga negatif; yang penting
+adalah `lag`-nya). Pada data hujan, `seasonal_decompose` bersifat *additive* dan bisa
+kasar jika distribusi masih sangat miring - gunakan transformasi (`log1p`, §6.7) atau
+*modeling* multiplikatif bila hasilnya berisik.
 
 ## 6.6 Feature Engineering untuk Data Meteorologi
 
@@ -318,7 +416,7 @@ melompat.
 Fitur **regional** meningkatkan prediksi hujan Indonesia secara signifikan:
 
 - **ENSO** (El Niño-Southern Oscillation): indeks Nino3.4 atau MEI mengukur anomali
-  suhu muka laut Pasifik; Indonesia cenderung lebih kering saat El Niño [7].
+  suhu muka laut Pasifik [7]; Indonesia cenderung lebih kering saat El Niño.
 - **MJO** (Madden-Julian Oscillation): bit fase & amplitudo MJO (mis. RMM1, RMM2 dari
   Wheeler & Hendon [8]) berhubungan dengan osilasi hujan 30-60 hari di wilayah tropis.
 
@@ -400,7 +498,7 @@ Bab 9 akan menerapkan transformasi ini pada prediksi hujan stasiun BMKG.
 
 Ulangi aturan Bab 2 & 5: **jangan acak**. Potong deret secara kronologis:
 
-```
+```text
 train (2000-2015) | validasi (2016-2018) | test (2019-2021)
 ```
 
@@ -416,7 +514,8 @@ statistik seluruh data adalah *leakage*.
 
 ### Studi mini: dari berkas mentah ke X/y siap dilatih
 
-Merangkai seluruh bab dalam satu alur yang akan dijadikan *template*:
+Merangkai seluruh bab dalam satu alur yang akan dijadikan *template* (peta visualnya
+ada di **Alur 6.1**, §6.1):
 
 1. Baca stasiun (CSV) + *reanalysis* (NetCDF) → gabung per tanggal (Kode 6.1-6.3).
 2. QC & imputasi pilihannya (Kode 6.4).
@@ -452,7 +551,7 @@ buku ini). Lebih penting daripada "banyak": data **bersih** dan *split* yang juj
 
 **Haruskah indeks iklim (ENSO/MJO) selalu ditambahkan?** Tidak selalu. Uji dulu: tambah,
 bandingkan metrik validasi; jika perbaikannya bermakna, pertahankan. Untuk prediksi hujan
-Indonesia, dampaknya sering terasa nyata [7][8].
+Indonesia, dampak ENSO/MJO sering terasa nyata (Bab 9).
 
 **Apa beda *imputation* dan *interpolation*?** *Imputation* = mengisi nilai hilang
 dengan metode apa pun (statistik, model); *interpolation* adalah salah satu caranya
@@ -486,16 +585,24 @@ Bab 8-9.
 2. Jelaskan mengapa imputasi interpolasi linear cocok untuk suhu tetapi tidak untuk hujan.
 3. Apa bentuk *leakage* ketika normalisasi dihitung dari seluruh data sebelum split?
 4. Mengapa fitur ENSO/MJO bisa relevan untuk prediksi hujan di Indonesia?
+5. Mengapa latensi (keterlambatan ketersediaan) sebuah dataset menentukan apakah ia
+   cocok untuk aplikasi operasional *near-real-time*? Sebutkan satu contoh dataset
+   yang cocok dan satu yang tidak cocok untuk kasus tersebut (§6.2, butir 2).
+6. Apa perbedaan kegunaan antara ERA5 dan ERA5-Land untuk studi skala lokal di
+   Indonesia? (§6.2, butir 1).
 
 **Latihan praktik (notebook `ch-06-05_persiapan_data.ipynb`)**
 
-5. Ambil data hujan harian stasiun (atau data contoh yang disediakan); lakukan QC dan
+7. Ambil data hujan harian stasiun (atau data contoh yang disediakan); lakukan QC dan
    eksplorasi (distribusi, dekomposisi musiman).
-6. Bangun fitur: lag 1,2,3,7,14; musiman sinus; gabungkan indeks MJO/ENSO (berkas contoh).
-7. Normalisasi dengan skala latih; split berbasis waktu; dokumentasikan jumlah baris dan
-   rentang tanggal tiap split.
-8. (Proyek mini) Buat pipeline data reusable (berkas + fungsi) untuk dipakai di Bab 8-9:
-   input tanggal & stasiun → output X/y bersih siap dilatih.
+8. Bangun fitur: lag 1,2,3,7,14; musiman sinus; gabungkan indeks MJO/ENSO (berkas contoh).
+9. Normalisasi dengan skala latih; split berbasis waktu; dokumentasikan jumlah baris dan
+   rentang tanggal tiap split. Untuk masing-masing berkas sumber, catat tanggal observasi
+   terakhirnya dalam tabel kecil, lalu hitung selisih harinya terhadap tanggal terakhir
+   *test*; tuliskan dalam satu kalimat apakah selisih itu membatasi model jika dijalankan
+   secara operasional.
+10. (Proyek mini) Buat pipeline data reusable (berkas + fungsi) untuk dipakai di Bab 8-9:
+    input tanggal & stasiun → output X/y bersih siap dilatih.
 
 ## Ringkasan
 
@@ -505,8 +612,12 @@ Bab 8-9.
   sebagai *target*, *reanalysis* sebagai fitur regional.
 - Format CSV untuk stasiun; NetCDF/GRIB (xarray) untuk grid; selalu cek satuan dan nama
   variabel (Tabel 6.2).
+- Sebelum mengunduh, pahami latensi tiap produk (ERA5 vs ERA5T, GSMaP rilis berbeda),
+  beda ERA5 vs ERA5-Land, cakupan "km" yang bergantung lintang, serta cara akses BMKG
+  yang tanpa API publik (§6.2).
 - QC: bedakan nilai hilang (polanya) dan pencilan (salah vs ekstrem sahih) sebelum mengisi;
-  hapus kesalahan fisik, pertahankan ekstrem yang masuk akal.
+  hapus kesalahan fisik, pertahankan ekstrem yang masuk akal, dan cek konsistensi
+  internal/temporal/spasial (contoh di §6.4).
 - Eksplorasi: distribusi (Gambar 6.1), dekomposisi musiman, korelasi silang - dasar
   *feature engineering*.
 - Fitur: deret tunda (lag), musiman sinusoidal, dan indeks ENSO/MJO memperkuat model hujan.
@@ -543,3 +654,10 @@ Bab 8-9.
    MIT Press, 2016.
 10. S. Jolliffe and D. B. Stephenson, *Forecast Verification: A Practitioner's Guide in
     Atmospheric Science*, 2nd ed. Chichester, UK: Wiley, 2011, doi: 10.1002/9781119960003.
+11. K. Okamoto et al., "The global satellite mapping of precipitation (GSMaP) project,"
+    in *Proc. IEEE Int. Geoscience and Remote Sensing Symp. (IGARSS)*, vol. 5, Seoul,
+    South Korea, 2005, pp. 3414-3416, doi: 10.1109/IGARSS.2005.1526538.
+12. World Meteorological Organization (WMO), *Guide to Instruments and Methods of
+    Observation* (WMO-No. 8), 2021 ed., World Meteorological Organization, Geneva,
+    Switzerland, 2021. [Online]. Available: https://community.wmo.int/activity-sites/
+    meteorological-and-hydrological-service-wmo-8 (Accessed: Sep. 2026).

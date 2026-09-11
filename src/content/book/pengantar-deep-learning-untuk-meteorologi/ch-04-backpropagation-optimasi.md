@@ -406,6 +406,8 @@ versi terbaik (bukan yang terakhir yang mungkin sudah *overfit*).
 
 Selain `ReduceLROnPlateau` (otomatis), Keras juga menyediakan scheduler manual:
 
+**Kode 4.4 - *Learning rate scheduler* manual.**
+
 ```python
 def lr_schedule(epoch):
     return 0.001 * (0.5 ** (epoch // 30))  # halving tiap 30 epoch
@@ -428,7 +430,9 @@ Keduanya di-plot untuk melihat:
 - **Keduanya datar/tinggi** → ***underfit***: model terlalu sederhana / LR terlalu kecil /
   data kurang.
 
-![Gambar 4.1 - Contoh learning curve: train turun, validation mulai naik pada epoch ±60 (overfit)](ch-04-backpropagation-optimasi/figures/fig-4-1-learning-curve.png)
+![Gambar 4.1 - Contoh learning curve overfit](ch-04-backpropagation-optimasi/figures/fig-4-1-learning-curve.png)
+
+**Gambar 4.1**: Contoh learning curve: train turun, validation mulai naik pada epoch ±60 (overfit).
 
 Gambar 4.1 menunjukkan pola *overfit* khas: train terus menurun, validasi membentuk "U"
 terbalik. Di sinilah callback (*early stopping*) berguna - dan Bab 5 memperdalam diagnosis
@@ -488,7 +492,7 @@ mencoba semua kombinasi acak.
 Bab 2-4 memberi Anda satu siklus penuh: bentuk data → pelatihan → evaluasi. Dalam praktik,
 Anda akan mengulang siklus ini berkali-kali:
 
-```
+```text
 masalah → data → baseline → model → evaluasi → (analisis kesalahan) → perbaikan → ...
 ```
 

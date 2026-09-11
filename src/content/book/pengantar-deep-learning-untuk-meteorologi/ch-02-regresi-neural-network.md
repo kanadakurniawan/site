@@ -99,7 +99,10 @@ sebaliknya. Perceptron historis penting karena menunjukkan bahwa mesin bisa bela
 terbatas pada masalah yang *linearly separable*. Di Bab 2 ini kita menggunakan versi modern:
 neuron **tanpa aktivasi di lapisan keluaran** untuk regresi (nilai bebas, bukan 0/1).
 
-![Gambar 2.1 - Struktur neuron buatan: masukan x dikalikan bobot w, dijumlahkan dengan bias b menjadi z, lalu dilewatkan fungsi aktivasi f menghasilkan keluaran a](ch-02-regresi-neural-network/figures/fig-2-1-neuron.png)
+![Gambar 2.1 - Struktur neuron buatan](ch-02-regresi-neural-network/figures/fig-2-1-neuron.png)
+
+**Gambar 2.1**: Struktur neuron buatan: masukan `x` dikalikan bobot `w`, dijumlahkan
+dengan bias `b`, lalu melalui fungsi aktivasi `f` menghasilkan keluaran `a`.
 
 Persamaan (2.1) dan (2.2) diilustrasikan pada Gambar 2.1: setiap panah masukan membawa
 satu komponen `x_i` yang dikalikan `w_i`; semua hasil dijumlahkan bersama bias menjadi
@@ -191,7 +194,7 @@ bebas, bukan dibatasi ke rentang tertentu.
 
 Contoh arsitektur MLP untuk memprediksi suhu besok dari suhu kemarin:
 
-```
+```text
 Input: suhu-1 hari sebelumnya
   → Dense(8, activation='relu')
   → Dense(8, activation='relu')
@@ -255,7 +258,7 @@ dan kemarin (dua fitur). Ini contoh *autoregressive*: target (besok) dijelaskan 
 nilai-nilai sebelumnya. Data nyata pasang surut akan dibahas penuh di Bab 8; di sini kita
 mengenalkan alurnya saja:
 
-```
+```text
 input: [tinggi(t-2), tinggi(t-1)]  →  Dense+ReLU  →  output: tinggi(t)
 ```
 
@@ -355,7 +358,7 @@ Apakah itu berarti DL "menang"? Di Bab 5-9 kita akan membahas pertanyaan ini leb
 perbedaan kecil mungkin tidak signifikan secara operasional, dan biaya memelihara model
 harus diperhitungkan. Memiliki patokan operasional (misalnya toleransi tinggi pasang
 ±0.10 m) membantu menilai. Untuk menjawab "menang atau kebetulan?" secara statistik,
-exis uji seperti **Diebold-Mariano** yang memuji apakah perbedaan loss antara dua model
+tersedia uji seperti **Diebold-Mariano** yang menguji apakah perbedaan loss antara dua model
 signifikan, bukan hanya noise dari satu sampel uji. Di bab ini kita tidak lanjut mendalam;
 poinnya: angka MAE tidak cukup untuk klaim "menang" - baik konteks operasional, baik uji
 statistik, baik konsistensi antar-periode (Bab 5) yang diperlukan.
@@ -475,7 +478,7 @@ yang perlu dikenal sekarang:
 Untuk data **deret waktu meteorologi**, pembagian data menjadi latih/validasi/uji harus
 **berdasarkan waktu**, bukan acak:
 
-```
+```text
 train (2015-2021) | validation (2022) | test (2023)
 ```
 

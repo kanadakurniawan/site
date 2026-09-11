@@ -87,7 +87,9 @@ keyakinan 85% bahwa sampel masuk kelas `1` (misal *hujan*). Sifat sigmoid yang p
 - Nilai sangat negatif → mendekati 0.
 - Nilai nol → tepat 0.5 (titik paling "ragu").
 
-![Gambar 3.1 - Kurva sigmoid memetakan nilai z (-∞ sampai +∞) ke rentang (0, 1)](ch-03-klasifikasi-neural-network/figures/fig-3-1-sigmoid.png)
+![Gambar 3.1 - Kurva sigmoid](ch-03-klasifikasi-neural-network/figures/fig-3-1-sigmoid.png)
+
+**Gambar 3.1**: Kurva sigmoid memetakan nilai `z` (dari -∞ sampai +∞) ke rentang (0, 1).
 
 Gambar 3.1 memperlihatkan kurva *S* khas sigmoid: mulus, monoton naik, dan terampatkan.
 
@@ -255,7 +257,7 @@ Bandingkan hasil Kode 3.3 dengan tanpa bobot di notebook.
 Untuk multi-kelas, label biasanya di-encode sebagai **one-hot**: vektor panjang `K` dengan
 `satu` pada posisi kelas yang benar.
 
-```
+```text
 ringan → [1, 0, 0]
 sedang → [0, 1, 0]
 lebat  → [0, 0, 1]
@@ -281,11 +283,13 @@ Tabel berikut menggambarkan jebakan ini:
 
 **Tabel 3.3**: Contoh data tidak seimbang: sebagian besar hari "tidak hujan deras".
 
-![Gambar 3.2 - Confusion matrix contoh data tidak seimbang (2 benar, 8 miss, 20 false alarm, 970 benar-tidak)](ch-03-klasifikasi-neural-network/figures/fig-3-2-confusion-matrix.png)
+![Gambar 3.2 - Confusion matrix data tidak seimbang](ch-03-klasifikasi-neural-network/figures/fig-3-2-confusion-matrix.png)
+
+**Gambar 3.2**: Confusion matrix contoh data tidak seimbang (2 benar, 8 miss, 20 false alarm, 970 benar-tidak).
 
 Gambar 3.2 memvisualkan Tabel 3.3. Akurasi di sini = `(2+970)/1000 = 97.2%`. Catatan:
 angka 99% di atas adalah skenario **hipotetis** di mana model selalu berprediksi "tidak
-hujan deras" (untuk data dengan ~1% kejadian langka, akurasi = `990/1000 = 99%`), sema
+hujan deras" (untuk data dengan ~1% kejadian langka, akurasi = `990/1000 = 99%`), sementara
 Tabel 3.3 menggambarkan model yang **lain** yang masih melaporkan 20 *false alarm* - dua
 skenario, dua angka. Tetapi dari 10 hari hujan deras sungguhan, model hanya menangkap **2**
 (recall 20%) dan melaporkan **20** false alarm. Untuk peringatan dini, model seperti ini

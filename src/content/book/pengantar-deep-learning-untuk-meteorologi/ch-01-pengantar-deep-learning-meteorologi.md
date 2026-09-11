@@ -82,9 +82,9 @@ Kekuatan DL justru datang dari *kedalaman* ini: lapisan-lapisan awal mempelajari
 sederhana, lalu lapisan-lapisan berikutnya menggabungkannya menjadi representasi yang
 semakin abstrak [1].
 
-![Gambar 1.1: Keterkaitan artificial intelligence, machine learning, dan deep learning](ch-01-pengantar-deep-learning-meteorologi/figures/fig-1-1-hierarki-ai-by-chatgpt.png)
+![Gambar 1.1 - Keterkaitan artificial intelligence, machine learning, dan deep learning](ch-01-pengantar-deep-learning-meteorologi/figures/fig-1-1-hierarki-ai-by-chatgpt.png)
 
-**Gambar 1.1**: Keterkaitan *artificial intelligence*, *machine learning*, dan *deep learning*.
+**Gambar 1.1**: Keterkaitan *artificial intelligence* (AI), *machine learning* (ML), dan *deep learning* (DL).
 
 Sebagaimana dilihat pada Gambar 1.1, *artificial intelligence* adalah payung terluas,
 *machine learning* adalah cabangnya yang belajar dari data, dan *deep learning* adalah
@@ -152,9 +152,9 @@ secara mendalam dan mana yang hanya diarahkan ke literatur lanjut:
 
 | Aplikasi | Contoh pertanyaan | Dibahas di buku ini |
 |---|---|---|
-| Prediksi deret waktu (*time series*) | Berapa tinggi pasang surut besok? Berapa hujan minggu depan? | **Bab 6-9** |
+| Prediksi deret waktu (*time series*) | Berapa tinggi pasang surut besok? Berapa hujan minggu depan? | **Bab 2, 7-9** |
 | Klasifikasi kejadian | Hujan lebat atau tidak? Level bahaya apa? | **Bab 3, 5, 9** |
-| Imputasi (pengisian) data hilang | Bagaimana mengisi gap data stasiun? | Bab 6 (dasar), Bab 10 (generatif) |
+| Imputasi (pengisian) data hilang | Bagaimana mengisi gap data stasiun? | Bab 6 (dasar), Bab 8 (isi gap), Bab 10 (generatif) |
 | *Nowcasting* (prakiraan kini-6 jam) | Apa yang terjadi kini hingga 6 jam ke depan (radar/satelit)? | Bab 10 (arah riset) |
 | *Downscaling* / data spasial | Dari skala reanalysis ke skala lokal | Bab 10 (arah riset) |
 | Model generatif (*generative*) | Membuat skenario iklim, imputasi realistis, super-resolusi | Bab 10 (arah riset) |
@@ -263,11 +263,12 @@ digital dihitung ulang; inhomogenitas seperti ini adalah salah satu tantangan ut
 yang disoroti dalam literatur pembelajaran mesin untuk sains kebumian [7]. Bab 6
 membahas imputasi dasar dan eksplorasi data yang hati-hati.
 
-**4. Sinyal pasang surut yang kuat tetapi nonstasioner.** Di Pontianak (Bab 8), sinyal
-pasang surut Kapuas memiliki komponen harmonik yang kuat (semi-diurnal, diurnal, dan
-campuran) tetapi amplitudo dan fase dipengaruhi debit sungai, perubahan morfologi
-alur, dan pasang surut laut jauh. Ini menjadikannya kasus menarik untuk model sekuensial:
-pola periodik yang bisa dipelajari, dengan komponen residual yang menantang.
+**4. Sinyal pasang surut yang kuat tetapi nonstasioner.** Di stasiun pesisir seperti
+Cilacap (Bab 8), sinyal pasang surut memiliki komponen harmonik yang kuat (semi-diurnal,
+diurnal, dan campuran) tetapi amplitudo dan fase dipengaruhi faktor non-astronomis:
+cuaca (angin, tekanan), variabilitas laut regional, dan - di muara sungai seperti
+Kapuas - debit sungai. Ini menjadikannya kasus menarik untuk model sekuensial: pola
+periodik yang bisa dipelajari, dengan komponen residual yang menantang.
 
 **5. Keterbatasan data latih untuk kejadian ekstrem.** Hujan ekstrem (peringatan dini
 BMKG) dan pasang surut rob adalah **ekor distribusi**, persis bagian yang paling ingin
@@ -293,7 +294,7 @@ Implikasi untuk *deep learning*:
 Sebelum masuk ke kode, penting memahami *siklus hidup* proyek ML. Hampir semua proyek
 dalam buku ini mengikuti alur berikut:
 
-```
+```text
 Masalah → Data → Persiapan → Model → Evaluasi → (Putuskan: cukup / perbaiki)
 ```
 
@@ -343,6 +344,8 @@ Keunggulan Colab untuk buku ini:
 - Terintegrasi dengan Google Drive untuk menyimpan data dan hasil.
 
 Untuk memulai, buka colab.research.google.com, buat notebook baru, lalu jalankan:
+
+**Kode 1.1 - Memeriksa versi TensorFlow dan ketersediaan GPU di Colab.**
 
 ```python
 import tensorflow as tf
@@ -421,6 +424,8 @@ beberapa sumbu. Dengan contoh data cuaca:
 Tabel 1.2 merangkum contoh-contoh yang akan kita gunakan di notebook. Dalam TensorFlow,
 tensor dibuat dengan `tf.constant` atau `tf.Variable`:
 
+**Kode 1.2 - Membuat tensor suhu harian satu dimensi.**
+
 ```python
 import tensorflow as tf
 
@@ -463,6 +468,8 @@ luas dalam verifikasi prakiraan cuaca sebagai rujukan keterampilan model [12]:
   klimatologi (mis. El Niño kuat).
 
 Mari kita uji pada data sintetis sederhana (variasi harian menyerupai suhu):
+
+**Kode 1.3 - Mini-challenge: membandingkan *persistence* dan klimatologis.**
 
 ```python
 import numpy as np

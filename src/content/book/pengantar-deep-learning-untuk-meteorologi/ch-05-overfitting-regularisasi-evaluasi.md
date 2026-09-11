@@ -72,7 +72,9 @@ terhadap epoch (sudah dikenalkan Bab 4 §4.7):
 - **Overfit:** train terus turun, validation naik setelah titik tertentu. Solusi:
   regularisasi (§5.3), lebih banyak data, lebih sedikit parameter, early stopping.
 
-![Gambar 5.1 - Learning curve klasik: train terus turun, validation naik setelah titik tertentu (overfit)](ch-05-overfitting-regularisasi-evaluasi/figures/fig-5-1-learning-curve.png)
+![Gambar 5.1 - Learning curve klasik overfit](ch-05-overfitting-regularisasi-evaluasi/figures/fig-5-1-learning-curve.png)
+
+**Gambar 5.1**: Learning curve klasik: train terus turun, validation naik setelah titik tertentu (overfit).
 
 Gambar 5.1 adalah pola overfit paling umum. Perhatikan titik di mana val mulai naik -
 itu sinyal bahwa model mulai menghafal.

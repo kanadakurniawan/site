@@ -119,11 +119,16 @@ Untuk station demo Cilacap, pola yang akan pembaca temui adalah **campuran
 condong semi-diurnal** dengan komponen diurnal cukup kuat (terutama saat musim
 tertentu) - khas pesisir selatan Jawa. Jika ingin tahu tipe station Anda, cara
 cepat: hitung *Formzahl* `F = (K1 + O1)/(M2 + S2)` dari komponen harmonik [5] -
-`F < 0,25` semi-diurnal, `0,25-1,5` campuran, `1,5-3,0` campuran condong diurnal,
-`> 3` diurnal. Untuk pengguna machine learning, pembacaan spektrum deret (FFT)
+`F < 0,25` semi-diurnal, `0,25-1,5` campuran condong semi-diurnal,
+`1,5-3,0` campuran condong diurnal, `> 3` diurnal. Untuk pengguna machine
+learning, pembacaan spektrum deret (FFT)
 cukup untuk melihat periode dominan (Gambar 8.1).
 
-![Gambar 8.1 - Spektrum frekuensi tinggi muka air: puncak pada periode pasang surut (semi-diurnal ~12,42 jam dan diurnal ~24 jam)](ch-08-studi-kasus-pasang-surut-kapuas/figures/fig-8-1-spektrum-pasang.png)
+![Gambar 8.1 - Spektrum frekuensi muka air](ch-08-studi-kasus-pasang-surut-kapuas/figures/fig-8-1-spektrum-pasang.png)
+
+**Gambar 8.1**: Spektrum frekuensi muka air: puncak pada periode pasang surut semi-diurnal (~12,42 jam) dan diurnal (~24 jam).
+
+Pola ini cocok dengan tipe campuran condong semi-diurnal di pesisir selatan Jawa.
 
 Metode harmonik (tradisional) memodelkan `y(t)` sebagai jumlahan sinusoid dengan
 frekuensi tetap dari konstituen astronomis (M2, S2, K1, O1, …) [5]. Machine learning
@@ -175,7 +180,7 @@ atribusi (lihat catatan lisensi di bawah).
 1. **UNESCO/IOC Sea Level Station Monitoring Facility** [2] - data *real-time*
    dan *near real-time* untuk ratusan station global, termasuk 24 station di
    Indonesia. Akses via endpoint publik:
-   ```
+   ```text
    https://www.ioc-sealevelmonitoring.org/bgraph.php?code=<KODE>&output=tab&period=<HARI>
    ```
    Format: tab-separated, sampling 1-3 menit atau hourly. Periode maksimum per
@@ -237,7 +242,7 @@ QC yang konsisten dengan Bab 6 §6.4:
 4. **Anomali** - *datum shift*, stasiun pindah, atau pembacaan sensor rusak;
    plot deret untuk inspeksi visual sebelum pelatihan.
 
-**Tabel 8.3a**: Contoh ringkasan dataset Cilacap yang dibangun (1 tahun hourly).
+**Tabel 8.4**: Contoh ringkasan dataset Cilacap yang dibangun (1 tahun hourly).
 
 | Properti | Nilai (default buku) |
 |---|---|
@@ -248,6 +253,14 @@ QC yang konsisten dengan Bab 6 §6.4:
 | Satuan | m (relatif terhadap station benchmark) |
 | File lokal | `data/sample/cili_1y_hourly.csv` (di-commit) |
 | File lengkap | `data/raw/cili_*.csv` (di-`.gitignore`, via skrip) |
+| Sifat data | **Sintetik deterministik** (seed 42); bukan observasi |
+
+> **Catatan kejujuran:** `cili_1y_hourly.csv` adalah **data sintetik deterministik**
+> (skrip `scripts/generate_sample.py`: komponen M2/S2/K1/O1 dengan amplitudo mirip
+> Cilacap + noise 0,02 m + ~2% gap). Ia cocok untuk menjalankan pipeline end-to-end
+> out-of-the-box, **tapi hasilnya bukan klaim performa di Cilacap nyata**. Untuk
+> angka yang bisa dilaporkan, jalankan pipeline pada data nyata IOC/UHSLC (skrip
+> `scripts/download_ioc.py`).
 
 Untuk buku ini, repo menyediakan **sampel 1 tahun hourly** (`data/sample/
 cili_1y_hourly.csv`) yang siap dipakai notebook out-of-the-box, beserta
@@ -287,13 +300,25 @@ lebih dari 1 hari.
 
 Alur eksperimen mengikuti pola Bab 7:
 
-1. Bangun *window* `w` (misal 168 jam = 1 minggu) dan *horizon* `h` (1, 3, 7 hari;
-   di konversi ke jam).
-2. *Baseline*: **persistence** (`ŷ(t+h) = y(t)`, sangat kuat di pasang surut) dan
-   **klimatologi** (rata-rata per jam-musim).
+1. Bangun *window* `w` (misal 168 jam = 1 minggu) dan *horizon* `h` diukur dalam jam:
+   `h=24` (1 hari), `h=72` (3 hari), `h=168` (7 hari).
+2. *Baseline*: **persistence** dan **klimatologi** (rata-rata per jam-musim).
+   Persistence di bab ini = *naive* sederhana: `ŷ(t+h) = y(t)` (nilai terakhir yang
+   terobservasi). Pada pasang surut naive kuat untuk `h` yang dekat dengan seluruh
+   siklus pasang (misal `h=24` ≈ fase M2 hampir identik), tapi degradasi seiring `h`
+   naik karena fase siklus (M2 12,42 jam) "terbang" relatif terhadap horizon panjang.
+   Catatan: *seasonal naive* `ŷ(t+h) = y(t+h-24)` ekuivalen dengan naive hanya untuk
+   `h=24`; untuk `h>24` jadinya memakai nilai masa depan `y(t+h-24) > t` yang belum
+   terobservasi saat prakiraan dikeluarkan - bukan baseline forecast yang fair.
 3. Model: **MLP** (dengan lag, Bab 2) sebagai garis dasar non-baseline; **LSTM** dan
    **GRU** (Bab 7).
 4. Evaluasi: *walk-forward* (misal 6 blok tahunan) + MAE/RMSE per horizon + plot.
+
+Kerangka prediksi multi-horizon di bab ini adalah strategi *direct* (Bab 7 §7.7):
+**tiap horizon `h` dilatih dengan model sendiri**. Layer output tiap model tetap
+`Dense(1)`, karena target tiap model adalah satu nilai - titik akhir horizon itu
+(bukan seluruh jajaran). Untuk `h=72` dan `h=168`, latih ulang dengan target horizon
+yang sesuai (Kode 8.2); arsitektur tidak diubah.
 
 ### Persiapan fitur masukan
 
@@ -313,7 +338,7 @@ MLP dengan lag bertindak sebagai jembatan: ia menunjukkan apakah *urutan* (yang 
 LSTM/GRU) benar-benar memberi nilai lebih dibanding fitur tabular biasa. Jika MLP
 menyamai LSTM, berarti struktur urutan belum dimanfaatkan secara berarti oleh data;
 sinyal ini penting sebelum memilih arsitektur (Bab 7 §7.7). Perbandingan 4 kolom di
-Tabel 8.5 dirancang persis untuk melihat ini.
+Tabel 8.6 dirancang persis untuk melihat ini.
 
 ### Walk-forward yang jujur untuk pasang surut
 
@@ -329,14 +354,15 @@ Ini berbeda dengan melatih satu model lalu menguji semua blok sekaligus - bentuk
 
 ### Memilih window dan horizon
 
-Untuk data **jam-an**, dua opsi yang harus dicoba:
+Untuk data **jam-an**, tiga opsi yang harus dicoba:
 
 | Nama | `w` (jam) | Makna |
 |---|---|---|
 | 1 hari | 24 | siklus harian-ish |
+| 3 hari | 72 | tiga siklus harian; kompromis |
 | 1 minggu | 168 | beberapa siklus pasang penuh |
 
-**Tabel 8.4**: Pilihan window untuk data jam-an pasang surut.
+**Tabel 8.5**: Pilihan window untuk data jam-an pasang surut.
 
 Horizon `h` diukur dalam jam: `h=24` (1 hari), `h=72` (3 hari), `h=168` (7 hari).
 Uji `w ∈ {24, 72, 168}` pada validasi, pilih yang MAE-nya konsisten.
@@ -366,9 +392,28 @@ seri = pd.read_csv(
 print(seri.head(), "| hilang:", int(seri.isna().sum()))
 ```
 
+Seri yang bersih untuk windowing (isi gap pendek, Bab 6 §6.4):
+
+**Kode 8.2 - Windowing per horizon (strategi *direct*, Bab 7 §7.7).**
+
+```python
+def buat_window(deret, w=168, h=24):
+    # reuse Bab 7 (Kode 7.1): masukan shape (n, w, 1)
+    X, y = [], []
+    for i in range(len(deret) - w - h + 1):
+        X.append(deret[i:i+w, np.newaxis])       # (w,) -> (w, 1) fitur
+        y.append(deret[i+w:i+w+h])
+    return np.array(X), np.array(y)
+
+ser = seri.interpolate(limit=6).dropna().values  # bersih (Bab 6 §6.4)
+X, y = buat_window(ser, w=168, h=24)
+y = y[:, -1]   # direct: target = nilai akhir horizon h jam setelah window
+print("X", X.shape, "y", y.shape)   # misal (n, 168, 1) dan (n,)
+```
+
 Model target inti:
 
-**Kode 8.2 - Kerangka model pembanding (MLP / LSTM / GRU).**
+**Kode 8.3 - Kerangka model pembanding (MLP / LSTM / GRU), satu model per horizon.**
 
 ```python
 import tensorflow as tf
@@ -397,6 +442,11 @@ def buat_model(kind, w=168, f=1):
 Untuk MLP, *window* di-flatten (`w*f`) karena MLP tidak membaca urutan; LSTM/GRU
 membaca urutan `w × f`. Ini mengingatkan kembali Bab 7 §7.7.
 
+`Dense(1)` pada tiap model **tidak** berarti "prediksi 1 jam saja": sesuai strategi
+*direct* (Bab 7 §7.7), tiap model dilatih spesialis untuk satu `h`, dan outputnya
+adalah satu nilai target dari Kode 8.2 (`y[:, -1]`). Untuk `h=72` dan `h=168`,
+latih ulang `buat_window` dengan horizon yang sesuai - arsitektur tidak diubah.
+
 ## 8.5 Evaluasi dan Interpretasi
 
 ### Metrik dan toleransi
@@ -409,9 +459,9 @@ misal **MAE ±0,10 m** sesuai kebutuhan pelabuhan/peringatan rob. Kita laporkan:
   dari "tebak nilai kemarin".
 - **Plot prediksi vs aktual** 1, 3, 7 hari.
 
-**Tabel 8.5**: Contoh hasil ringkas (angka ilustratif; ganti dengan hasil eksperimen Anda).
+**Tabel 8.6**: Contoh hasil ringkas (angka ilustratif; ganti dengan hasil eksperimen Anda). Horizon `h` diukur dalam jam (bagian 8.4).
 
-| Model | MAE h=1 (m) | MAE h=3 (m) | MAE h=7 (m) |
+| Model | MAE h=24 (1 hari) | MAE h=72 (3 hari) | MAE h=168 (7 hari) |
 |---|---|---|---|
 | Persistence | 0.045 | 0.081 | 0.120 |
 | Klimatologi | 0.210 | 0.220 | 0.230 |
@@ -419,8 +469,8 @@ misal **MAE ±0,10 m** sesuai kebutuhan pelabuhan/peringatan rob. Kita laporkan:
 | LSTM | 0.040 | 0.072 | 0.108 |
 | GRU | 0.041 | 0.074 | 0.110 |
 
-**Kesimpulan yang jujur** (berdasarkan pola khas): persistence sangat kuat untuk `h=1`;
-LSTM/GRU mulai menang di `h=3` dan `h=7` karena memanfaatkan pola periodik yang lebih
+**Kesimpulan yang jujur** (berdasarkan pola khas): persistence sangat kuat untuk `h=24`
+(1 hari); LSTM/GRU mulai menang di `h=72` (3 hari) dan `h=168` (7 hari) karena memanfaatkan pola periodik yang lebih
 panjang. Kemenangannya atas *baseline* perlu dihitung *skill score* (Persamaan 7.6) dan
 diuji pada beberapa blok walk-forward sebelum diklaim.
 
@@ -440,11 +490,11 @@ di literatur [6][7][8]). Ini juga mencegah klaim "0,001 lebih baik!" yang sebena
 Agar pembaca tahu bentuk hasil yang wajar, berikut pola yang *seharusnya* muncul saat
 pipeline dijalankan pada data pasang surut:
 
-- **h=1 (24 jam)**: persistence sekitar 0.04-0.06 m; LSTM/GRU menyamai atau sedikit
+- **h=24 (1 hari)**: persistence sekitar 0.04-0.06 m; LSTM/GRU menyamai atau sedikit
   lebih baik. Jangan heran jika persistence menang tipis - siklusnya kuat.
-- **h=3 (72 jam)**: persistence mulai "terbawa" fase; LSTM/GRU sering unggul beberapa
+- **h=72 (3 hari)**: persistence mulai "terbawa" fase; LSTM/GRU sering unggul beberapa
   persen; MLP tertinggal satu tingkat.
-- **h=7 (168 jam)**: selisih LSTM/GRU vs persistence makin jelas; variabilitas antar blok
+- **h=168 (7 hari)**: selisih LSTM/GRU vs persistence makin jelas; variabilitas antar blok
   walk-forward meningkat - laporkan rentang, bukan satu angka.
 
 Jika hasil Anda **tidak** menunjukkan pola ini (misal LSTM kalah jauh dari persistence di
@@ -457,14 +507,14 @@ proses belajar paling berharga di studi kasus.
 Untuk laporan yang mudah dipahami, rangkum sebagai *skill score* relatif terhadap
 persistence:
 
-| Model | SS h=1 | SS h=3 | SS h=7 |
+| Model | SS h=24 | SS h=72 | SS h=168 |
 |---|---|---|---|
 | Persistence | 0.00 | 0.00 | 0.00 |
 | MLP | -0.11 | -0.17 | -0.25 |
 | LSTM | +0.11 | +0.11 | +0.10 |
 | GRU | +0.09 | +0.09 | +0.08 |
 
-**Tabel 8.6**: Contoh skill score relatif terhadap persistence (ilustratif).
+**Tabel 8.7**: Contoh skill score relatif terhadap persistence (ilustratif).
 
 Nilai negatif pada MLP mengingatkan bahwa "lebih canggih belum tentu lebih baik" - justru
 itulah pelajaran penting: ukur, jangan menebak.
@@ -475,27 +525,29 @@ Plot prediksi 7 hari (Gambar 8.2) menunjukkan kemampuan menangkap fase (kapan pa
 naik) dan amplitudo (berapa tinggi). Ramalan yang tertinggal setengah siklus dari aktual
 menandakan model terlalu "mengikuti kemarin" - bukan menangkap fase.
 
-![Gambar 8.2 - Prediksi vs aktual 7 hari terakhir, station Cilacap (data sample)](ch-08-studi-kasus-pasang-surut-kapuas/figures/fig-8-2-forecast-7hari.png)
+![Gambar 8.2 - Prediksi vs aktual 7 hari, Cilacap](ch-08-studi-kasus-pasang-surut-kapuas/figures/fig-8-2-forecast-7hari.png)
 
-**Gambar 8.2**: Prediksi vs aktual untuk 7 hari terakhir pada station Cilacap
-(data sample `cili_1y_hourly.csv`; "prediksi" dihasilkan oleh skrip
-`scripts/generate_figures.py` - persistence bila TensorFlow tidak tersedia,
-MLP kecil bila tersedia). Garis biru = aktual; garis oranye putus-putus = prediksi.
-Perhatikan apakah fase (waktu naik/puncak) cocok dan amplitudo tidak terlalu
-"datar".
+**Gambar 8.2**: Prediksi vs aktual 7 hari terakhir, stasiun Cilacap (data sample).
+
+Garis biru = aktual; garis oranye putus-putus = prediksi. Data sample
+`cili_1y_hourly.csv`; "prediksi" dihasilkan oleh skrip
+`scripts/generate_figures.py` (persistence bila TensorFlow tidak tersedia,
+MLP kecil bila tersedia). Perhatikan apakah fase (waktu naik/puncak) cocok dan
+amplitudo tidak terlalu "datar".
 
 Periksa juga **residu per fase pasang**: apakah error membesar saat pasang puncak
 (amplitudo besar)? Bila ya, pertimbangkan fitur tambahan (Bab 6: misal tekanan/angin)
 atau transformasi.
 
-![Gambar 8.3 - Residu per amplitudo dan fase pasang M2](ch-08-studi-kasus-pasang-surut-kapuas/figures/fig-8-3-residu.png)
+![Gambar 8.3 - Residu per amplitudo dan fase M2](ch-08-studi-kasus-pasang-surut-kapuas/figures/fig-8-3-residu.png)
 
-**Gambar 8.3**: Residu (prediksi - aktual) 7 hari terakhir. **Panel kiri**:
-residu vs amplitudo aktual - titik yang menyebar acak di sekitar garis nol
-menandakan error tidak bergantung pada amplitudo (gejala baik). **Panel kanan**:
-residu vs fase dalam siklus M2 (12,42 jam dilipat ke [0, 1)) - pola periodik
-di sini menandakan model kehilangan sebagian informasi fase (jala umum untuk
-baseline persistence; LSTM/GRU biasanya lebih baik).
+**Gambar 8.3**: Residu per amplitudo dan fase pasang M2.
+
+**Panel kiri**: residu vs amplitudo aktual - titik yang menyebar acak di sekitar garis
+nol menandakan error tidak bergantung pada amplitudo (gejala baik). **Panel kanan**:
+residu vs fase dalam siklus M2 (12,42 jam dilipat ke [0, 1)) - pola periodik di sini
+menandakan model kehilangan sebagian informasi fase (gejala umum untuk baseline
+persistence; LSTM/GRU biasanya lebih baik).
 
 ### Cara membaca plot: tiga hal yang harus diperiksa
 
@@ -514,7 +566,7 @@ angka metrik - pembaca bisa melihat *di mana* model bekerja dan gagal.
 
 Setelah angka metrik, tanyakan "lalu?":
 
-- Apakah MAE `h=7` sebesar 0,108 m mengubah keputusan operasional pelabuhan?
+- Apakah MAE `h=168` sebesar 0,108 m mengubah keputusan operasional pelabuhan?
   Tergantung toleransi (mis. ±0,20 m untuk dermaga kecil; lebih ketat untuk kapal besar).
 - Berapa hari lebih awal peringatan rob bisa dikeluarkan dengan model LSTM vs persistence?
 - Apakah biaya pelatihan/pemeliharaan sebanding dengan keuntungan? (Bab 10).
@@ -527,18 +579,40 @@ tidak hanya dari angka MAE, tetapi dari dampak pada keputusan.
 Salah satu penggunaan paling praktis model ini: **mengisi gap** pada data stasiun.
 
 1. Latih model pada periode data lengkap (window dengan target valid).
-2. Untuk gap pendek (jam-hari), prediksi `y(t+h)` dari window terakhir sebelum gap,
-   maju berulang (mode *recursive*, Bab 7) sampai gap tertutup.
+2. Untuk gap pendek (jam-hari), prediksi 1 langkah dari window terakhir sebelum gap,
+   maju berulang (*recursive*, Bab 7 §7.7; implementasi di Kode 8.4) sampai gap
+   tertutup.
 3. Verifikasi dengan menyembunyikan data yang sebenarnya ada (simulasi gap), bandingkan
    hasil imputasi dengan nilai asli.
 
-**Kode 8.3 - Simulasi pengisian gap (evaluasi kejujuran).**
+**Kode 8.4 - Simulasi pengisian gap (evaluasi kejujuran).**
 
 ```python
 # sembunyikan 24 jam untuk mengukur kualitas imputasi
-mask = np.ones(len(seri), dtype=bool)
-mask[pos:pos+24] = False
-# latih pada mask, prediksi gap, banding dgn nilai tersembunyi
+pos = 1500                     # posisi gap (ubah saat eksperimen)
+h = 24
+nilai_asli = ser[pos:pos+h].copy()
+garis = ser.copy()             # gap dalam NaN (ser asli tetap untuk hist)
+garis[pos:pos+h] = np.nan
+
+# latih model 1 langkah pada data utuh minus gap (Kode 8.2/8.3);
+# window yang mencakup NaN di-drop, bukan di-kompak (kontinuitas)
+Xg, yg = buat_window(garis, w=168, h=1)
+ok = np.isfinite(yg).ravel() & np.all(np.isfinite(Xg), axis=(1, 2))
+m_imu = buat_model("mlp", w=168)
+m_imu.fit(Xg[ok].reshape(ok.sum(), -1), yg[ok], epochs=15, batch_size=32, verbose=0)
+
+# prediksi gap secara rekursif dari window terakhir sebelum gap
+hist = list(ser[pos-168:pos])
+pred_gap = []
+for _ in range(h):
+    win = np.array(hist[-168:], dtype=float).reshape(1, -1)
+    pred_gap.append(float(m_imu.predict(win, verbose=0).ravel()[0]))
+    hist.append(pred_gap[-1])   # recursive: prediksi jadi bagian window
+
+# evaluasi: bandingkan dengan nilai yang disembunyikan
+mae_gap = float(np.mean(np.abs(np.array(pred_gap) - nilai_asli)))
+print(f"MAE imputasi gap {h} jam: {mae_gap:.4f} m")
 ```
 
 Cara ini - memvalidasi imputasi dengan menyembunyikan data asli - adalah praktik yang
@@ -606,9 +680,9 @@ batas dari apa yang bisa disimpulkan.
   (MSL bulanan jangka panjang), BIG (komponen harmonik); periksa kontinuitas,
   datum, unit, anomali (Tabel 8.3).
 - Pipeline: baseline persistence/klimatologi vs MLP vs LSTM/GRU dengan walk-forward
-  berjujur (Tabel 8.4).
+  berjujur (Tabel 8.5).
 - Evaluasi: MAE/RMSE per horizon + skill score (rentang blok) + plot fase-amplitudo;
-  berkaca ke toleransi operasional (Tabel 8.5).
+  berkaca ke toleransi operasional (Tabel 8.6).
 - Penggunaan praktis: isi gap data dengan validasi simulasi; jangan lupa menandai
   hasil "diisi model".
 - Keterbatasan diakui: lokasi proksi ≠ target, panjang data 1 tahun cukup untuk demo

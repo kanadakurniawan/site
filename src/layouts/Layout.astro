@@ -5,6 +5,7 @@ import { getRelativeLocaleUrl } from "astro:i18n";
 import { resolveDefaultOgImagePath } from "@/utils/resolveDefaultOgImagePath";
 import { getAssetPath } from "@/utils/withBase";
 import config from "@/config";
+import ScrollToTop from "@/components/ScrollToTop.astro";
 import "@/styles/global.css";
 import "katex/dist/katex.min.css";
 
@@ -140,6 +141,7 @@ function truncateText(str: string, maxLen: number): string {
     class="bg-background font-app text-foreground selection:bg-accent/75 selection:text-accent-foreground flex min-h-svh flex-col"
   >
     <slot />
+    <ScrollToTop />
     <script>
       import "@/scripts/theme";
     </script>

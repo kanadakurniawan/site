@@ -6,9 +6,10 @@ import { fileURLToPath } from 'node:url';
 const here = dirname(fileURLToPath(import.meta.url));
 const siteRoot = dirname(here);
 
+// Satu buku = satu repo publik. Tambahkan entri di sini saat buku ke-2 ada.
 const candidates = [
-	join(siteRoot, '..', 'book', 'build', 'sync-to-blog.mjs'), // lokal: book/ sibling dari site/
-	join(siteRoot, 'book', 'build', 'sync-to-blog.mjs'),       // CI: book/ di-checkout ke dalam repo site
+	join(siteRoot, '..', 'books', '01-pengantar-dl-meteorologi', 'build', 'sync-to-blog.mjs'), // lokal: books/<book>/ sibling dari site/
+	join(siteRoot, 'book-01-pengantar-dl-meteorologi', 'build', 'sync-to-blog.mjs'),           // CI: repo buku di-checkout ke dalam repo site
 ];
 
 const script = candidates.find(existsSync);

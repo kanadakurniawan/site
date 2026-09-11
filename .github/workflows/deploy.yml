@@ -24,8 +24,8 @@ jobs:
       - name: Checkout book (untuk sync bab)
         uses: actions/checkout@v5
         with:
-          repository: kanadakurniawan/book
-          path: book
+          repository: kanadakurniawan/book-01-pengantar-dl-meteorologi
+          path: book-01-pengantar-dl-meteorologi
 
       - name: Setup Node
         uses: actions/setup-node@v5

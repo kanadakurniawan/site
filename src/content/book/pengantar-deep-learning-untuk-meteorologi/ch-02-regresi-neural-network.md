@@ -527,7 +527,7 @@ supaya tidak curang: memakai test berkali-kali untuk menyetel model sama saja de
 7. Ganti `loss="mse"` dengan `loss="mae"`. Bandingkan akhir MAE test. Diskusikan perbedaan.
 8. Buat *baseline* kedua: rata-rata klimatologis (nilai **rata-rata** keseluruhan train) sebagai
    prediksi tetap untuk seluruh test. Bandingkan dengan *persistence* dan jaringan.
-9. **Proyek mini:** ambil data suhu harian stasiun lokal (misal dari BMKG - Bab 6),
+9. **Proyek mini:** ambil data suhu harian stasiun lokal (misal dari GHCN-Daily - Bab 6),
    lakukan windowing 2 langkah, dan bandingkan MLP 2 lapisan vs *persistence*. Laporkan MAE.
 10. **(Opsional, statistik)** Jika punya library `statsmodels` atau `sklearn`, ulangi perbandingan
     MAE model vs *persistence* di beberapa blok waktu dan run sekema uji **Diebold-Mariano**

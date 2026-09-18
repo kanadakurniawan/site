@@ -1,15 +1,15 @@
 ---
-title: "Studi Kasus: Prediksi Curah Hujan Stasiun BMKG"
-description: "Bab 9 - proyek end-to-end prediksi curah hujan stasiun BMKG: dua lintasan (regresi jumlah hujan dan klasifikasi kategori intensitas), fitur observasi + ERA5 + ENSO/MJO, verifikasi operasional CSI/POD/FAR, trade-off threshold, interpretasi awal (SHAP), dan tabel verifikasi per kategori."
+title: "Studi Kasus: Prediksi Curah Hujan dengan Data Terbuka"
+description: "Bab 9 - proyek end-to-end prediksi curah hujan harian dengan data terbuka (CHIRPS + ERA5-Land + indeks ENSO/MJO): dua lintasan (regresi jumlah hujan dan klasifikasi kategori intensitas), fitur regional + indeks iklim, verifikasi operasional CSI/POD/FAR, trade-off threshold, interpretasi awal (permutation importance), dan tabel verifikasi per kategori."
 pubDatetime: 2026-09-10
-tags: ["Deep Learning", "Meteorologi", "curah hujan", "BMKG", "prediksi hujan", "CSI", "FAR", "POD", "GRU", "SHAP", "walk-forward", "studi kasus"]
+tags: ["Deep Learning", "Meteorologi", "curah hujan", "CHIRPS", "ERA5", "prediksi hujan", "CSI", "FAR", "POD", "GRU", "SHAP", "walk-forward", "studi kasus"]
 draft: false
 chapter: 9
 bookId: "pengantar-deep-learning-untuk-meteorologi"
 ---
 
 
-# Bab 9 - Studi Kasus: Prediksi Curah Hujan Stasiun BMKG
+# Bab 9 - Studi Kasus: Prediksi Curah Hujan dengan Data Terbuka
 
 > **Prasyarat:** Bab 2-7 (regresi, klasifikasi, evaluasi, data, LSTM/GRU) dan Bab 8
 > (alur studi kasus end-to-end). Bab 9 menggabungkan dua lintasan - regresi dan
@@ -23,55 +23,59 @@ bookId: "pengantar-deep-learning-untuk-meteorologi"
 
 Setelah menyelesaikan bab ini, Anda diharapkan mampu:
 
-1. **Membangun** prediktor hujan stasiun BMKG (regresi jumlah hujan + klasifikasi
-   intensitas) dengan fitur observasi, ERA5, dan indeks iklim.
+1. **Membangun** prediktor hujan harian titik grid terbuka (regresi jumlah hujan +
+   klasifikasi intensitas) dengan fitur regional ERA5/ERA5-Land dan indeks iklim.
 2. **Menerapkan** verifikasi operasional dengan CSI/POD/FAR dan trade-off threshold.
 3. **Membandingkan** *walk-forward* vs baseline (persistence, klimatologi, ARIMA singkat).
-4. **Melakukan** interpretasi awal (SHAP) dan menyusun tabel verifikasi per kategori
-   intensitas.
+4. **Melakukan** interpretasi awal (*permutation importance*; SHAP penuh di Bab 10)
+   dan menyusun tabel verifikasi per kategori intensitas.
 
 ## 9.1 Konteks Pelayanan dan Kejujuran Framing
 
-BMKG menyedia data stasiun cuaca dan layanan informasi cuaca melalui platform Data
-Online [1]. Dampak prediksi curah hujan langsung menyentuh masyarakat, sehingga
-**kehati-hatian** dan **kejujuran** dalam klaim menjadi keharusan - bukan sekadar etika,
-tetapi juga pelindung kredibilitas institusi.
+CHIRPS adalah dataset curah hujan harian global (grid ±0,05° ≈ 5 km) yang
+digabungkan dari satelit dan stasiun, tersedia bebas untuk diunduh [1]. Studi kasus
+ini memakai data serupa yang sepenuhnya terbuka (CHIRPS, ERA5/ERA5-Land, indeks
+iklim) agar pembaca dapat mereproduksi tanpa akun atau izin khusus. Dampak prediksi
+curah hujan langsung menyentuh masyarakat, sehingga **kehati-hatian** dan **kejujuran**
+dalam klaim menjadi keharusan - bukan sekadar etika, tetapi juga pelindung kredibilitas.
 
 Tiga hal yang harus ditegaskan sejak awal (sejalan dengan Risk Management umbrella):
 
 1. **Materi pengenalan, bukan hasil riset resmi.** Studi kasus ini adalah latihan
-   end-to-end yang dapat diulang pembaca, bukan klaim sebagai sistem operasional terbaru
-   BMKG.
+   end-to-end yang dapat diulang pembaca, bukan klaim sebagai sistem operasional
+   institusi mana pun.
 2. **Hujan sulit diprediksi.** Nilai harian bersifat berisik dan banyak nol; ekspektasi
    harus realistis. Skill score (Bab 7 Persamaan 7.6) terhadap *baseline* adalah cara
    jujur untuk melaporkan.
-3. **Data yang dipakai harus disebutkan.** Sumber stasiun, rentang, lisensi, dan versi
-   dicatat (Bab 6 §6.9) agar hasil dapat diperiksa ulang.
+3. **Data yang dipakai harus disebutkan.** Jenis data (grid/pelengkap), rentang, lisensi,
+   dan versi dicatat (Bab 6 §6.9) agar hasil dapat diperiksa ulang.
 
 Seperti Bab 8, framing "alat bantu yang dapat dijelaskan" lebih tepat daripada
 "menggantikan peramal". Nilai utama studi kasus: menunjukkan alur dan metrik yang benar,
 bukan meyakinkan bahwa deep learning selalu unggul.
 
-## 9.2 Data: Stasiun BMKG + Fitur Regional
+## 9.2 Data: Titik Grid CHIRPS + Fitur Regional
 
 Untuk model hujan, strategi data (Bab 6) berbentuk:
 
-- **Target**: curah hujan harian stasiun BMKG [1] (misal salah satu stasiun di wilayah
-  barat dan timur Indonesia untuk perbandingan pola).
-- **Fitur stasiun**: hujan kemarin (lag), suhu, kelembapan, angin (bila tersedia).
-- **Fitur regional (ERA5)** [2][3]: suhu, angin, kelembapan, `total precipitation` pada
-  grid terdekat - memberi konteks atmosfer yang tidak tercatat stasiun.
+- **Target**: curah hujan harian titik grid CHIRPS [1] (misal satu titik di wilayah
+  barat dan satu di wilayah timur Indonesia untuk perbandingan pola).
+- **Fitur lokasi**: hujan kemarin (lag), suhu, kelembapan, angin - dari grid terbuka
+  (ERA5-Land/ERA5) atau stasiun GHCND bila ingin verifikasi berbasis observasi.
+- **Fitur regional (ERA5/ERA5-Land)** [2][3]: suhu, angin, kelembapan,
+  `total precipitation` pada grid terdekat - memberi konteks atmosfer yang tidak
+  tercatat di titik target.
 - **Indeks iklim**: ENSO (Nino3.4 anomali SST dari NOAA PSL [6]; MEI [5] sebagai
   alternatif - tidak dipakai bersamaan untuk menghindari redundansi) dan MJO
   (RMM1, RMM2 [4]) - berpengaruh pada hujan Indonesia.
 
-**Tabel 9.1**: Ringkasan fitur yang dibangun untuk satu stasiun.
+**Tabel 9.1**: Ringkasan fitur yang dibangun untuk satu titik lokasi.
 
 | Kelompok | Contoh fitur | Sumber |
 |---|---|---|
-| Deret tunda | `hujan_t1`, `hujan_t2`, `hujan_t3`, `hujan_t7` | Stasiun BMKG |
-| Observasi lokal | `suhu_t1`, `kelembapan_t1` (lag 1) | Stasiun BMKG / ERA5 |
-| Regional grid | `era5_tp_t1`, `era5_u10_t1`, `era5_v10_t1`, `era5_t2m_t1` (lag ≥ 1 hari) | ERA5 [2][3] |
+| Deret tunda | `hujan_t1`, `hujan_t2`, `hujan_t3`, `hujan_t7` | CHIRPS [1] |
+| Observasi lokal (verifikasi opsional) | `suhu_t1`, `gur_rh_t1` (lag 1) | ERA5-Land [2][3] |
+| Regional grid | `era5_tp_t1`, `era5_u10_t1`, `era5_v10_t1`, `era5_t2m_t1` (lag ≥ 1 hari) | ERA5/ERA5-Land [2][3] |
 | Musiman | `mus_sin`, `mus_cos` | dihitung |
 | Indeks iklim | `rmm1`, `rmm2`, `nino34` | BoM/NOAA PSL [4][6] |
 
@@ -83,50 +87,55 @@ tidak klaim sistem operasional real-time. Lag ini justru mencegah *leakage*: fit
 ERA5 hari D hanya dipakai untuk prediksi hujan D+1.
 
 Satuan ERA5: `total_precipitation` (tp) dalam meter, akumulasi per jam. Konversi ke mm
-(`tp * 1000`), lalu agregasi harian sesuai definisi "hari" stasiun:
+(`tp * 1000`), lalu agregasi harian sesuai definisi "hari" yang konsisten antara fitur
+dan target:
 
 ```python
 df["era5_tp_mm"] = df["era5_tp"] * 1000.0        # meter -> mm
 df["era5_tp_harian"] = df["era5_tp_mm"].resample("24h", offset="7h").sum()
 ```
 
-Lisensi data: BMKG sesuai syarat penggunaan data BMKG; ERA5 di bawah Copernicus
-Climate Data Store license; NOAA/BoM dengan attribution sesuai sumber (Bab 6 §6.9).
+Lisensi data: semua sumber terbuka - CHIRPS (domain publik, kutip Funk et al. 2015 [1]),
+ERA5/ERA5-Land di bawah Copernicus Climate Data Store license [2][3], NOAA/BoM dengan
+attribution sesuai sumber (Bab 6 §6.9). Tidak ada data berizin/rahasia yang dipakai.
 
 Semua fitur dinormalisasi dengan statistik dari bagian latih saja (Bab 6 §6.7); target
 regresi di-transform `log1p` bila dipakai (Bab 6 §6.7).
 
-### Data multi-stasiun: barat vs timur Indonesia
+### Data multi-titik: barat vs timur Indonesia
 
 Pola hujan Indonesia sangat bergantung pada geografi: wilayah barat (Sumatera,
 Kalimantan, Jawa) dipengaruhi kuat oleh monsun Asia-Australia dan MJO; wilayah timur
 (Papua, Maluku, Nusa Tenggara Timur) lebih dipengaruhi oleh monsun Australia dan
-variabilitas ENSO. Untuk studi kasus yang lebih lengkap, bandingkan **dua stasiun
+variabilitas ENSO. Untuk studi kasus yang lebih lengkap, bandingkan **dua titik grid
 berbeda pola**:
 
-- **Stasiun barat** (misal Kalimantan atau Sumatera): hujan sepanjang tahun dengan
+- **Titik barat** (misal sekitar Kalimantan atau Jawa): hujan sepanjang tahun dengan
   puncak musiman; variabilitas hari-ke-hari tinggi.
-- **Stasiun timur** (misal Papua): musim kering lebih tegas saat monsun Australia;
-  dampak El Niño jauh terasa.
+- **Titik timur** (misal sekitar Papua atau Nusa Tenggara Timur): musim kering lebih
+  tegas saat monsun Australia; dampak El Niño jauh terasa.
 
-Dengan dua stasiun ini, pembaca bisa melihat bahwa:
+Dengan dua titik ini, pembaca bisa melihat bahwa:
 
 1. Fitur yang relevan berbeda antar wilayah (MJO penting di barat; Nino3.4 lebih
    menonjol di timur).
 2. Model yang sama tidak otomatis transfer antar wilayah - perlu dilatih ulang.
-3. Evaluasi harus dilakukan per stasiun; rata-rata antar stasiun bisa menyembunyikan
+3. Evaluasi harus dilakukan per lokasi; rata-rata antar lokasi bisa menyembunyikan
    kegagalan lokal.
 
 Notebook menyediakan dua rangkaian data contoh (sintetik dengan pola berbeda) dan
-meminta Anda mengganti dengan data nyata stasiun pilihan.
+meminta Anda mengganti dengan data nyata titik pilihan (via `scripts/download_chirps.py`
+dan `scripts/download_era5.py`).
 
 ### Frekuensi dan resolusi data
 
-Data harian stasiun BMKG umumnya tersedia sebagai **kumulatif 24 jam** (misal 07.00-07.00
-waktu lokal stasiun) - pastikan Anda konsisten dengan definisi "hari" pada target dan fitur. Bila data
-jam-an tersedia, Anda bisa agregasi ke harian (sum/resample) atau justru membangun
-prediksi sub-harian (di luar lingkup buku ini). Konsistensi definisi waktu mencegah
-*leakage* halus: jangan mencampur jam-an dan harian tanpa transformasi yang jelas.
+Data hujan harian (stasiun maupun grid CHIRPS) umumnya tersedia sebagai **kumulatif
+24 jam** - pastikan Anda konsisten dengan definisi "hari" pada target dan fitur. Untuk
+CHIRPS, raster harian adalah total 24 jam; untuk stasiun, perhatikan jam pengamatan
+(misal 07.00-07.00 lokal). Bila data jam-an tersedia, Anda bisa agregasi ke harian
+(sum/resample) atau justru membangun prediksi sub-harian (di luar lingkup buku ini).
+Konsistensi definisi waktu mencegah *leakage* halus: jangan mencampur jam-an dan
+harian tanpa transformasi yang jelas.
 
 ## 9.3 Dua Lintasan: Regresi dan Klasifikasi
 
@@ -179,7 +188,7 @@ keterampilan perancangan yang penting (Bab 1 §1.8 melatih ini).
 
 ### Menangani data tak seimbang pada klasifikasi hujan lebat
 
-Hujan lebat (≥50 mm) hanya terjadi beberapa hari dalam setahun di sebagian besar stasiun.
+Hujan lebat (≥50 mm) hanya terjadi beberapa hari dalam setahun di sebagian besar lokasi.
 Strategi yang dipakai (Bab 3 §3.6):
 
 1. Metrik yang tepat (CSI/POD/FAR, bukan akurasi).
@@ -191,6 +200,12 @@ Strategi yang dipakai (Bab 3 §3.6):
 Catatan: `class_weight` mengubah distribusi yang "dilihat" model, jadi angka POD/FAR
 harus dievaluasi dengan data asli (tidak seimbang) - jangan mengevaluasi pada data yang
 sudah di-resample.
+
+Peringatan khusus deret waktu: **hindari *oversampling* acak (mis. SMOTE)** pada data
+hujan harian. Menyalin atau mensintesis contoh secara acak merusak kontinuitas temporal
+(window "baru" bisa berisi hari yang sama dari masa depan) dan membuat evaluasi bocor.
+Untuk deret waktu, `class_weight` (Bab 3 §3.6) dan pergeseran *threshold* (Bab 9.4)
+jauh lebih aman daripada *resampling*.
 
 ## 9.4 Verifikasi Operasional: CSI/POD/FAR dan Threshold
 
@@ -242,13 +257,40 @@ Pilih **precision-recall curve**:
 - Sumbu x: recall (= POD); sumbu y: precision (= 1 - FAR).
 - Model ideal: kurva mendekati pojok kanan-atas (recall tinggi, precision tinggi).
 - Luas di bawah (AUPRC) lebih informatif daripada AUC untuk kelas langka.
+- **Baseline kurva PR bukan 0.5** (tidak seperti ROC/AUC): garis acak berada di
+  proporsi kelas positif dalam data (mis. 5% hujan lebat). Model lebih baik daripada
+  menebak jika kurvanya berada **di atas** garis baseline itu (Gambar 9.1).
 
-![Gambar 9.1 - Precision-recall curve](ch-09-studi-kasus-curah-hujan-bmkg/figures/fig-9-1-precision-recall.png)
+![Gambar 9.1 - Precision-recall curve](ch-09-studi-kasus-curah-hujan-terbuka/figures/fig-9-1-precision-recall.png)
 
-**Gambar 9.1**: Precision-recall curve untuk deteksi hujan lebat (ilustratif).
+**Gambar 9.1**: Precision-recall curve untuk deteksi hujan lebat (ilustratif);
+garis putus-putus menunjukkan *baseline* acak (proporsi kelas positif).
 
-Visualisasi pada Gambar 9.1 (dibuat di notebook) melengkapi Tabel 9.3 dan menjadi
-argumen visual mengapa threshold tertentu dipilih.
+Visualisasi semacam Gambar 9.1 melengkapi Tabel 9.3 dan menjadi
+argumen visual mengapa threshold tertentu dipilih. Untuk data Anda sendiri, hitung
+kurva dengan `sklearn.metrics.precision_recall_curve`:
+
+**Kode 9.4 - Menggambar kurva precision-recall dengan baseline acak.**
+
+```python
+from sklearn.metrics import precision_recall_curve
+import matplotlib.pyplot as plt
+
+prec, rec, _ = precision_recall_curve(y_true, prob)  # y_true: label biner (lebat)
+base = float(y_true.mean())                          # baseline = proporsi kelas positif
+
+fig, ax = plt.subplots(figsize=(6, 4))
+ax.plot(rec, prec, lw=2, label="Model")
+ax.axhline(base, color="gray", ls="--", lw=1.3,
+           label=f"Baseline acak (proporsi positif {base:.0%})")
+ax.set_xlabel("Recall (= POD)")
+ax.set_ylabel("Precision (= 1 - FAR)")
+ax.set_xlim(0, 1); ax.set_ylim(0, 1)
+ax.grid(alpha=0.3)
+ax.legend(loc="best")
+plt.tight_layout()
+plt.show()
+```
 
 Persamaan yang dipakai (dari Tabel 5.3 Bab 5, pedoman WMO [7]):
 
@@ -347,7 +389,7 @@ meniru mayoritas.
 Deep learning "kotak hitam" menjadi masalah untuk kepercayaan operasional. Interpretasi
 **global** (fitur apa yang paling berpengaruh) dan **lokal** (mengapa satu prediksi
 tertentu) dibahas penuh di Bab 10; di sini kita mulai dengan **permutation importance**
-dan **SHAP** sederhana pada model yang sudah dilatih.
+  pada model yang sudah dilatih (SHAP penuh di Bab 10).
 
 **Kode 9.2 - Permutation importance sederhana.**
 
@@ -381,7 +423,7 @@ Hasil yang "masuk akal" untuk hujan Indonesia biasanya:
 
 - `hujan_t1`, `hujan_t2` penting (persistensi kondisi basah).
 - Fitur musiman (`mus_sin/cos`) tinggi (pola monsun).
-- `rmm1`, `rmm2` membantu di beberapa stasiun (osilasi 30-60 hari).
+- `rmm1`, `rmm2` membantu di beberapa lokasi (osilasi 30-60 hari).
 
 Jika satu fitur yang secara fisis seharusnya penting ternyata tidak muncul, bisa jadi
 data/fitur kurang bersih - bahan perbaikan (Bab 6).
@@ -424,7 +466,7 @@ ulangi fungsi `verifikasi` (Kode 9.1) untuk setiap k.
 Laporkan untuk masing-masing kategori (0, 1, 2) nilai CSI/POD/FAR secara terpisah -
 perilaku model pada hujan lebat (langka) sering jauh lebih buruk daripada pada hari
 kering, dan ini penting diketahui pengguna (Bab 5). Contoh kerja penuh (termasuk
-threshold, probabilitas, dan crosstab) tersedia di notebook `ch-09-08_studi_kasus_curah_hujan_bmkg.ipynb`.
+threshold, probabilitas, dan crosstab) tersedia di notebook `ch-09-08_studi_kasus_curah_hujan_terbuka.ipynb`.
 
 **Tabel 9.5**: Contoh ringkas verifikasi per kategori (ilustratif).
 
@@ -434,7 +476,7 @@ threshold, probabilitas, dan crosstab) tersedia di notebook `ch-09-08_studi_kasu
 | Sedang (20 - <50) | 0.45 | 0.40 | 0.32 | perlu perbaikan |
 | Lebat / sangat lebat (≥ 50) | 0.20 | 0.55 | 0.15 | sulit, kelas langka |
 
-![Gambar 9.2 - Verifikasi per kategori intensitas](ch-09-studi-kasus-curah-hujan-bmkg/figures/fig-9-2-verifikasi-kategori.png)
+![Gambar 9.2 - Verifikasi per kategori intensitas](ch-09-studi-kasus-curah-hujan-terbuka/figures/fig-9-2-verifikasi-kategori.png)
 
 **Gambar 9.2**: Verifikasi per kategori intensitas (ilustratif).
 
@@ -447,13 +489,13 @@ berjalan di atas TensorFlow [9].
 
 Laporan studi kasus yang jujur biasanya berisi:
 
-1. **Konteks & data** - stasiun, rentang, sumber, lisensi, jumlah contoh.
+1. **Konteks & data** - lokasi/lintasan, rentang, sumber, lisensi, jumlah contoh.
 2. **Metode** - fitur, window, arsitektur, baseline, skema walk-forward.
 3. **Hasil** - MAE/RMSE (regresi), CSI/POD/FAR per threshold & kategori, plus rentang
    antar blok.
 4. **Threshold yang dipilih & alasannya** - konteks operasional.
 5. **Interpretasi** - fitur penting (dengan kewaspadaan), error per musim.
-6. **Keterbatasan** - data contoh vs nyata, satu/dua stasiun, tanpa optimasi menyeluruh.
+6. **Keterbatasan** - data contoh vs nyata, satu/dua titik lokasi, tanpa optimasi menyeluruh.
 
 Yang **tidak** perlu dilaporkan: klaim "akurasi 99%" tanpa metrik langka, angka tanpa
 baseline, atau kesimpulan kausal dari korelasi. Format ini langsung dipakai kembali di
@@ -486,9 +528,9 @@ Bab 10 untuk keputusan produksi.
 5. Tidak langsung; cek rentang antar blok walk-forward & konteks operasional sebelum
    memutuskan - model harus mengalahkan baseline secara konsisten, bukan sekali.
 
-**Latihan praktik (notebook `ch-09-08_studi_kasus_curah_hujan_bmkg.ipynb`)**
+**Latihan praktik (notebook `ch-09-08_studi_kasus_curah_hujan_terbuka.ipynb`)**
 
-1. Gunakan data contoh harian satu stasiun; bangun fitur (Tabel 9.1). 
+1. Gunakan data contoh harian satu titik lokasi; bangun fitur (Tabel 9.1). 
 2. Regresi: latih GRU dengan transformasi `log1p`; hitung MAE/RMSE; bandingkan dengan
    persistence & klimatologi pada *walk-forward* 3 blok.
 3. Klasifikasi biner lebat vs tidak: evaluasi threshold 0,2/0,5/0,8 (Tabel 9.3); tetapkan
@@ -502,8 +544,8 @@ Bab 10 untuk keputusan produksi.
 ## Ringkasan
 
 - Prediksi hujan berdampak langsung pada masyarakat; kejujuran framing & metrik wajib.
-- Data: stasiun BMKG (target + lag), ERA5 (regional), ENSO/MJO (indeks iklim); pola
-  barat vs timur Indonesia berbeda dan perlu dilatih ulang per stasiun.
+- Data: titik grid CHIRPS (target + lag), ERA5/ERA5-Land (regional), ENSO/MJO (indeks
+  iklim); pola barat vs timur Indonesia berbeda dan perlu dilatih ulang per lokasi.
 - Dua lintasan: regresi (mm, `log1p`, MAE/RMSE) dan klasifikasi (kategori, CSI/POD/FAR);
   menangani imbalance dengan class_weight & threshold.
 - Threshold bukan 0,5 tetap - atur sesuai biaya kesalahan; gunakan precision-recall
@@ -518,9 +560,10 @@ Bab 10 untuk keputusan produksi.
 
 ## References
 
-1. Badan Meteorologi, Klimatologi, dan Geofisika (BMKG), "Data online: data stasiun
-   dan layanan informasi cuaca," [Online]. Available: https://dataonline.bmkg.go.id
-   (Accessed: Sep. 2026).
+1. C. Funk et al., "The climate hazards infrared precipitation with stations - a new
+   environmental record for monitoring extremes," *Scientific Data*, vol. 2, 150066,
+   2015, doi: 10.1038/sdata.2015.66. Data diunduh dari
+   https://data.chc.ucsb.edu/products/CHIRPS-2.0/ (Accessed: Sep. 2026).
 2. Copernicus Climate Change Service (C3S), "ERA5: fifth generation ECMWF atmospheric
    reanalysis of the global climate," Copernicus Climate Data Store, [Online].
    Available: https://cds.climate.copernicus.eu (Accessed: Sep. 2026).

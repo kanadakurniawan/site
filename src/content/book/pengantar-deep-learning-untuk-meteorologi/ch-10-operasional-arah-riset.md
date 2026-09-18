@@ -309,7 +309,7 @@ Interpretasi SHAP harus selalu ditautkan ke **pengetahuan atmosfer**:
 Misal untuk satu prediksi "hujan lebat" hari ini, SHAP menunjukkan kontribusi terbesar
 dari `hujan_t2` (kemarin hujan besar) dan `rmm1` (fase MJO basah). Jawaban yang bisa
 disampaikan ke pemangku: "model ini menilai kondisi basah yang berlanjut dan osilasi
-musiman sebagai pendorong - silakan periksa juga prakiraan model dinamik BMKG untuk
+musiman sebagai pendorong - silakan periksa juga prakiraan model dinamik nasional untuk
 konfirmasi." Ini mengubah "kotak hitam" menjadi bahan diskusi yang transparan - persis
 tujuan interpretasi.
 
@@ -325,7 +325,7 @@ Ini penutup penting dan selaras dengan *Risk Management* umbrella. Tiga area:
 
 ### 1. Anti-overhype
 
-- Jangan mengklaim "menggantikan peramal BMKG"; klaim yang benar: "memberi probabilitas
+- Jangan mengklaim "menggantikan peramal"; klaim yang benar: "memberi probabilitas
   terkalibrasi tambahan (untuk model klasifikasi) atau skor/interval yang diverifikasi
   dengan metrik tertentu".
 - Sertakan *baseline* & metrik jujur (skill score, CSI) serta keterbatasan (Bab 8-9).
@@ -412,7 +412,7 @@ Buku ini selesai, tetapi belajar tidak. Rekomendasi berjenjang:
 
 1. **Membaca** - literatur pada Referensi bab ini + bab 6-9.
 2. **Berlatih** - kerjakan ulang Bab 8-9 dengan data nyata stasiun sendiri.
-3. **Terhubung** - komunitas (misal grup ML Indonesia, komunitas data BMKG/akademik),
+3. **Terhubung** - komunitas (misal grup ML Indonesia, komunitas data meteorologi/akademik),
    konferensi (misal *IDEA* / *Indonesia AI Day*), dan *open-source* (GitHub proyek
    sejenis).
 4. **Publikasikan** - tulis catatan singkat (blog/notebook publik), dapatkan umpan balik
@@ -480,7 +480,8 @@ rumus atau kode, melainkan **sikap praktisi**:
 - Jujur tentang keterbatasan - itu yang membangun kepercayaan.
 - Terus belajar dengan data nyata dan berbagi kepada komunitas.
 
-Buku ini adalah permulaan, bukan akhir. Jadikan studi kasus Cilacap dan BMKG sebagai
+Buku ini adalah permulaan, bukan akhir. Jadikan studi kasus Cilacap (pasang surut) dan
+prediksi hujan (Bab 9) sebagai
 batu loncatan; jadikan setiap masalah lokal sebagai latihan berikutnya. Selama Anda
 memegang disiplin "ukur dulu, klaim kemudian", Anda sudah berada di jalur yang benar.
 

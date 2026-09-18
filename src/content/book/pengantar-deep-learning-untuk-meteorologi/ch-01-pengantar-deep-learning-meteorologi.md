@@ -35,7 +35,7 @@ tersebut.
 
 **2. Data lokal dan notebook yang dapat dijalankan.** Kami sengaja tidak menulis bab
 ini sebagai esai filosofis. Tiap bab membawa notebook Colab, dataset kecil (data sintetis
-atau data publik BMKG/ERA5/pasang surut yang kami cantumkan sumbernya), dan target
+atau data publik terbuka (ERA5/CHIRPS/pasang surut) yang kami cantumkan sumbernya), dan target
 evaluasi yang terukur. Anda tidak hanya membaca; Anda menjalankan ulang.
 
 Ringkasnya: buku ini bukan satu-satunya sumber yang Anda butuhkan, melainkan **teman
@@ -205,6 +205,12 @@ seluruh buku:
    learning* hanya layak jika **mengalahkan *baseline*** dengan data yang cukup Prinsip ini
   menjadi tulang punggung Bab 7-9. Jika model sederhana sudah melebihi kebutuhan, tidak
   ada alasan memperkenalkan kompleksitas.
+- **Ingat *baseline* non-linear: model berbasis pohon.** Untuk data tabular dan deret
+  waktu, algoritma seperti **Random Forest** atau **XGBoost** sering mengalahkan jaringan
+  saraf kecil dari segi kecepatan, akurasi, dan keterbacaan. Buku ini fokus pada jaringan
+  saraf, tetapi praktisi wajib tahu bahwa pohon bisa menjadi pembanding yang sangat kuat
+  sebelum beralih ke *deep learning* - yang benar-benar unggul saat data sangat masif
+  atau melibatkan data spasial (citra radar/satelit, grid).
 - **Perhatikan ukuran data.** Jaringan saraf besar membutuhkan banyak data untuk belajar.
   Untuk deret waktu stasiun dengan puluhan ribu pengamatan, model sekuensial (*sequence*)
   seperti LSTM (Bab 7) adalah pilihan yang masuk akal, tetapi jangan langsung melompat
@@ -215,8 +221,8 @@ seluruh buku:
   menyesuaikannya (*fine-tuning*) dengan data stasiun lokal. Poin "data besar" di atas
   tidak lagi mutlak; Bab 10 membahas *transfer learning* singkat sebagai salah satu arah
   riset.
-- **Utamakan keterbacaan dan kepercayaan di konteks operasional.** Di lingkungan seperti
-  BMKG, model yang sederhana dan dapat dijelaskan kadang lebih diterima daripada model
+- **Utamakan keterbacaan dan kepercayaan di konteks operasional.** Di lingkungan
+  layanan meteorologi, model yang sederhana dan dapat dijelaskan kadang lebih diterima daripada model
   "kotak hitam" (hasilnya sulit dijelaskan). Bab 10 membahas interpretasi dan keterbatasan.
   Tidak semua pengguna akhir (kepala stasiun, peramal, pengambil keputusan) nyaman dengan
   hasil tanpa alasan yang bisa dijelaskan.
@@ -270,8 +276,8 @@ cuaca (angin, tekanan), variabilitas laut regional, dan - di muara sungai sepert
 Kapuas - debit sungai. Ini menjadikannya kasus menarik untuk model sekuensial: pola
 periodik yang bisa dipelajari, dengan komponen residual yang menantang.
 
-**5. Keterbatasan data latih untuk kejadian ekstrem.** Hujan ekstrem (peringatan dini
-BMKG) dan pasang surut rob adalah **ekor distribusi**, persis bagian yang paling ingin
+**5. Keterbatasan data latih untuk kejadian ekstrem.** Hujan ekstrem (basis peringatan
+dini) dan pasang surut rob adalah **ekor distribusi**, persis bagian yang paling ingin
 kita prediksi dengan baik, tetapi paling jarang ada datanya [7], [11]. Bab 3, 5, dan 9
 membahas cara menghadapi *class imbalance* dan verifikasi operasional untuk kejadian
 langka.
@@ -587,7 +593,8 @@ Goodfellow, Bengio, dan Courville [1], sangat mendalam tetapi cenderung teoretis
 TensorFlow sangat membantu. Buku ini berbeda karena dua hal:
 
 1. **Bahasa Indonesia**, menurunkan hambatan bagi mahasiswa dan praktisi kebumian lokal.
-2. **Konteks meteorologi Indonesia**, data BMKG, pasang surut, curah hujan, dan
+2. **Konteks meteorologi Indonesia**, data terbuka (ERA5, CHIRPS/GSMaP, pasang surut),
+   curah hujan, dan
    pertimbangan operasional. Tidak ada buku DL arus utama yang membahas kombinasi ini.
 
 Di samping buku ini, berikut ekosistem yang bermanfaat:
@@ -649,7 +656,7 @@ bermanfaat sebelum masuk ke model sekuensial.
 **Jika Anda sudah familiar dengan ML klasik (regresi, pohon keputusan):** Bab 1 cukup;
 Anda bisa langsung ke Bab 3 untuk klasifikasi dan Bab 5 untuk metrik domain.
 
-**Jika Anda ingin konteks data dulu:** Bab 6 (data BMKG/ERA5/pasang surut) menjelaskan
+**Jika Anda ingin konteks data dulu:** Bab 6 (data terbuka/ERA5/pasang surut) menjelaskan
 sumber, lisensi, dan kualitas, bekal penting untuk Bab 8-9.
 
 **Kata kunci SEO** untuk bab ini (untuk pencarian internal blog):

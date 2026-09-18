@@ -1,8 +1,8 @@
 ---
 title: "Data Meteorologi: Sumber, Kualitas dan Persiapan"
-description: "Bab 6 - sumber data meteorologi Indonesia (stasiun BMKG, reanalysis ERA5, pasang surut, satelit), format berkas (CSV/NetCDF/GRIB), penanganan nilai hilang dan pencilan, eksplorasi, feature engineering, serta normalisasi dan split berbasis waktu yang bebas kebocoran."
+description: "Bab 6 - sumber data meteorologi Indonesia (stasiun/pelengkap terbuka, reanalysis ERA5, pasang surut, satelit), format berkas (CSV/NetCDF/GRIB), penanganan nilai hilang dan pencilan, eksplorasi, feature engineering, serta normalisasi dan split berbasis waktu yang bebas kebocoran."
 pubDatetime: 2026-09-10
-tags: ["Deep Learning", "Meteorologi", "Data", "data meteorologi", "ERA5", "BMKG", "netcdf", "grib", "xarray", "imputasi", "feature engineering", "data leakage"]
+tags: ["Deep Learning", "Meteorologi", "Data", "data meteorologi", "ERA5", "GHCN", "CHIRPS", "netcdf", "grib", "xarray", "imputasi", "feature engineering", "data leakage"]
 draft: false
 chapter: 6
 bookId: "pengantar-deep-learning-untuk-meteorologi"
@@ -23,8 +23,8 @@ bookId: "pengantar-deep-learning-untuk-meteorologi"
 
 Setelah menyelesaikan bab ini, Anda diharapkan mampu:
 
-1. **Mengambil dan menghubungkan** data meteorologi Indonesia (stasiun BMKG, reanalysis
-   ERA5, pasang surut, satelit) beserta lisensi dan batasannya.
+1. **Mengambil dan menghubungkan** data meteorologi Indonesia (stasiun dan grid terbuka,
+   reanalysis ERA5, pasang surut, satelit) beserta lisensi dan batasannya.
 2. **Membaca** format berkas CSV, NetCDF, dan GRIB; menangani nilai hilang, pencilan, dan
    imputasi dasar.
 3. **Melakukan eksplorasi** (dekomposisi musiman, distribusi, korelasi silang) dan
@@ -56,8 +56,8 @@ yang siap dilatih - persis yang akan dipakai di Bab 7-9. Peta alurnya:
 ```text
 [6.1-6.2]            [6.3]               [6.4]
  Berkas mentah        Membaca dan         QC dan imputasi
- CSV, NetCDF, GRIB    menyatukan          - pola gap
- (BMKG, ERA5, pasut,  (Kode 6.1-6.3)      - outlier vs ekstrem sahih
+CSV, NetCDF, GRIB    menyatukan          - pola gap
+  (GHCND, ERA5, pasut,  (Kode 6.1-6.3)      - outlier vs ekstrem sahih
   GSMaP, CHIRPS)      -> tabel            (Kode 6.4)
   (Tabel 6.1)           berindeks waktu   - konsistensi internal,
         |                    |               temporal, spasial
@@ -90,18 +90,20 @@ dipakai.
 
 | Sumber | Jenis data | Resolusi | Akses | Catatan lisensi & kutip |
 |---|---|---|---|---|
-| Stasiun BMKG | Observasi suhu, hujan, angin, dsb. | Harian/jam-an, per stasiun | `dataonline.bmkg.go.id`, permintaan data | Data publik untuk pendidikan; sebutkan BMKG [1] |
-| ERA5 / ERA5-Land (Copernicus) | *Reanalysis* suhu, hujan, angin, dll. | ±0.25° (~31 km) / ±0.1° (~9 km), per jam | Copernicus Climate Data Store [2] | Lisensi CC-BY untuk C3S; kutip Hersbach et al. [3] |
+| GHCN-Daily (NOAA) | Observasi suhu, hujan, dll. - stasiun global termasuk Indonesia | Harian, per stasiun | `ncei.noaa.gov/pub/data/ghcn/daily` [1] | Publik (domain publik AS); kutip Menne et al. [1] |
+| ERA5 / ERA5-Land (Copernicus) | *Reanalysis* suhu, hujan, angin, dll. | ±0.25° (~31 km) / ±0.1° (~9 km), per jam | Copernicus Climate Data Store [2] | Lisensi terbuka (setara CC-BY); kutip Hersbach et al. [3] |
 | CMIP6 | Proyeksi iklim (skenario) | Lebih kasar, bulanan-harian | ESGF / Copernicus | Untuk konteks jangka panjang, Bab 10 |
-| PSMSL / IOC / BIG | Muka laut / pasang surut | Menit-jam, per stasiun | `psmsl.org` [4], `tides.big.go.id` [5] | Gratis; sertakan rujukan data & bottle/stasiun |
+| PSMSL / IOC / BIG | Muka laut / pasang surut | Menit-jam, per stasiun | `psmsl.org` [4], `tides.big.go.id` [5] | Gratis; IOC non-komersial (CC BY-NC 4.0); sertakan rujukan data & bottle/stasiun |
 | GSMaP (JAXA) | Hujan satelit+kalibrasi | 0.1°, 3 jam-harian | `sharaku.eorc.jaxa.jp` [11] | Kutip paper pembuat |
-| CHIRPS (CHC UCSB) | Hujan satelit+kalibrasi | ±0.05° (~5 km), harian | CHC UCSB [6] | Kutip paper pembuat |
+| CHIRPS (CHC UCSB) | Hujan satelit+kalibrasi | ±0.05° (~5 km), harian | CHC UCSB [6] | Domain publik; kutip paper pembuat |
 
-**Catatan penting:** stasiun BMKG [1] adalah sumber "kebenaran lokal" terbaik, tetapi
-tidak merata spasial dan kadang bergap. ERA5 [2][3] memberikan cakupan grid lengkap dan
-konsisten, tetapi merupakan *model* (taksiran) - bukan observasi murni. Praktik umum:
-gabungkan observasi stasiun (untuk akurasi) dengan *reanalysis* (untuk fitur regional
-yang lengkap). Cara menggabungkan ini dibahas di §6.3-6.6.
+**Catatan penting:** stasiun GHCND [1] (termasuk sejumlah stasiun Indonesia pada jaringan
+GSN) adalah sumber "kebenaran lokal" yang terbuka, tetapi tidak merata spasial dan kadang
+bergap. ERA5 [2][3] memberikan cakupan grid lengkap dan konsisten, tetapi merupakan
+*model* (taksiran) - bukan observasi murni. Praktik umum: gabungkan observasi stasiun
+(untuk akurasi) dengan *reanalysis* (untuk fitur regional yang lengkap). Bila stasiun
+tidak tersedia, titik grid satelit-gauge seperti CHIRPS [11][6] bisa menjadi target yang
+reproduksibel. Cara menggabungkan ini dibahas di §6.3-6.6.
 
 ### Memahami *reanalysis* secara singkat
 
@@ -147,10 +149,11 @@ Lima hal yang perlu diketahui sebelum mengunduh (berlaku untuk semua sumber di T
 3. **"0.25° ≈ 31 km" hanya berlaku di sekitar khatulistiwa**: di lintang tinggi, jarak
    per derajat bujur menyusut. Karena Indonesia praktis berada di ekuator, angka 31 km
    cukup akurat untuk buku ini - tetapi jangan menganggapnya universal.
-4. **BMKG tidak memiliki API publik**: akses umum manual via
-   `dataonline.bmkg.go.id`; sebagian data memerlukan permintaan resmi yang mungkin
-   berbayar, dan kualitas data **bervariasi antar stasiun** (bergap panjang, sensor
-   error, atau pindah lokasi). Selalu baca metadata stasiun dan dokumentasi sebelum
+4. **Tidak semua data stasiun punya API publik**: beberapa stasiun nasional (misal di
+   Indonesia) memerlukan permintaan/izin resmi yang bisa berbayar. Untuk data yang benar-benar
+   terbuka, gunakan **GHCN-Daily** [1] (stasiun global) atau titik grid **CHIRPS/GSMaP**
+   [6][11] sebagai pengganti; kualitas data stasiun juga **bervariasi** (bergap panjang,
+   sensor error, atau pindah lokasi). Selalu baca metadata stasiun dan dokumentasi sebelum
    mengunduh (lihat §6.9).
 5. **Kutipkan sumber tepat**: cantumkan nama produk, versi, dan tanggal unduh sesuai
    §6.9 - sebagian data (CDS, JAXA) mewajibkan kredit khusus untuk publikasi.
@@ -207,7 +210,16 @@ Untuk GRIB (prakiraan model operasional), dua jalur umum: xarray dengan *engine*
 untuk eksplorasi cepat, atau `wgrib2` untuk ekstraksi presisi pada skala besar. Catatan:
 engine `cfgrib` (beserta pustaka `eccodes` di belakangnya) perlu diinstal terpisah dari
 xarray - `pip install cfgrib` biasanya mencukupi di Colab, tetapi kegagalan instalasi
-pada beberapa sistem sering menjadi titik hambatan pertama pembaca.
+pada beberapa sistem sering menjadi titik hambatan pertama pembaca. Jika *pip* saja
+gagal, resep yang biasa berhasil di Colab: instal dulu pustaka sistem `libeccodes0`,
+baru `cfgrib`:
+
+```python
+!apt-get install -y libeccodes0
+!pip install cfgrib
+```
+
+(Alternatif: `!pip install cfgrib eccodes`; coba resep *apt* bila instalasi *pip* gagal.)
 
 **Kode 6.2 - Membaca GRIB dengan xarray + engine cfgrib.**
 
@@ -420,7 +432,7 @@ Fitur **regional** meningkatkan prediksi hujan Indonesia secara signifikan:
 - **MJO** (Madden-Julian Oscillation): bit fase & amplitudo MJO (mis. RMM1, RMM2 dari
   Wheeler & Hendon [8]) berhubungan dengan osilasi hujan 30-60 hari di wilayah tropis.
 
-Kedua indeks tersedia gratis (NOAA, BMKG). Memasukkan mereka sebagai fitur adalah contoh
+Kedua indeks tersedia gratis (NOAA, BoM). Memasukkan mereka sebagai fitur adalah contoh
 nyata "pengetahuan domain meningkatkan model" - sesuatu yang dimiliki praktisi meteo
 tetapi umumnya tidak dimiliki mahasiswa CS.
 
@@ -492,7 +504,7 @@ dan pelatihan lebih stabil. Kehati-hatian yang perlu:
 - Tidak semua masalah butuh transformasi: untuk pasang surut (data mulus) tidak perlu.
   Cek distribusi dulu (Gambar 6.1 + §6.5).
 
-Bab 9 akan menerapkan transformasi ini pada prediksi hujan stasiun BMKG.
+Bab 9 akan menerapkan transformasi ini pada prediksi hujan harian.
 
 ### Split berbasis waktu
 
@@ -564,8 +576,8 @@ Setiap *dataset* yang dibangun harus bisa **direproduksi dan dijelaskan** - atur
 Kriteria Sitasi bagian 3 menuntut identifikasi dataset, versi, dan cara akses. Catat
 dalam berkas `README_data.md` (atau sel notebook) hal berikut:
 
-1. **Sumber & versi**: berkas BMKG mana, ERA5 level produk (reanalysis, `ERA5-Land`?),
-   tanggal unduh.
+1. **Sumber & versi**: berkas stasiun mana (GHCND/CHIRPS), ERA5 level produk
+   (reanalysis, `ERA5-Land`?), tanggal unduh.
 2. **Lisensi & kutip**: lisensi pihak penyedia + DOI/rujukan paper (misal [3][6]).
 3. **Transformasi yang diterapkan**: satuan asli → satuan akhir, resample harian, imputasi,
    transformasi target.
@@ -607,14 +619,14 @@ Bab 8-9.
 ## Ringkasan
 
 - Data menentukan hasil: pahami sumber, lisensi, dan cara kutip sebelum membangun model.
-- BMKG (observasi), ERA5 (*reanalysis*), CMIP6 (proyeksi), PSMSL (pasang surut), dan
-  GSMaP/CHIRPS (hujan satelit) adalah sumber utama buku ini (Tabel 6.1); gunakan observasi
-  sebagai *target*, *reanalysis* sebagai fitur regional.
+- GHCN-Daily (observasi stasiun), ERA5 (*reanalysis*), CMIP6 (proyeksi), PSMSL (pasang
+  surut), dan GSMaP/CHIRPS (hujan satelit/grid) adalah sumber utama buku ini
+  (Tabel 6.1); gunakan observasi/grid sebagai *target*, *reanalysis* sebagai fitur regional.
 - Format CSV untuk stasiun; NetCDF/GRIB (xarray) untuk grid; selalu cek satuan dan nama
   variabel (Tabel 6.2).
 - Sebelum mengunduh, pahami latensi tiap produk (ERA5 vs ERA5T, GSMaP rilis berbeda),
-  beda ERA5 vs ERA5-Land, cakupan "km" yang bergantung lintang, serta cara akses BMKG
-  yang tanpa API publik (§6.2).
+  beda ERA5 vs ERA5-Land, cakupan "km" yang bergantung lintang, serta cara akses data
+  stasiun nasional yang sering tanpa API publik (§6.2).
 - QC: bedakan nilai hilang (polanya) dan pencilan (salah vs ekstrem sahih) sebelum mengisi;
   hapus kesalahan fisik, pertahankan ekstrem yang masuk akal, dan cek konsistensi
   internal/temporal/spasial (contoh di §6.4).
@@ -627,9 +639,10 @@ Bab 8-9.
 
 ## References
 
-1. Badan Meteorologi, Klimatologi, dan Geofisika (BMKG), "Data online: data stasiun
-   meteorologi, klimatologi, dan geofisika," [Online]. Available:
-   https://dataonline.bmkg.go.id (Accessed: Sep. 2026).
+1. M. J. Menne et al., "An overview of the Global Historical Climatology Network-Daily
+   database," *Journal of Atmospheric and Oceanic Technology*, vol. 29, no. 7,
+   pp. 897-910, 2012, doi: 10.1175/JTECH-D-11-00103.1. Data:
+   https://www.ncei.noaa.gov/pub/data/ghcn/daily/ (Accessed: Sep. 2026).
 2. Copernicus Climate Change Service (C3S), "ERA5: fifth generation ECMWF atmospheric
    reanalysis of the global climate," Copernicus Climate Data Store, [Online]. Available:
    https://cds.climate.copernicus.eu (Accessed: Sep. 2026).

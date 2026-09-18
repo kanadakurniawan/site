@@ -318,7 +318,8 @@ operasional dikeluarkan WMO [4]. Di bab ini kita cukup paham mengapa akurasi tid
 3. **Pemberian bobot kelas** - `class_weight` di Keras memberi penalti lebih besar untuk
    kesalahan pada kelas minoritas (contoh dalam notebook).
 4. **Resampling** - undersampling kelas mayoritas atau oversampling minoritas (konsekuensi:
-   mengubah distribusi; diskusi di Bab 5).
+   mengubah distribusi; diskusi di Bab 5). **Hati-hati pada deret waktu:** oversampling
+   acak (mis. SMOTE) merusak urutan temporal - lebih aman pakai `class_weight` (Bab 9).
 
 ### Contoh numerik lengkap precision/recall
 
@@ -348,7 +349,7 @@ Untuk keputusan yang mahal (misal evakuasi), mungkin precision lebih penting.
 
 Kurva **precision-recall** dan **ROC** membantu memilih: kita mengevaluasi model di banyak
 *threshold* sekaligus, bukan hanya 0.5. Di Bab 9, *trade-off* ini diterapkan pada prediksi
-hujan stasiun BMKG.
+hujan harian.
 
 Bagaimana memilih *threshold* secara sistematis? Salah satu cara sederhana: hitung precision
 dan recall untuk rentang *threshold* (mis. 0.1, 0.2, ..., 0.9), lalu pilih titik yang paling
@@ -356,7 +357,7 @@ sesuai kebutuhan. Cara lain: gunakan *cost matrix* - tetapkan berapa "harga" seb
 vs false alarm (misal 5:1), lalu pilih *threshold* yang meminimalkan total biaya pada
 validasi. Tidak ada jawaban tunggal, tetapi prosesnya **harus eksplisit dan terdokumentasi**.
 
-### Contoh keputusan threshold dalam konteks BMKG
+### Contoh keputusan threshold dalam konteks peringatan dini
 
 Bayangkan sistem peringatan dini banjir rob. Jika *threshold* terlalu tinggi (konservatif),
 kita jarang mengeluarkan peringatan salah - tetapi ada risiko kejadian terlewat dan warga
@@ -421,7 +422,7 @@ satu titik:
 - Jika kelas sangat langka (hujan deras, banjir), **precision-recall curve** lebih jujur -
   ROC bisa tampak "bagus" padahal model praktis tak berguna karena FN/FP penting.
 
-Bab 9 akan memakai precision-recall untuk verifikasi hujan stasiun BMKG.
+Bab 9 akan memakai precision-recall untuk verifikasi hujan harian.
 
 ## 3.10 FAQ Singkat
 

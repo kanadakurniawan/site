@@ -173,7 +173,8 @@ astronomis", machine learning praktis.
 
 Untuk pembaca yang ingin mereproduksi studi kasus ini dengan data nyata, tiga sumber
 utama dipakai buku ini. Semuanya **terbuka dan gratis untuk riset/pendidikan** dengan
-atribusi (lihat catatan lisensi di bawah).
+atribusi (rincian lisensi dan batasannya ada pada "Catatan lisensi dan penggunaan"
+di bawah).
 
 ### Sumber data
 
@@ -202,6 +203,30 @@ Selain itu:
 - **BIG (tides.big.go.id)** [1] - tabel pasut harmonik per lokasi (komponen
   konstituen, amplitudo, fase) yang dipakai BIG untuk prakiraan operasional; tidak
   menyediakan time-series tinggi air mentah yang mudah di-curl otomatis.
+
+### Catatan lisensi dan penggunaan
+
+Lisensi tiap sumber **berbeda dengan lisensi buku** (CC BY-SA 4.0 yang mengizinkan
+penggunaan komersial):
+
+- **UNESCO/IOC Sea Level Station Monitoring Facility** [2] - **CC BY-NC 4.0
+  (non-komersial)** per catatan resmi dataset (DOI 10.14284/482). Gratis untuk
+  riset/pendidikan dan prakiraan operasional, tetapi **tidak boleh dipakai untuk
+  produk/jasa komersial**; turunan dari data ini tetap non-komersial. Penggunaan di
+  luar ketentuan tersebut memerlukan izin dari penyedia data (*data originator*)
+  yang bersangkutan.
+- **UHSLC** [4] - gratis untuk riset/pendidikan; sertakan atribusi
+  "University of Hawaii Sea Level Center"; untuk penggunaan di luar itu, periksa
+  kebijakan UHSLC saat mengunduh.
+- **PSMSL** [3] - gratis; wajib menyertakan sitasi dataset (Holgate et al. 2013)
+  dan referensi data/stasiun.
+- **BIG (tides.big.go.id)** [1] - publik untuk keperluan informasi pasut; atribusi
+  BIG dianjurkan.
+
+Karena buku ini berlisensi **CC BY-SA 4.0** (penggunaan komersial diperbolehkan),
+jika Anda menggabungkan data **non-komersial** (IOC) ke dalam produk turunan,
+kewajiban non-komersial dari data tersebut **tetap berlaku** - cantumkan peringatan
+eksplisit di produk Anda.
 
 ### Station Indonesia yang datanya tersedia di sumber terbuka
 
@@ -242,30 +267,30 @@ QC yang konsisten dengan Bab 6 §6.4:
 4. **Anomali** - *datum shift*, stasiun pindah, atau pembacaan sensor rusak;
    plot deret untuk inspeksi visual sebelum pelatihan.
 
-**Tabel 8.4**: Contoh ringkasan dataset Cilacap yang dibangun (1 tahun hourly).
+**Tabel 8.4**: Ringkasan dataset Cilacap yang dibangun (notebook `ch-08`).
 
-| Properti | Nilai (default buku) |
+| Properti | Nilai (repo buku) |
 |---|---|
 | Stasiun | Cilacap (`code=cili`, IOC) |
-| Rentang | 1 tahun terakhir (otomatis via skrip) |
-| Interval | 1 jam (24 poin/hari) |
+| Rentang | ~30 hari terakhir IOC real-time (notebook); derivasi harmonik 1 thn (`cili_1y_hourly_real.csv`) |
+| Interval | 1 jam (24 poin/hari) setelah rata-rata dari sampling 1-3 menit |
 | Nilai hilang | ~1-3% (tergantung periode) |
 | Satuan | m (relatif terhadap station benchmark) |
-| File lokal | `data/sample/cili_1y_hourly.csv` (di-commit) |
-| File lengkap | `data/raw/cili_*.csv` (di-`.gitignore`, via skrip) |
-| Sifat data | **Sintetik deterministik** (seed 42); bukan observasi |
+| File nyata (di-commit) | `data/raw/cili_30d.csv` (observasi IOC), `data/raw/cili_1y_hourly_real.csv` (derivasi harmonik), `data/raw/cilacap_psmsl_rlr_monthly.rlrdata` (PSMSL) |
+| Sifat data | **Observasi nyata IOC** (+ derivasi harmonik klar dicantumkan); bukan sintetik |
 
-> **Catatan kejujuran:** `cili_1y_hourly.csv` adalah **data sintetik deterministik**
-> (skrip `scripts/generate_sample.py`: komponen M2/S2/K1/O1 dengan amplitudo mirip
-> Cilacap + noise 0,02 m + ~2% gap). Ia cocok untuk menjalankan pipeline end-to-end
-> out-of-the-box, **tapi hasilnya bukan klaim performa di Cilacap nyata**. Untuk
-> angka yang bisa dilaporkan, jalankan pipeline pada data nyata IOC/UHSLC (skrip
-> `scripts/download_ioc.py`).
+> **Catatan kejujuran:** sejak v2.0 notebook memakai **data nyata IOC** real-time
+> (`scripts/download_ioc.py --source ioc --code cili --days 30`). IOC hanya
+> menyediakan ~30 hari terakhir, jadi hasil di bab ini adalah contoh pendek
+> (~1 bulan), bukan validasi jangka panjang. `cili_1y_hourly_real.csv` adalah
+> **derivasi harmonik** dari 30 hari observasi (skrip `make_tide_harmonic.py`),
+> bukan pengukuran langsung — klar penandai saat dipakai. Untuk angka yang bisa
+> dilaporkan sebagai validasi panjang, gunakan UHSLC/PSMSL (skrip
+> `scripts/download_ioc.py`) dengan beberapa thn data.
 
-Untuk buku ini, repo menyediakan **sampel 1 tahun hourly** (`data/sample/
-cili_1y_hourly.csv`) yang siap dipakai notebook out-of-the-box, beserta
-**skrip unduh** (`scripts/download_ioc.py`) untuk mengambil periode lebih
-panjang atau station lain. Prinsip QC mengikuti Bab 6 §6.4.
+Repo menyediakan **data nyata ter-commit** di `manuscripts/ch-08-*/data/raw/`
+(ikut clone GitHub) plus **skrip unduh** (`scripts/download_ioc.py`) untuk
+station lain. Prinsip QC mengikuti Bab 6 §6.4.
 
 ### Menangani gap dan outlier pada data pasang surut
 
@@ -367,27 +392,22 @@ Untuk data **jam-an**, tiga opsi yang harus dicoba:
 Horizon `h` diukur dalam jam: `h=24` (1 hari), `h=72` (3 hari), `h=168` (7 hari).
 Uji `w ∈ {24, 72, 168}` pada validasi, pilih yang MAE-nya konsisten.
 
-**Kode 8.1 - Setup dan pemuatan data (ringkas; lengkap di notebook).**
+**Kode 8.1 - Setup dan pemuatan data (data nyata IOC ter-commit; lengkap di notebook).**
 
 ```python
 import numpy as np, pandas as pd
 
-# Opsi A: data sample (1 tahun hourly Cilacap) yang sudah ada di repo.
+# Data nyata IOC real-time (~30 hari) yang ter-commit di repo.
 seri = pd.read_csv(
-    "data/sample/cili_1y_hourly.csv",
+    "manuscripts/ch-08-studi-kasus-pasang-surut-kapuas/data/raw/cili_30d.csv",
     parse_dates=["time"],
 ).set_index("time")["tinggi"].astype(float)
 
-# Opsi B: muat data nyata lengkap (hasil unduh scripts/download_ioc.py)
-# seri = pd.read_csv("data/raw/cili_hourly.csv",
-#                    parse_dates=["time"]).set_index("time")["tinggi"]
-
-# Opsi C: fallback sintetis (untuk coba cepat tanpa unduh)
-# t = pd.date_range("2024-01-01", periods=365*24, freq="h")
-# seri = (1.0 + 0.6*np.sin(2*np.pi*np.arange(len(t))/12.42)
-#         + 0.4*np.sin(2*np.pi*np.arange(len(t))/24.84)
-#         + 0.05*np.random.randn(len(t)))
-# seri = pd.Series(seri.round(3), index=t, name="tinggi")
+# Derivatif harmonik 1 tahun (untuk horizon lebih panjang; klar: bukan observasi)
+# seri = pd.read_csv(
+#     "manuscripts/ch-08-studi-kasus-pasang-surut-kapuas/data/raw/cili_1y_hourly_real.csv",
+#     parse_dates=["time"],
+# ).set_index("time")["tinggi"].astype(float)
 
 print(seri.head(), "| hilang:", int(seri.isna().sum()))
 ```
@@ -527,10 +547,10 @@ menandakan model terlalu "mengikuti kemarin" - bukan menangkap fase.
 
 ![Gambar 8.2 - Prediksi vs aktual 7 hari, Cilacap](ch-08-studi-kasus-pasang-surut-kapuas/figures/fig-8-2-forecast-7hari.png)
 
-**Gambar 8.2**: Prediksi vs aktual 7 hari terakhir, stasiun Cilacap (data sample).
+**Gambar 8.2**: Prediksi vs aktual 7 hari terakhir, stasiun Cilacap (data nyata IOC).
 
-Garis biru = aktual; garis oranye putus-putus = prediksi. Data sample
-`cili_1y_hourly.csv`; "prediksi" dihasilkan oleh skrip
+Garis biru = aktual; garis oranye putus-putus = prediksi. Data nyata IOC
+(`data/raw/cili_30d.csv`, ~30 hari terakhir); "prediksi" dihasilkan oleh
 `scripts/generate_figures.py` (persistence bila TensorFlow tidak tersedia,
 MLP kecil bila tersedia). Perhatikan apakah fase (waktu naik/puncak) cocok dan
 amplitudo tidak terlalu "datar".
@@ -628,9 +648,10 @@ Sebagai penutup, empat keterbatasan yang wajar diakui:
    reproducible karena datanya terbuka; untuk lokasi tanpa station terbuka,
    hasil Cilacap tidak langsung berlaku. Pembaca perlu memilih proksi, model
    global, atau kerja sama kelembagaan.
-2. **Panjang data terbatas** - sample 1 tahun hourly cukup untuk walk-forward
-   4 blok dan demo pola, tetapi tidak cukup untuk tren jangka panjang atau
-   variabilitas antar-tahun. Untuk klaim kuat, perlu 3-10 tahun (Bab 10).
+2. **Panjang data terbatas** - IOC real-time hanya ~30 hari; cukup untuk
+   walk-forward blok pendek dan demo pola, tetapi tidak cukup untuk tren jangka
+   panjang atau variabilitas antar-tahun. Untuk klaim kuat, perlu data 3-10 tahun
+   (UHSLC/PSMSL; Bab 10).
 3. **Fokus satu station** - pola Cilacap belum tentu sama dengan station
    lain; tipe pasang (Tabel 8.1) harus diperiksa dulu sebelum menggeneralisasi.
 4. **Bukan penelusuran menyeluruh** - *hyperparameter* tidak dioptimasi besar;
@@ -653,8 +674,9 @@ batas dari apa yang bisa disimpulkan.
 
 **Latihan praktik (notebook `ch-08-07_studi_kasus_pasang_surut.ipynb`)**
 
-5. Ganti data sample Cilacap dengan data nyata dari `scripts/download_ioc.py` untuk
-   station Anda (atau proksi terdekat) dan jalankan pipeline ulang.
+5. Setelah Andegg telah mengganti station (mis. Ambon/Bitung) dengan data nyata
+   dari `scripts/download_ioc.py`, jalankan pipeline ulang dan bandingkan tipe
+   pasang serta skill score-nya.
 6. Bandingkan `w ∈ {24, 72, 168}` untuk `h=24` jam; buat tabel MAE.
 7. Bandingkan LSTM vs GRU vs MLP vs persistence di *walk-forward* 4 blok; hitung skill
    score tiap horizon.
